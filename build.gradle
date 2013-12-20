@@ -1,0 +1,87 @@
+// Default tasks
+defaultTasks 'clean', 'build', 'licenseFormatMain', 'shadow', 'install'
+
+// Apply plugins
+apply plugin: 'java'
+apply plugin: 'shadow'
+apply plugin: 'license'
+apply plugin: 'maven'
+
+// Basic project information
+group = 'org.spoutcraft'
+archivesBaseName = 'client'
+version = '1.0.0-SNAPSHOT'
+
+// Extended project information
+ext.projectName = 'Client'
+ext.inceptionYear = '2013'
+ext.packaging = 'jar'
+ext.url = 'http://www.spoutcraft.org/'
+ext.description = ''
+ext.organization = 'Spoutcraft'
+
+// Minimum version of Java required
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
+
+
+// Plugin repositories and dependencies
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            name = 'sonatype-nexus-public'
+            url = 'https://oss.sonatype.org/content/repositories/public/'
+        }
+        maven {
+            name = 'shadow-repo'
+            url = 'http://dl.bintray.com/content/johnrengelman/gradle-plugins/'
+        }
+    }
+    dependencies {
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.6.0'
+        classpath 'org.gradle.plugins:shadow:0.7.4'
+    }
+}
+
+// Non-plugin repositories and dependencies
+repositories {
+    mavenCentral()
+    maven {
+        name = 'sonatype-nexus-public'
+        url = 'https://oss.sonatype.org/content/repositories/public/'
+    }
+}
+dependencies {
+    compile 'com.flowpowered:flow-networking:0.1.0-SNAPSHOT'
+}
+
+// Filter, process, and include resources
+processResources {
+    from(rootProject.rootDir) {
+        include 'LICENSE.txt'
+    }
+}
+
+// Include dependencies in final JAR
+shadow {
+    artifactAttached = false
+    include 'com/flowpowered/**'
+}
+
+// License header formatting
+license {
+    ext.name = projectName
+    ext.organization = organization
+    ext.url = url
+    ext.year = inceptionYear
+    header rootProject.file('HEADER.txt')
+    strictCheck true
+}
+
+// Source compiler configuration
+configure([compileJava, compileTestJava]) {
+    options.compilerArgs << '-Xlint:all'
+    options.compilerArgs << '-Xlint:-path'
+    options.deprecation = true
+}
