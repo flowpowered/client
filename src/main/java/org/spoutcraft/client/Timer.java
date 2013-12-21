@@ -1,0 +1,139 @@
+/**
+ * This file is part of Client, licensed under the MIT License (MIT).
+ *
+ * Copyright (c) 2013 Spoutcraft <http://spoutcraft.org/>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+package org.spoutcraft.client;
+
+import java.util.Arrays;
+
+import org.apache.commons.lang3.SystemUtils;
+import org.lwjgl.Sys;
+
+/**
+ * A time class. Calling the {@link #sync(int)} method at the end of each tick will cause the thread to sleep for the correct time delay between the ticks.
+ * <p/>
+ * Based on LWJGL's implementation of {@link org.lwjgl.opengl.Sync}.
+ */
+public class Timer {
+	// Time to sleep or yield before next tick
+	private long nextTickDelay = 0;
+	// Last 10 running averages for sleeps and yields
+	private final RunAverages sleepDurations = new RunAverages(10, 1000000);
+	private final RunAverages yieldDurations = new RunAverages(10, (int) (-(getTime() - getTime()) * 1.333f));
+
+	static {
+		// Makes windows thread sleeping more accurate
+		if (SystemUtils.IS_OS_WINDOWS) {
+			final Thread sleepingDeamon = new Thread() {
+				@Override
+				public void run() {
+					try {
+						Thread.sleep(Long.MAX_VALUE);
+					} catch (Exception ignored) {
+					}
+				}
+			};
+			sleepingDeamon.setName("Timer");
+			sleepingDeamon.setDaemon(true);
+			sleepingDeamon.start();
+		}
+	}
+
+	/**
+	 * Constucts a new timer.
+	 */
+	public Timer() {
+		nextTickDelay = getTime();
+	}
+
+	/**
+	 * An accurate sync method that will attempt to run at a constant tps. It should be called once every tick.
+	 *
+	 * @param tps The desired ticks per seconds
+	 */
+	public void sync(int tps) {
+		if (tps <= 0) {
+			return;
+		}
+		try {
+			// Sleep until the average sleep time is greater than the time remaining until next tick
+			for (long time1 = getTime(), time2; nextTickDelay - time1 > sleepDurations.average(); time1 = time2) {
+				Thread.sleep(1);
+				// Update average sleep time
+				sleepDurations.add((time2 = getTime()) - time1);
+			}
+			// Slowly dampen sleep average if too high to avoid yielding too much
+			sleepDurations.dampen();
+			// Yield until the average yield time is greater than the time remaining till nextTickDelay
+			for (long time1 = getTime(), time2; nextTickDelay - time1 > yieldDurations.average(); time1 = time2) {
+				Thread.yield();
+				// Update average yield time
+				yieldDurations.add((time2 = getTime()) - time1);
+			}
+		} catch (InterruptedException ignored) {
+		}
+		// Schedule next frame, drop frames if it's too late for next frame
+		nextTickDelay = Math.max(nextTickDelay + 1000000000 / tps, getTime());
+	}
+
+	// Get the system time in nano seconds
+	private static long getTime() {
+		return Sys.getTime() * 1000000000 / Sys.getTimerResolution();
+	}
+
+	// Holds a number of run times for averaging
+	private static class RunAverages {
+		// Dampen threshold, 10ms
+		private static final long DAMPEN_THRESHOLD = 10000000;
+		// Dampen factor, don't alter this value
+		private static final float DAMPEN_FACTOR = 0.9f;
+		private final long[] values;
+		private int currentIndex;
+
+		private RunAverages(int slotCount, long initialValue) {
+			currentIndex = slotCount;
+			values = new long[currentIndex];
+			Arrays.fill(values, initialValue);
+		}
+
+		private void add(long value) {
+			currentIndex %= values.length;
+			values[currentIndex++] = value;
+		}
+
+		private long average() {
+			long sum = 0;
+			for (long slot : values) {
+				sum += slot;
+			}
+			return sum / values.length;
+		}
+
+		private void dampen() {
+			if (average() > DAMPEN_THRESHOLD) {
+				for (int i = 0; i < values.length; i++) {
+					values[i] *= DAMPEN_FACTOR;
+				}
+			}
+		}
+	}
+}
