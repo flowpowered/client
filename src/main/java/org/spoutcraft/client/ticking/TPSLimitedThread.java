@@ -37,6 +37,7 @@ public class TPSLimitedThread extends Thread {
 
 	@Override
 	public void run() {
+		timer.start();
 		while (running) {
 			super.run();
 			timer.sync();
