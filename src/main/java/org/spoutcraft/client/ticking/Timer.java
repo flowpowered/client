@@ -29,13 +29,13 @@ import org.apache.commons.lang3.SystemUtils;
 import org.lwjgl.Sys;
 
 /**
- * A time class. Calling the {@link #sync()} method at the end of each ticking will cause the thread to sleep for the correct time delay between the ticks. {@link #start()} must be called just before the
+ * A time class. Calling the {@link #sync()} method at the end of each tick will cause the thread to sleep for the correct time delay between the ticks. {@link #start()} must be called just before the
  * loop to start the timer. {@link #reset()} is used to reset the start time to the current time.
  * <p/>
  * Based on LWJGL's implementation of {@link org.lwjgl.opengl.Sync}.
  */
 public class Timer {
-	// Time to sleep or yield before next ticking
+	// Time to sleep or yield before next tick
 	private long nextTick = -1;
 	// Last 10 running averages for sleeps and yields
 	private final RunAverages sleepDurations = new RunAverages(10, 1000000);
@@ -85,7 +85,7 @@ public class Timer {
 	}
 
 	/**
-	 * An accurate sync method that will attempt to run at the tps. It should be called once every ticking.
+	 * An accurate sync method that will attempt to run at the tps. It should be called once every tick.
 	 */
 	public void sync() {
 		if (nextTick < 0) {
@@ -95,7 +95,7 @@ public class Timer {
 			return;
 		}
 		try {
-			// Sleep until the average sleep time is greater than the time remaining until next ticking
+			// Sleep until the average sleep time is greater than the time remaining until next tick
 			for (long time1 = getTime(), time2; nextTick - time1 > sleepDurations.average(); time1 = time2) {
 				Thread.sleep(1);
 				// Update average sleep time
@@ -103,7 +103,7 @@ public class Timer {
 			}
 			// Slowly dampen sleep average if too high to avoid yielding too much
 			sleepDurations.dampen();
-			// Yield until the average yield time is greater than the time remaining until next ticking
+			// Yield until the average yield time is greater than the time remaining until next tick
 			for (long time1 = getTime(), time2; nextTick - time1 > yieldDurations.average(); time1 = time2) {
 				Thread.yield();
 				// Update average yield time
