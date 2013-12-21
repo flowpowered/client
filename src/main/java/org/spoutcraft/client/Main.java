@@ -23,8 +23,61 @@
  */
 package org.spoutcraft.client;
 
+import java.io.File;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.SystemUtils;
+
 public class Main {
-	public static void main(String[] args) {
-		System.out.println("Hello World");
+	public static void main(String[] args) throws Exception {
+		deploy();
+		final Timer timer = new Timer();
+		long time = System.currentTimeMillis();
+		for (int i = 0; i < 1000; i++) {
+			long t = System.currentTimeMillis();
+			System.out.println(t - time);
+			time = t;
+			timer.sync(20);
+		}
+	}
+
+	private static void deploy() throws Exception {
+		final File configFile = new File("config.yml");
+		if (!configFile.exists()) {
+			FileUtils.copyInputStreamToFile(Main.class.getResourceAsStream("/config.yml"), configFile);
+		}
+		final String osPath;
+		final String[] nativeLibs;
+		if (SystemUtils.IS_OS_WINDOWS) {
+			nativeLibs = new String[]{
+					"jinput-dx8_64.dll", "jinput-dx8.dll", "jinput-raw_64.dll", "jinput-raw.dll",
+					"jinput-wintab.dll", "lwjgl.dll", "lwjgl64.dll", "OpenAL32.dll", "OpenAL64.dll"
+			};
+			osPath = "windows/";
+		} else if (SystemUtils.IS_OS_MAC) {
+			nativeLibs = new String[]{
+					"libjinput-osx.jnilib", "liblwjgl.jnilib", "openal.dylib"
+			};
+			osPath = "mac/";
+		} else if (SystemUtils.IS_OS_LINUX) {
+			nativeLibs = new String[]{
+					"liblwjgl.so", "liblwjgl64.so", "libopenal.so", "libopenal64.so", "libjinput-linux.so",
+					"libjinput-linux64.so"
+			};
+			osPath = "linux/";
+		} else {
+			throw new IllegalStateException("Could not get lwjgl natives for OS \"" + SystemUtils.OS_NAME + "\".");
+		}
+		final File nativesDir = new File("natives" + File.separator + osPath);
+		nativesDir.mkdirs();
+		for (String nativeLib : nativeLibs) {
+			final File nativeFile = new File(nativesDir, nativeLib);
+			if (!nativeFile.exists()) {
+				FileUtils.copyInputStreamToFile(Main.class.getResourceAsStream("/" + nativeLib), nativeFile);
+			}
+		}
+		final String nativesPath = nativesDir.getAbsolutePath();
+		System.setProperty("org.lwjgl.librarypath", nativesPath);
+		System.setProperty("net.java.games.input.librarypath", nativesPath);
 	}
 }

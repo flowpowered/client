@@ -62,6 +62,8 @@ dependencies {
     compile 'org.spout:caustic:1.0.0-SNAPSHOT'
     compile 'org.spout:react:1.0.0-SNAPSHOT'
     compile 'org.spout:spout-math:1.0.0-SNAPSHOT'
+    compile 'commons-io:commons-io:2.4'
+    compile 'org.apache.commons:commons-lang3:3.1'
 }
 
 // Filter, process, and include resources
@@ -76,6 +78,7 @@ shadow {
     artifactAttached = false
     include 'com/flowpowered/**'
     include 'org/spout/**'
+    include 'org/apache/**'
 }
 
 // License header formatting
