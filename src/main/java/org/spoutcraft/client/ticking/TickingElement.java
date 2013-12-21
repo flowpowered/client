@@ -21,29 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.ticking;
 
 /**
- * Represents a thread that runs its runnable at a specific TPS, until terminated.
+ * Represents an element that ticks at a specific TPS.
  */
-public class TPSLimitedThread extends Thread {
-	private final Timer timer;
-	private boolean running = true;
+public abstract class TickingElement implements Runnable {
+	private int tps;
+	private TPSLimitedThread thread;
 
-	public TPSLimitedThread(Runnable runnable, int tps) {
-		super(runnable);
-		timer = new Timer(tps);
+	public TickingElement(int tps) {
+		this.tps = tps;
+	}
+
+	public void start() {
+		thread = new TPSLimitedThread(this, tps);
+		thread.start();
 	}
 
 	@Override
-	public void run() {
-		while (running) {
-			super.run();
-			timer.sync();
-		}
-	}
+	public abstract void run();
 
-	public void terminate() {
-		running = false;
+	public void stop() {
+		thread.terminate();
+		thread = null;
 	}
 }

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.ticking;
 
 import java.util.Arrays;
 
@@ -29,7 +29,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.lwjgl.Sys;
 
 /**
- * A time class. Calling the {@link #sync(int)} method at the end of each tick will cause the thread to sleep for the correct time delay between the ticks.
+ * A time class. Calling the {@link #sync()} method at the end of each tick will cause the thread to sleep for the correct time delay between the ticks.
  * <p/>
  * Based on LWJGL's implementation of {@link org.lwjgl.opengl.Sync}.
  */

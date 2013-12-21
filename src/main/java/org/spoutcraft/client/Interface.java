@@ -23,6 +23,8 @@
  */
 package org.spoutcraft.client;
 
+import org.spoutcraft.client.ticking.TickingElement;
+
 /**
  * Contains and manages the renderer and GUI.
  */
