@@ -37,17 +37,20 @@ public class Game {
     private GameNetworkClient network;
 
     public void start() {
-        start(new InetSocketAddress(25565));
-    }
-
-    public void start(SocketAddress connectTo) {
         universe.start();
         nterface.start();
-        //network = new GameNetworkClient(connectTo);
     }
 
     public void stop() {
         nterface.stop();
         universe.stop();
+    }
+
+    public void connect() {
+        connect(new InetSocketAddress(25565));
+    }
+
+    public void connect(SocketAddress address) {
+        network = new GameNetworkClient(address);
     }
 }
