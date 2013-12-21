@@ -29,14 +29,14 @@ import org.spoutcraft.client.ticking.TickingElement;
  * Contains and manages the renderer and GUI.
  */
 public class Interface extends TickingElement {
-	private static final int TPS = 60;
+    private static final int TPS = 60;
 
-	public Interface() {
-		super(TPS);
-	}
+    public Interface() {
+        super(TPS);
+    }
 
-	@Override
-	public void run() {
-		System.out.println("Interface tick!");
-	}
+    @Override
+    public void run() {
+        System.out.println("Interface tick!");
+    }
 }

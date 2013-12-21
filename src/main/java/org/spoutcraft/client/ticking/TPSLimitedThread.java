@@ -27,24 +27,24 @@ package org.spoutcraft.client.ticking;
  * Represents a thread that runs its runnable at a specific TPS, until terminated.
  */
 public class TPSLimitedThread extends Thread {
-	private final Timer timer;
-	private boolean running = true;
+    private final Timer timer;
+    private boolean running = true;
 
-	public TPSLimitedThread(Runnable runnable, int tps) {
-		super(runnable);
-		timer = new Timer(tps);
-	}
+    public TPSLimitedThread(Runnable runnable, int tps) {
+        super(runnable);
+        timer = new Timer(tps);
+    }
 
-	@Override
-	public void run() {
-		timer.start();
-		while (running) {
-			super.run();
-			timer.sync();
-		}
-	}
+    @Override
+    public void run() {
+        timer.start();
+        while (running) {
+            super.run();
+            timer.sync();
+        }
+    }
 
-	public void terminate() {
-		running = false;
-	}
+    public void terminate() {
+        running = false;
+    }
 }

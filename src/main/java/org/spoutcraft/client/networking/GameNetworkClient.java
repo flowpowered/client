@@ -27,7 +27,6 @@ import java.net.SocketAddress;
 
 import com.flowpowered.networking.NetworkClient;
 import com.flowpowered.networking.protocol.Protocol;
-import com.flowpowered.networking.session.BasicSession;
 import com.flowpowered.networking.session.Session;
 import io.netty.channel.Channel;
 

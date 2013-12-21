@@ -29,14 +29,14 @@ import org.spoutcraft.client.ticking.TickingElement;
  * Contains and manages all the voxel worlds.
  */
 public class Universe extends TickingElement {
-	private static final int TPS = 20;
+    private static final int TPS = 20;
 
-	public Universe() {
-		super(TPS);
-	}
+    public Universe() {
+        super(TPS);
+    }
 
-	@Override
-	public void run() {
-		System.out.println("Universe tick!");
-	}
+    @Override
+    public void run() {
+        System.out.println("Universe tick!");
+    }
 }

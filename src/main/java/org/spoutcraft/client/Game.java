@@ -32,13 +32,13 @@ import org.spoutcraft.client.networking.GameNetworkClient;
  * The game class.
  */
 public class Game {
-	private final Universe universe = new Universe();
-	private final Interface nterface = new Interface();
+    private final Universe universe = new Universe();
+    private final Interface nterface = new Interface();
     private GameNetworkClient network;
 
-	public void start() {
+    public void start() {
         start(new InetSocketAddress(25565));
-	}
+    }
 
     public void start(SocketAddress connectTo) {
         universe.start();
@@ -46,8 +46,8 @@ public class Game {
         //network = new GameNetworkClient(connectTo);
     }
 
-	public void stop() {
+    public void stop() {
         nterface.stop();
-		universe.stop();
-	}
+        universe.stop();
+    }
 }
