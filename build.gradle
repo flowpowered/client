@@ -59,6 +59,7 @@ repositories {
 }
 dependencies {
     compile 'com.flowpowered:flow-networking:0.1.0-SNAPSHOT'
+    compile 'io.netty:netty-all:4.0.13.Final'
     compile 'junit:junit:4.8.1'
     compile 'org.spout:caustic:1.0.0-SNAPSHOT'
     compile 'org.spout:react:1.0.0-SNAPSHOT'

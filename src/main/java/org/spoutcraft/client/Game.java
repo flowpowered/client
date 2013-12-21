@@ -23,17 +23,28 @@
  */
 package org.spoutcraft.client;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+
+import org.spoutcraft.client.networking.GameNetworkClient;
+
 /**
  * The game class.
  */
 public class Game {
 	private final Universe universe = new Universe();
 	private final Interface ïnterface = new Interface();
+    private GameNetworkClient network;
 
 	public void start() {
-		universe.start();
-		ïnterface.start();
+        start(new InetSocketAddress(25565));
 	}
+
+    public void start(SocketAddress connectTo) {
+        universe.start();
+        ïnterface.start();
+        //network = new GameNetworkClient(connectTo);
+    }
 
 	public void stop() {
 		ïnterface.stop();
