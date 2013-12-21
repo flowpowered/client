@@ -39,6 +39,8 @@ public class Timer {
 	// Last 10 running averages for sleeps and yields
 	private final RunAverages sleepDurations = new RunAverages(10, 1000000);
 	private final RunAverages yieldDurations = new RunAverages(10, (int) (-(getTime() - getTime()) * 1.333f));
+	// The target tps
+	private final int tps;
 
 	static {
 		// Makes windows thread sleeping more accurate
@@ -60,17 +62,18 @@ public class Timer {
 
 	/**
 	 * Constucts a new timer.
+	 *
+	 * @param tps The target tps
 	 */
-	public Timer() {
+	public Timer(int tps) {
+		this.tps = tps;
 		nextTickDelay = getTime();
 	}
 
 	/**
-	 * An accurate sync method that will attempt to run at a constant tps. It should be called once every tick.
-	 *
-	 * @param tps The desired ticks per seconds
+	 * An accurate sync method that will attempt to run at a the tps. It should be called once every tick.
 	 */
-	public void sync(int tps) {
+	public void sync() {
 		if (tps <= 0) {
 			return;
 		}

@@ -31,14 +31,10 @@ import org.apache.commons.lang3.SystemUtils;
 public class Main {
 	public static void main(String[] args) throws Exception {
 		deploy();
-		final Timer timer = new Timer();
-		long time = System.currentTimeMillis();
-		for (int i = 0; i < 1000; i++) {
-			long t = System.currentTimeMillis();
-			System.out.println(t - time);
-			time = t;
-			timer.sync(20);
-		}
+		final Game game = new Game();
+		game.start();
+		Thread.sleep(1000);
+		game.stop();
 	}
 
 	private static void deploy() throws Exception {
