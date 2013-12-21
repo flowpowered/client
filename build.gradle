@@ -59,6 +59,7 @@ repositories {
 }
 dependencies {
     compile 'com.flowpowered:flow-networking:0.1.0-SNAPSHOT'
+    compile 'org.spout:spout-math:1.0.0-SNAPSHOT'
 }
 
 // Filter, process, and include resources
@@ -72,6 +73,7 @@ processResources {
 shadow {
     artifactAttached = false
     include 'com/flowpowered/**'
+    include 'org/spout/**'
 }
 
 // License header formatting
