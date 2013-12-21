@@ -1,12 +1,11 @@
 // Default tasks
-defaultTasks 'clean', 'build', 'licenseFormatMain', 'shadow', 'install'
+defaultTasks 'clean', 'build', 'licenseFormatMain', 'shadow'
 
 // Apply plugins
 apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'shadow'
 apply plugin: 'license'
-apply plugin: 'maven'
 
 // Basic project information
 group = 'org.spoutcraft'
