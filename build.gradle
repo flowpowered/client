@@ -16,14 +16,18 @@ version = '1.0.0-SNAPSHOT'
 ext.projectName = 'Client'
 ext.inceptionYear = '2013'
 ext.packaging = 'jar'
-ext.url = 'http://www.spoutcraft.org/'
-ext.description = ''
+ext.url = 'http://spoutcraft.org'
+ext.description = 'Open source, multi-threaded Minecraft client written in Java.'
 ext.organization = 'Spoutcraft'
 
 // Minimum version of Java required
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
+// Define variables
+ext.buildNumber = '0'
+ext.ciSystem = 'unknown'
+ext.commit = 'unknown'
 
 // Plugin repositories and dependencies
 buildscript {
@@ -85,3 +89,12 @@ configure([compileJava, compileTestJava]) {
     options.compilerArgs << '-Xlint:-path'
     options.deprecation = true
 }
+
+// JAR manifest configuration
+manifest.mainAttributes(
+        "Built-By": System.properties['user.name'],
+        "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+        "Implementation-Title": name,
+        "Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
+        "Implementation-Vendor": url)
+

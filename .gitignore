@@ -10,8 +10,8 @@ build
 dist
 lib
 out
-target
 run
+target
 *.com
 *.class
 *.dll
@@ -59,10 +59,10 @@ Thumbs.db
 ###########
 .classpath
 .externalToolBuilders
+.gradle
 .idea
 .project
 .settings
-.gradle
 nbproject
 atlassian-ide-plugin.xml
 build.xml
