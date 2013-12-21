@@ -59,6 +59,8 @@ repositories {
 }
 dependencies {
     compile 'com.flowpowered:flow-networking:0.1.0-SNAPSHOT'
+    compile 'org.spout:caustic:1.0.0-SNAPSHOT'
+    compile 'org.spout:react:1.0.0-SNAPSHOT'
     compile 'org.spout:spout-math:1.0.0-SNAPSHOT'
 }
 
