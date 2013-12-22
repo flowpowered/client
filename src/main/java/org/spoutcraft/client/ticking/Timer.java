@@ -113,7 +113,7 @@ public class Timer {
         nextTick = Math.max(nextTick + 1000000000 / tps, getTime());
     }
 
-    // Get the system time in nano seconds
+    // Get the system time in nanoseconds
     private static long getTime() {
         return Sys.getTime() * 1000000000 / Sys.getTimerResolution();
     }
@@ -125,11 +125,10 @@ public class Timer {
         // Dampen factor, don't alter this value
         private static final float DAMPEN_FACTOR = 0.9f;
         private final long[] values;
-        private int currentIndex;
+        private int currentIndex = 0;
 
         private RunAverages(int slotCount, long initialValue) {
-            currentIndex = slotCount;
-            values = new long[currentIndex];
+            values = new long[slotCount];
             Arrays.fill(values, initialValue);
         }
 

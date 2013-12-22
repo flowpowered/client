@@ -53,7 +53,7 @@ public class ClientProtocol extends Protocol {
         int length = buf.readInt();
         int opcode = buf.readInt();
 
-        final Codec codec = getCodecLookupService().find(opcode);
+        final Codec<?> codec = getCodecLookupService().find(opcode);
         if (codec == null) {
             throw new UnknownPacketException(length, opcode);
         }

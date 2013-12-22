@@ -39,9 +39,6 @@ public abstract class TickingElement implements Runnable {
         thread.start();
     }
 
-    @Override
-    public abstract void run();
-
     public void stop() {
         thread.terminate();
         thread = null;
