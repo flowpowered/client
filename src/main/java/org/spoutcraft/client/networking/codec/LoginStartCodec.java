@@ -21,22 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.networking.codec;
 
-import org.spoutcraft.client.ticking.TickingElement;
+import java.io.IOException;
 
-/**
- * Contains and manages the renderer and GUI.
- */
-public class Interface extends TickingElement {
-    private static final int TPS = 60;
+import com.flowpowered.networking.Codec;
+import io.netty.buffer.ByteBuf;
+import org.spoutcraft.client.networking.ByteBufUtils;
+import org.spoutcraft.client.networking.message.LoginStartMessage;
 
-    public Interface() {
-        super(TPS);
+public class LoginStartCodec extends Codec<LoginStartMessage> {
+    public static final int OPCODE = 1;
+
+    public LoginStartCodec() {
+        super(LoginStartMessage.class, OPCODE);
     }
 
     @Override
-    public void run() {
-        System.out.println("Interface tick");
+    public LoginStartMessage decode(ByteBuf byteBuf) throws IOException {
+        throw new IOException("The Minecraft Server does not send a login start!");
+    }
+
+    @Override
+    public ByteBuf encode(ByteBuf buf, LoginStartMessage message) throws IOException {
+        ByteBufUtils.writeUTF8(buf, message.getUsername());
+        return buf;
     }
 }

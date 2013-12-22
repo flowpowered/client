@@ -21,22 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.networking;
 
-import org.spoutcraft.client.ticking.TickingElement;
+import java.io.IOException;
 
-/**
- * Contains and manages the renderer and GUI.
- */
-public class Interface extends TickingElement {
-    private static final int TPS = 60;
+import io.netty.buffer.ByteBuf;
+import org.apache.commons.io.Charsets;
 
-    public Interface() {
-        super(TPS);
+public class ByteBufUtils {
+    public static void writeUTF8(ByteBuf buf, String str) throws IOException {
+        int len = str.length();
+        if (len >= 65536) {
+            throw new IOException("Attempt to write a String with a length greater than Integer.MAX_VALUE to ByteBuf!");
+        }
+        //Write the String's length
+        buf.writeByte(len);
+
+        //Write the String
+        for (int i = 0; i < len; i++) {
+            buf.writeChar(str.charAt(i));
+        }
     }
 
-    @Override
-    public void run() {
-        System.out.println("Interface tick");
+    public static String readUTF8(ByteBuf buf) {
+        //Read size of String
+        int len = buf.readInt(); //TODO Test this
+        byte[] data = new byte[len];
+
+        //Read bytes of String from length
+        buf.readBytes(data, 0, len);
+        return new String(data, Charsets.UTF_8);
     }
 }

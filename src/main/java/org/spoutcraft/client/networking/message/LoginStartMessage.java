@@ -21,22 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.networking.message;
 
-import org.spoutcraft.client.ticking.TickingElement;
+import com.flowpowered.networking.Message;
 
-/**
- * Contains and manages the renderer and GUI.
- */
-public class Interface extends TickingElement {
-    private static final int TPS = 60;
+public class LoginStartMessage implements Message {
+    private final String username;
 
-    public Interface() {
-        super(TPS);
+    public LoginStartMessage(String username) {
+        this.username = username;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     @Override
-    public void run() {
-        System.out.println("Interface tick");
+    public boolean isAsync() {
+        return false;
     }
 }

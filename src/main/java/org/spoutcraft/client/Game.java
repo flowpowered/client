@@ -53,4 +53,8 @@ public class Game {
     public void connect(SocketAddress address) {
         network = new GameNetworkClient(address);
     }
+
+    public GameNetworkClient getNetwork() {
+        return network;
+    }
 }

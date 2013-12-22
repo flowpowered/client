@@ -37,6 +37,6 @@ public class Universe extends TickingElement {
 
     @Override
     public void run() {
-        System.out.println("Universe tick!");
+        System.out.println("Universe tick");
     }
 }

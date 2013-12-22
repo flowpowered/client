@@ -34,18 +34,25 @@ import io.netty.channel.Channel;
  * The network entry point for the client. Handles connecting to the server as well as creating {@link Session}s.
  */
 public class GameNetworkClient extends NetworkClient {
+    private ClientSession session;
+
     public GameNetworkClient(SocketAddress remoteAddress) {
         super(remoteAddress, new ClientProtocol("Client", 25565));
     }
 
     @Override
     public Session newSession(Channel channel, Protocol protocol) {
-        return new ClientSession(channel, protocol);
+        session = new ClientSession(channel, protocol);
+        return session;
     }
 
     @Override
     public void sessionInactivated(Session session) {
-        //TODO Clear all session references here
-        //TODO Show disconnected GUI to client
+        //TODO Show generic client GUI for disconnection
+        session = null;
+    }
+
+    public ClientSession getSession() {
+        return session;
     }
 }

@@ -21,22 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.networking.handler;
 
-import org.spoutcraft.client.ticking.TickingElement;
+import com.flowpowered.networking.MessageHandler;
+import com.flowpowered.networking.session.Session;
+import org.spoutcraft.client.networking.message.HandshakeMessage;
 
-/**
- * Contains and manages the renderer and GUI.
- */
-public class Interface extends TickingElement {
-    private static final int TPS = 60;
-
-    public Interface() {
-        super(TPS);
-    }
-
+public class HandshakeHandler implements MessageHandler<HandshakeMessage> {
     @Override
-    public void run() {
-        System.out.println("Interface tick");
+    public void handle(Session session, HandshakeMessage handshakeMessage) {
+        //TODO Ask kitskub to remove the need for a handle on a message
     }
 }

@@ -21,22 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.networking.codec;
 
-import org.spoutcraft.client.ticking.TickingElement;
+import java.io.IOException;
 
-/**
- * Contains and manages the renderer and GUI.
- */
-public class Interface extends TickingElement {
-    private static final int TPS = 60;
+import com.flowpowered.networking.Codec;
+import io.netty.buffer.ByteBuf;
+import org.spoutcraft.client.networking.ByteBufUtils;
+import org.spoutcraft.client.networking.message.HandshakeMessage;
 
-    public Interface() {
-        super(TPS);
+public class HandshakeCodec extends Codec<HandshakeMessage> {
+    public static final int OPCODE = 0;
+
+    public HandshakeCodec() {
+        super(HandshakeMessage.class, OPCODE);
     }
 
     @Override
-    public void run() {
-        System.out.println("Interface tick");
+    public HandshakeMessage decode(ByteBuf byteBuf) throws IOException {
+        throw new IOException("The Minecraft Server does not send a handshake!");
+    }
+
+    @Override
+    public ByteBuf encode(ByteBuf buf, HandshakeMessage message) throws IOException {
+        buf.writeInt(message.getVersion());
+        ByteBufUtils.writeUTF8(buf, message.getAddress());
+        buf.writeShort(message.getPort());
+        buf.writeInt(message.getState().value());
+        return buf;
     }
 }

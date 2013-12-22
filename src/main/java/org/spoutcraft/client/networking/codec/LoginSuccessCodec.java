@@ -21,22 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.networking.codec;
 
-import org.spoutcraft.client.ticking.TickingElement;
+import java.io.IOException;
 
-/**
- * Contains and manages the renderer and GUI.
- */
-public class Interface extends TickingElement {
-    private static final int TPS = 60;
+import com.flowpowered.networking.Codec;
+import io.netty.buffer.ByteBuf;
+import org.spoutcraft.client.networking.ByteBufUtils;
+import org.spoutcraft.client.networking.message.LoginSuccessMessage;
 
-    public Interface() {
-        super(TPS);
+public class LoginSuccessCodec extends Codec<LoginSuccessMessage> {
+    public static final int OPCODE = 2;
+
+    public LoginSuccessCodec() {
+        super(LoginSuccessMessage.class, OPCODE);
     }
 
     @Override
-    public void run() {
-        System.out.println("Interface tick");
+    public LoginSuccessMessage decode(ByteBuf buf) throws IOException {
+        final String uuid = ByteBufUtils.readUTF8(buf);
+        final String username = ByteBufUtils.readUTF8(buf);
+        return new LoginSuccessMessage(uuid, username);
+    }
+
+    @Override
+    public ByteBuf encode(ByteBuf buf, LoginSuccessMessage message) throws IOException {
+        throw new IOException("The Minecraft Server should not receive a login success!");
     }
 }
