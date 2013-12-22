@@ -21,27 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.universe.block.material;
+package org.spoutcraft.util.hashing;
 
-/**
- *
- */
-public class SubMaterial extends Material {
-    private final Material master;
+import org.junit.Assert;
+import org.junit.Test;
 
-    public SubMaterial(MasterMaterial master, short subID) {
-        super(master.getID(), subID);
-        if (master == null) {
-            throw new IllegalArgumentException("Master material cannot be null");
-        }
-        if (subID == 0) {
-            throw new IllegalArgumentException("Sub ID 0 is reserved for the master material");
-        }
-        this.master = master;
-        master.addSubMaterial(this);
+import org.spoutcraft.client.util.hashing.Int21TripleHashed;
+
+public class Int21TripleHashedTest {
+    public void testValue(int x, int y, int z) {
+        long key = Int21TripleHashed.key(x, y, z);
+        Assert.assertEquals(x, Int21TripleHashed.key1(key));
+        Assert.assertEquals(y, Int21TripleHashed.key2(key));
+        Assert.assertEquals(z, Int21TripleHashed.key3(key));
     }
 
-    public Material getMaster() {
-        return master;
+    @Test
+    public void testHashes() {
+        testValue(-1048575, -1048575, -1048575);
+        testValue(0, 0, 0);
+        testValue(1048575, 1048575, 1048575);
+        testValue(1048575, -1048575, 1048575);
+        testValue(-1048575, 1048575, -1048575);
+        testValue(32423, 14144, 24114);
+        testValue(10475, 104865, 104835);
+        testValue(128, 512, 1024);
+        testValue(-34, 2421, -4452);
     }
 }
