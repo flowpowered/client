@@ -46,6 +46,6 @@ public class LoginSuccessCodec extends Codec<LoginSuccessMessage> {
 
     @Override
     public ByteBuf encode(ByteBuf buf, LoginSuccessMessage message) throws IOException {
-        throw new IOException("The Minecraft Server should not receive a login success!");
+        throw new IOException("The client should not send a login success to the Minecraft server!");
     }
 }

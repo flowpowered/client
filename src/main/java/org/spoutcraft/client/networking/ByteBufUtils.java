@@ -31,8 +31,8 @@ import org.apache.commons.io.Charsets;
 public class ByteBufUtils {
     public static void writeUTF8(ByteBuf buf, String str) throws IOException {
         int len = str.length();
-        if (len >= 65536) {
-            throw new IOException("Attempt to write a String with a length greater than Integer.MAX_VALUE to ByteBuf!");
+        if (len >= Short.MAX_VALUE) {
+            throw new IOException("Attempt to write a String with a length greater than Short.MAX_VALUE to ByteBuf!");
         }
         //Write the String's length
         buf.writeByte(len);

@@ -39,7 +39,7 @@ public class HandshakeCodec extends Codec<HandshakeMessage> {
 
     @Override
     public HandshakeMessage decode(ByteBuf byteBuf) throws IOException {
-        throw new IOException("The Minecraft Server does not send a handshake!");
+        throw new IOException("The client should not receive a handshake from the Minecraft server!");
     }
 
     @Override
