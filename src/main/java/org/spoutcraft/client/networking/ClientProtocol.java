@@ -73,7 +73,6 @@ public class ClientProtocol extends Protocol {
         }
         out.writeInt(length);
         out.writeInt(opcode);
-        out.writeBytes(data);
         return out;
     }
 }
