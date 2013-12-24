@@ -33,7 +33,12 @@ public class Main {
         deploy();
         final Game game = new Game();
         game.start();
-        Thread.sleep(1000);
+
+        if (!game.connect()) {
+        	System.out.println("Connect failed.");
+        }
+
+        Thread.sleep(5000);
         game.stop();
     }
 
