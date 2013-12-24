@@ -24,6 +24,7 @@
 package org.spoutcraft.client.networking.handler;
 
 import com.flowpowered.networking.MessageHandler;
+import com.flowpowered.networking.session.PulsingSession;
 import com.flowpowered.networking.session.Session;
 import org.spoutcraft.client.networking.message.LoginSuccessMessage;
 
@@ -31,5 +32,6 @@ public class LoginSuccessHandler implements MessageHandler<LoginSuccessMessage> 
     @Override
     public void handle(Session session, LoginSuccessMessage loginSuccessMessage) {
         System.out.println("Server says login is successful...Woo!!");
+        ((PulsingSession) session).setState(PulsingSession.State.OPEN);
     }
 }

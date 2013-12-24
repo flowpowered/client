@@ -24,6 +24,7 @@
 package org.spoutcraft.client.networking.handler;
 
 import com.flowpowered.networking.MessageHandler;
+import com.flowpowered.networking.session.PulsingSession;
 import com.flowpowered.networking.session.Session;
 import org.spoutcraft.client.networking.message.LoginStartMessage;
 
