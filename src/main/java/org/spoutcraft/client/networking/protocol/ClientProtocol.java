@@ -21,33 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking;
+package org.spoutcraft.client.networking.protocol;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.exception.UnknownPacketException;
 import com.flowpowered.networking.protocol.Protocol;
 import io.netty.buffer.ByteBuf;
-import org.spoutcraft.client.networking.codec.HandshakeCodec;
 import org.spoutcraft.client.networking.codec.LoginStartCodec;
-import org.spoutcraft.client.networking.codec.LoginSuccessCodec;
-import org.spoutcraft.client.networking.handler.HandshakeHandler;
-import org.spoutcraft.client.networking.handler.KeepAliveHandler;
-import org.spoutcraft.client.networking.handler.LoginStartHandler;
-import org.spoutcraft.client.networking.handler.LoginSuccessHandler;
 
 /**
  * The protocol used for client communication.
  */
-public class ClientProtocol extends Protocol {
+public abstract class ClientProtocol extends Protocol {
+    public static final int DEFAULT_PORT = 25565;
     public static final int VERSION = 4;
 
-    public ClientProtocol(String name, int defaultPort) {
-        super(name, defaultPort, 50);
-        //TODO Put handlers here
-        registerMessage(HandshakeCodec.class, HandshakeHandler.class);
-        registerMessage(LoginStartCodec.class, LoginStartHandler.class);
-        registerMessage(LoginSuccessCodec.class, LoginSuccessHandler.class);
-        registerMessage(KeepAliveCodec.class, KeepAliveHandler.class);
+    public ClientProtocol(String name, int messageCount) {
+        super(name, DEFAULT_PORT, messageCount);
     }
 
     @Override
@@ -66,13 +56,7 @@ public class ClientProtocol extends Protocol {
     public ByteBuf writeHeader(Codec<?> codec, ByteBuf data, ByteBuf out) {
         //Length -> opcode -> data
         final int length = data.capacity();
-        final int opcode;
-        //TODO Merely for testing, I need to get kitskub to make changes to flow-networking.
-        if (codec instanceof LoginStartCodec) {
-            opcode = 0;
-        } else {
-            opcode = codec.getOpcode();
-        }
+        final int opcode = codec.getOpcode();
         out.writeInt(length);
         out.writeInt(opcode);
         return out;

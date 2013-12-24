@@ -21,15 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.handler;
+package org.spoutcraft.client.networking.protocol;
 
-import com.flowpowered.networking.MessageHandler;
-import com.flowpowered.networking.session.Session;
-import org.spoutcraft.client.networking.message.HandshakeMessage;
+import org.spoutcraft.client.networking.codec.LoginStartCodec;
+import org.spoutcraft.client.networking.codec.LoginSuccessCodec;
+import org.spoutcraft.client.networking.handler.LoginSuccessHandler;
 
-public class HandshakeHandler implements MessageHandler<HandshakeMessage> {
-    @Override
-    public void handle(Session session, HandshakeMessage handshakeMessage) {
-        //TODO Ask kitskub to remove the need for a handle on a message
+public class LoginProtocol extends ClientProtocol {
+    public LoginProtocol() {
+        super("Client-Login", 2);
+
+        //TODO Put handlers here
+        registerMessage(LoginStartCodec.class, null);
+        registerMessage(LoginSuccessCodec.class, LoginSuccessHandler.class);
     }
 }

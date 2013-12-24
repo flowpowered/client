@@ -21,15 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.handler;
+package org.spoutcraft.client.networking.protocol;
 
-import com.flowpowered.networking.MessageHandler;
-import com.flowpowered.networking.session.Session;
-import org.spoutcraft.client.networking.message.LoginStartMessage;
+import org.spoutcraft.client.networking.KeepAliveCodec;
+import org.spoutcraft.client.networking.handler.KeepAliveHandler;
 
-public class LoginStartHandler implements MessageHandler<LoginStartMessage> {
-    @Override
-    public void handle(Session session, LoginStartMessage loginStartMessage) {
-        //TODO Ask kitskub to remove the need for a handle on a message
+public class PlayProtocol extends ClientProtocol {
+    public PlayProtocol() {
+        super("Client-Play", 1);
+
+        //TODO Put handlers here
+        registerMessage(KeepAliveCodec.class, KeepAliveHandler.class);
     }
 }

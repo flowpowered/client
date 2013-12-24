@@ -24,7 +24,7 @@
 package org.spoutcraft.client.networking.message;
 
 import com.flowpowered.networking.Message;
-import org.spoutcraft.client.networking.ClientProtocol;
+import org.spoutcraft.client.networking.protocol.ClientProtocol;
 
 public class HandshakeMessage implements Message {
     private final int version;

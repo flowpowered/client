@@ -36,8 +36,8 @@ public class ClientSession extends PulsingSession {
     private UUID uuid;
     private String username;
 
-    public ClientSession(Channel channel, Protocol bootstrapProtocol) {
-        super(channel, bootstrapProtocol);
+    public ClientSession(Channel channel, Protocol protocol) {
+        super(channel, protocol);
     }
 
     public UUID getUUID() {
@@ -54,5 +54,10 @@ public class ClientSession extends PulsingSession {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    @Override
+    public void setProtocol(Protocol protocol) {
+        super.setProtocol(protocol);
     }
 }

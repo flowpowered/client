@@ -30,6 +30,7 @@ import com.flowpowered.networking.session.PulsingSession;
 import com.flowpowered.networking.session.Session;
 import org.spoutcraft.client.networking.ClientSession;
 import org.spoutcraft.client.networking.message.LoginSuccessMessage;
+import org.spoutcraft.client.networking.protocol.PlayProtocol;
 
 public class LoginSuccessHandler implements MessageHandler<LoginSuccessMessage> {
     @Override
@@ -37,6 +38,7 @@ public class LoginSuccessHandler implements MessageHandler<LoginSuccessMessage> 
         System.out.println("Server says login is successful...Woo!!");
 
         final ClientSession clientSession = (ClientSession) session;
+        clientSession.setProtocol(new PlayProtocol());
         clientSession.setUUID(UUID.fromString(message.getUUID()));
         clientSession.setUsername(message.getUsername());
         clientSession.setState(PulsingSession.State.OPEN);

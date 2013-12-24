@@ -21,15 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.handler;
+package org.spoutcraft.client.networking.protocol;
 
-import com.flowpowered.networking.MessageHandler;
-import com.flowpowered.networking.session.Session;
-import org.spoutcraft.client.networking.message.KeepAliveMessage;
+import org.spoutcraft.client.networking.codec.HandshakeCodec;
 
-public class KeepAliveHandler implements MessageHandler<KeepAliveMessage> {
-    @Override
-    public void handle(Session session, KeepAliveMessage message) {
-        session.send(new KeepAliveMessage(message.getRandom()));
+public class HandshakeProtocol extends ClientProtocol {
+    public HandshakeProtocol() {
+        super("Client-Handshake", 1);
+
+        registerMessage(HandshakeCodec.class, null);
     }
 }

@@ -29,6 +29,8 @@ import com.flowpowered.networking.NetworkClient;
 import com.flowpowered.networking.protocol.Protocol;
 import com.flowpowered.networking.session.Session;
 import io.netty.channel.Channel;
+import org.spoutcraft.client.networking.protocol.ClientProtocol;
+import org.spoutcraft.client.networking.protocol.HandshakeProtocol;
 
 /**
  * The network entry point for the client. Handles connecting to the server as well as creating {@link Session}s.
@@ -37,12 +39,12 @@ public class GameNetworkClient extends NetworkClient {
     private ClientSession session;
 
     public GameNetworkClient(SocketAddress remoteAddress) {
-        super(remoteAddress, new ClientProtocol("Client", 25565));
+        super(remoteAddress);
     }
 
     @Override
-    public Session newSession(Channel channel, Protocol protocol) {
-        session = new ClientSession(channel, protocol);
+    public Session newSession(Channel channel) {
+        session = new ClientSession(channel, new HandshakeProtocol());
         return session;
     }
 
