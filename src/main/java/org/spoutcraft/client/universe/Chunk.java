@@ -23,13 +23,13 @@
  */
 package org.spoutcraft.client.universe;
 
-import org.spout.math.vector.Vector3i;
-
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.store.AtomicBlockStore;
 import org.spoutcraft.client.universe.store.impl.AtomicPaletteBlockStore;
 import org.spoutcraft.client.util.BitSize;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  *

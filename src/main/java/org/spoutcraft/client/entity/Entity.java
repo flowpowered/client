@@ -7,14 +7,11 @@ import org.spout.math.vector.Vector3f;
 /**
  * Entities are objects which are dynamic unlike their static {@link org.spoutcraft.client.universe.block.Block} brethren.
  *
- * TODO Make other players just entities (should be easily done)?
- * TODO Component system so entities don't store logic?
- *
+ * TODO Make other players just entities (should be easily done)? TODO Component system so entities don't store logic?
  */
 public class Entity {
     //Unique
     private final int id;
-
     private String displayName;
     private World world;
     private Vector3f position;

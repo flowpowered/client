@@ -29,9 +29,8 @@ import gnu.trove.iterator.TLongObjectIterator;
 import gnu.trove.map.TLongObjectMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
 import gnu.trove.set.TLongSet;
-
-import org.spoutcraft.client.util.map.TripleIntObjectMap;
 import org.spoutcraft.client.util.hashing.Int21TripleHashed;
+import org.spoutcraft.client.util.map.TripleIntObjectMap;
 
 /**
  * A simplistic map that supports a 3 21 bit integers for keys, using a trove long Object hashmap in the backend. 1 bit is wasted.
@@ -229,7 +228,7 @@ public class TTripleInt21ObjectHashMap<T> implements TripleIntObjectMap<T> {
      *
      * @return the values of the map as an array of <code>long</code> values.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings ("unchecked")
     public T[] values() {
         return (T[]) map.values();
     }

@@ -23,9 +23,9 @@
  */
 package org.spoutcraft.client.universe.block;
 
-import org.spout.math.vector.Vector3i;
-
 import org.spoutcraft.client.universe.block.material.Material;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  *

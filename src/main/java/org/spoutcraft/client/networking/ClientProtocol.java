@@ -31,6 +31,7 @@ import org.spoutcraft.client.networking.codec.HandshakeCodec;
 import org.spoutcraft.client.networking.codec.LoginStartCodec;
 import org.spoutcraft.client.networking.codec.LoginSuccessCodec;
 import org.spoutcraft.client.networking.handler.HandshakeHandler;
+import org.spoutcraft.client.networking.handler.KeepAliveHandler;
 import org.spoutcraft.client.networking.handler.LoginStartHandler;
 import org.spoutcraft.client.networking.handler.LoginSuccessHandler;
 
@@ -46,6 +47,7 @@ public class ClientProtocol extends Protocol {
         registerMessage(HandshakeCodec.class, HandshakeHandler.class);
         registerMessage(LoginStartCodec.class, LoginStartHandler.class);
         registerMessage(LoginSuccessCodec.class, LoginSuccessHandler.class);
+        registerMessage(KeepAliveCodec.class, KeepAliveHandler.class);
     }
 
     @Override

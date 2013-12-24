@@ -26,11 +26,10 @@ package org.spoutcraft.client.universe.store.impl;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import gnu.trove.set.hash.TIntHashSet;
-
-import org.spout.math.vector.Vector3i;
-
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.store.AtomicBlockStore;
+
+import org.spout.math.vector.Vector3i;
 
 public class AtomicPaletteBlockStore implements AtomicBlockStore {
     private final int shift;

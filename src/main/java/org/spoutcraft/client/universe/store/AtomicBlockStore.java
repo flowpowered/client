@@ -24,10 +24,9 @@
 package org.spoutcraft.client.universe.store;
 
 import gnu.trove.set.hash.TIntHashSet;
+import org.spoutcraft.client.universe.block.material.Material;
 
 import org.spout.math.vector.Vector3i;
-
-import org.spoutcraft.client.universe.block.material.Material;
 
 /**
  * This store stores block data for each chunk. Each block can either store a short id, or a short id, a short data value and a reference to a &lt;T&gt; object.

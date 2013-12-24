@@ -102,11 +102,11 @@ public class AtomicShortIntUniformBackingArray extends AtomicShortIntBackingArra
 
     @Override
     public int[] getPalette() {
-        return new int[]{store.get()};
+        return new int[] {store.get()};
     }
 
     @Override
     public int[] getBackingArray() {
-        return new int[]{};
+        return new int[] {};
     }
 }

@@ -23,10 +23,10 @@
  */
 package org.spoutcraft.client.universe;
 
-import org.spout.math.vector.Vector3i;
-
 import org.spoutcraft.client.util.map.TripleIntObjectMap;
 import org.spoutcraft.client.util.map.impl.TTripleInt21ObjectHashMap;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  *
