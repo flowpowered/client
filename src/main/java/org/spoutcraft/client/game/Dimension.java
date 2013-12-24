@@ -25,7 +25,7 @@ package org.spoutcraft.client.game;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings ("unchecked")
 public enum Dimension {
     NORMAL(0),
     NETHER(-1),

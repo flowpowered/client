@@ -21,43 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.protocol;
+package org.spoutcraft.client.networking.codec;
+
+import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
-import com.flowpowered.networking.exception.UnknownPacketException;
-import com.flowpowered.networking.protocol.Protocol;
 import io.netty.buffer.ByteBuf;
+import org.spoutcraft.client.game.Difficulty;
+import org.spoutcraft.client.game.Dimension;
+import org.spoutcraft.client.game.Gamemode;
+import org.spoutcraft.client.game.LevelType;
+import org.spoutcraft.client.networking.ByteBufUtils;
+import org.spoutcraft.client.networking.message.JoinGameMessage;
 
-/**
- * The protocol used for client communication.
- */
-public abstract class ClientProtocol extends Protocol {
-    public static final int DEFAULT_PORT = 25565;
-    public static final int VERSION = 4;
+public class JoinGameCodec extends Codec<JoinGameMessage> {
+    public static final int OPCODE = 1;
 
-    public ClientProtocol(String name, int messageCount) {
-        super(name, DEFAULT_PORT, messageCount);
+    public JoinGameCodec() {
+        super(JoinGameMessage.class, OPCODE);
     }
 
     @Override
-    public Codec<?> readHeader(ByteBuf buf) throws UnknownPacketException {
-        int length = buf.readInt();
-        int opcode = buf.readInt();
-
-        final Codec<?> codec = getCodecLookupService().find(opcode);
-        if (codec == null) {
-            throw new UnknownPacketException(length, opcode);
-        }
-        return codec;
+    public JoinGameMessage decode(ByteBuf buf) throws IOException {
+        final int playerID = buf.readInt();
+        final Gamemode gamemode = Gamemode.get(buf.readUnsignedByte());
+        final Dimension dimension = Dimension.get(buf.readByte());
+        final Difficulty difficulty = Difficulty.get(buf.readUnsignedByte());
+        final short maxPlayers = buf.readUnsignedByte();
+        final LevelType levelType = LevelType.get(ByteBufUtils.readUTF8(buf));
+        return new JoinGameMessage(playerID, gamemode, dimension, difficulty, maxPlayers, levelType);
     }
 
     @Override
-    public ByteBuf writeHeader(Codec<?> codec, ByteBuf data, ByteBuf out) {
-        //Length -> opcode -> data
-        final int length = data.capacity();
-        final int opcode = codec.getOpcode();
-        out.writeInt(length);
-        out.writeInt(opcode);
-        return out;
+    public ByteBuf encode(ByteBuf buf, JoinGameMessage message) throws IOException {
+        throw new IOException("The client cannot send a join game to the Minecraft server!");
     }
 }

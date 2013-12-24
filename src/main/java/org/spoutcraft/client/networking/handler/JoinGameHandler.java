@@ -21,38 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.game;
+package org.spoutcraft.client.networking.handler;
 
-import gnu.trove.map.hash.TIntObjectHashMap;
+import com.flowpowered.networking.MessageHandler;
+import com.flowpowered.networking.session.Session;
+import org.spoutcraft.client.networking.message.JoinGameMessage;
 
-@SuppressWarnings ("unchecked")
-public enum Gamemode {
-    ADVENTURE(2),
-    CREATIVE(1),
-    HARDCORE(3),
-    SURVIVAL(0);
-    private final int value;
-    private static final TIntObjectHashMap map = new TIntObjectHashMap();
-
-    static {
-        for (Gamemode mode : Gamemode.values()) {
-            map.put(mode.value(), mode);
-        }
-    }
-
-    private Gamemode(int value) {
-        this.value = value;
-    }
-
-    public int value() {
-        return value;
-    }
-
-    public static Gamemode get(int id) {
-        return (Gamemode) map.get(id);
-    }
-
-    public static Gamemode get(String name) {
-        return valueOf(name.toUpperCase());
+public class JoinGameHandler implements MessageHandler<JoinGameMessage> {
+    @Override
+    public void handle(Session session, JoinGameMessage message) {
+        System.out.println("Server instructed client to join game!");
     }
 }

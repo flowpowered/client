@@ -26,11 +26,13 @@ package org.spoutcraft.client.networking;
 import java.net.SocketAddress;
 
 import com.flowpowered.networking.NetworkClient;
-import com.flowpowered.networking.protocol.Protocol;
 import com.flowpowered.networking.session.Session;
 import io.netty.channel.Channel;
+import org.spoutcraft.client.networking.message.HandshakeMessage;
+import org.spoutcraft.client.networking.message.LoginStartMessage;
 import org.spoutcraft.client.networking.protocol.ClientProtocol;
 import org.spoutcraft.client.networking.protocol.HandshakeProtocol;
+import org.spoutcraft.client.networking.protocol.LoginProtocol;
 
 /**
  * The network entry point for the client. Handles connecting to the server as well as creating {@link Session}s.

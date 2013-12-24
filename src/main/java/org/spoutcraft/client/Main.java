@@ -27,6 +27,8 @@ import java.io.File;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.spoutcraft.client.networking.message.HandshakeMessage;
+import org.spoutcraft.client.networking.protocol.ClientProtocol;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -35,6 +37,8 @@ public class Main {
         game.start();
         Thread.sleep(1000);
         game.stop();
+
+        game.connect();
     }
 
     private static void deploy() throws Exception {

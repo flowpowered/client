@@ -28,6 +28,10 @@ import java.util.UUID;
 import com.flowpowered.networking.protocol.Protocol;
 import com.flowpowered.networking.session.PulsingSession;
 import io.netty.channel.Channel;
+import org.spoutcraft.client.networking.message.HandshakeMessage;
+import org.spoutcraft.client.networking.message.LoginStartMessage;
+import org.spoutcraft.client.networking.protocol.ClientProtocol;
+import org.spoutcraft.client.networking.protocol.LoginProtocol;
 
 /**
  * Represents an open connection to the server. All {@link com.flowpowered.networking.Message}s are sent through the session
@@ -59,5 +63,12 @@ public class ClientSession extends PulsingSession {
     @Override
     public void setProtocol(Protocol protocol) {
         super.setProtocol(protocol);
+    }
+
+    @Override
+    public void onReady() {
+        send(new HandshakeMessage(ClientProtocol.VERSION, "127.0.0.1", ClientProtocol.DEFAULT_PORT, HandshakeMessage.HandshakeState.LOGIN));
+        setProtocol(new LoginProtocol());
+        send(new LoginStartMessage("Player1"));
     }
 }
