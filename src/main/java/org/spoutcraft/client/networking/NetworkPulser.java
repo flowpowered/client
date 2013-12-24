@@ -23,34 +23,30 @@
  */
 package org.spoutcraft.client.networking;
 
-import java.net.SocketAddress;
+import org.spoutcraft.client.ticking.TickingElement;
 
-import com.flowpowered.networking.NetworkClient;
-import com.flowpowered.networking.session.Session;
+public class NetworkPulser extends TickingElement {
+    private GameNetworkClient client;
 
-import io.netty.channel.Channel;
-
-import org.spoutcraft.client.networking.protocol.HandshakeProtocol;
-
-/**
- * The network entry point for the client. Handles connecting to the server as well as creating {@link Session}s.
- */
-public class GameNetworkClient extends NetworkClient {
-    private ClientSession session;
-
-    @Override
-    public Session newSession(Channel channel) {
-        session = new ClientSession(channel, new HandshakeProtocol());
-        return session;
+    public NetworkPulser() {
+        super(20);
     }
 
     @Override
-    public void sessionInactivated(Session session) {
-        //TODO Show generic client GUI for disconnection
-        session = null;
+    public void onTick() {
+        if (client != null && client.getSession() != null) client.getSession().pulse();
     }
 
-    public ClientSession getSession() {
-        return session;
+    @Override
+    public void onStart() {
+        
+    }
+
+    @Override
+    public void onStop() {        
+    }
+
+    public void setClient(GameNetworkClient client) {
+        this.client = client;
     }
 }

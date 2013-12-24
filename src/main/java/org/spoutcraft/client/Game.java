@@ -25,8 +25,13 @@ package org.spoutcraft.client;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.spoutcraft.client.networking.GameNetworkClient;
+import org.spoutcraft.client.networking.NetworkPulser;
 
 /**
  * The game class.
@@ -34,24 +39,35 @@ import org.spoutcraft.client.networking.GameNetworkClient;
 public class Game {
     private final Universe universe = new Universe();
     private final Interface nterface = new Interface();
+    private final NetworkPulser pulser = new NetworkPulser();
     private GameNetworkClient network;
 
     public void start() {
         universe.start();
         nterface.start();
+        pulser.start();
     }
 
     public void stop() {
         nterface.stop();
         universe.stop();
+        pulser.stop();
     }
 
-    public void connect() {
-        connect(new InetSocketAddress(25565));
+    public boolean connect() throws Exception {
+        return connect(new InetSocketAddress(25565));
     }
 
-    public void connect(SocketAddress address) {
-        network = new GameNetworkClient(address);
+    public boolean connect(SocketAddress address) throws Exception {
+        network = new GameNetworkClient();
+        Future<Void> future = network.connect(address);
+        try {
+            future.get(10, TimeUnit.SECONDS);
+        } catch (InterruptedException | TimeoutException | ExecutionException e) {
+            return false;
+        }
+        pulser.setClient(network);
+        return true;
     }
 
     public GameNetworkClient getNetwork() {

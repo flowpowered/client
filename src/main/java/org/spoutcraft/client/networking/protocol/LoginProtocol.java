@@ -29,7 +29,7 @@ import org.spoutcraft.client.networking.handler.LoginSuccessHandler;
 
 public class LoginProtocol extends ClientProtocol {
     public LoginProtocol() {
-        super("Client-Login", 2);
+        super("Client-Login", 3);
 
         //TODO Put handlers here
         registerMessage(LoginStartCodec.class, null);
