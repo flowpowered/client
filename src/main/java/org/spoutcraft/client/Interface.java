@@ -36,7 +36,17 @@ public class Interface extends TickingElement {
     }
 
     @Override
-    public void run() {
+    public void onStart() {
+        System.out.println("Interface start");
+    }
+
+    @Override
+    public void onTick() {
         System.out.println("Interface tick");
+    }
+
+    @Override
+    public void onStop() {
+        System.out.println("Interface stop");
     }
 }
