@@ -67,8 +67,9 @@ public class ClientSession extends PulsingSession {
 
     @Override
     public void onReady() {
-        send(new HandshakeMessage(ClientProtocol.VERSION, "127.0.0.1", ClientProtocol.DEFAULT_PORT, HandshakeMessage.HandshakeState.LOGIN));
+        send(new HandshakeMessage(ClientProtocol.VERSION, "localhost", ClientProtocol.DEFAULT_PORT, HandshakeMessage.HandshakeState.LOGIN));
         setProtocol(new LoginProtocol());
+        System.out.println("Login Protocol Set!");
         send(new LoginStartMessage("Player1"));
     }
 }

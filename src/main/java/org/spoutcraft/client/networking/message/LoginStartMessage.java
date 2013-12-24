@@ -38,6 +38,6 @@ public class LoginStartMessage implements Message {
 
     @Override
     public boolean isAsync() {
-        return false;
+        return true;
     }
 }

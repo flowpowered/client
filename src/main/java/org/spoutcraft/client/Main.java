@@ -37,8 +37,6 @@ public class Main {
         game.start();
         Thread.sleep(1000);
         game.stop();
-
-        game.connect();
     }
 
     private static void deploy() throws Exception {

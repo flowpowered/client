@@ -44,6 +44,6 @@ public class LoginSuccessMessage implements Message {
 
     @Override
     public boolean isAsync() {
-        return false;
+        return true;
     }
 }
