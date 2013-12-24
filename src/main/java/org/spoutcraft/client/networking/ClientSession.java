@@ -23,6 +23,8 @@
  */
 package org.spoutcraft.client.networking;
 
+import java.util.UUID;
+
 import com.flowpowered.networking.protocol.Protocol;
 import com.flowpowered.networking.session.PulsingSession;
 import io.netty.channel.Channel;
@@ -31,7 +33,26 @@ import io.netty.channel.Channel;
  * Represents an open connection to the server. All {@link com.flowpowered.networking.Message}s are sent through the session
  */
 public class ClientSession extends PulsingSession {
+    private UUID uuid;
+    private String username;
+
     public ClientSession(Channel channel, Protocol bootstrapProtocol) {
         super(channel, bootstrapProtocol);
+    }
+
+    public UUID getUUID() {
+        return uuid;
+    }
+
+    public void setUUID(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

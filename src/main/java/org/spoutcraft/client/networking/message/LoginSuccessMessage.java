@@ -34,7 +34,7 @@ public class LoginSuccessMessage implements Message {
         this.username = username;
     }
 
-    public String getUuid() {
+    public String getUUID() {
         return uuid;
     }
 

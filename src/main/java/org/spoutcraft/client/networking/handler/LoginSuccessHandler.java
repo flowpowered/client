@@ -23,15 +23,22 @@
  */
 package org.spoutcraft.client.networking.handler;
 
+import java.util.UUID;
+
 import com.flowpowered.networking.MessageHandler;
 import com.flowpowered.networking.session.PulsingSession;
 import com.flowpowered.networking.session.Session;
+import org.spoutcraft.client.networking.ClientSession;
 import org.spoutcraft.client.networking.message.LoginSuccessMessage;
 
 public class LoginSuccessHandler implements MessageHandler<LoginSuccessMessage> {
     @Override
-    public void handle(Session session, LoginSuccessMessage loginSuccessMessage) {
+    public void handle(Session session, LoginSuccessMessage message) {
         System.out.println("Server says login is successful...Woo!!");
-        ((PulsingSession) session).setState(PulsingSession.State.OPEN);
+
+        final ClientSession clientSession = (ClientSession) session;
+        clientSession.setUUID(UUID.fromString(message.getUUID()));
+        clientSession.setUsername(message.getUsername());
+        clientSession.setState(PulsingSession.State.OPEN);
     }
 }
