@@ -23,13 +23,16 @@
  */
 package org.spoutcraft.client.universe;
 
+import java.util.concurrent.locks.Lock;
+
+import org.spout.math.vector.Vector3i;
+
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
+import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 import org.spoutcraft.client.universe.store.AtomicBlockStore;
 import org.spoutcraft.client.universe.store.impl.AtomicPaletteBlockStore;
 import org.spoutcraft.client.util.BitSize;
-
-import org.spout.math.vector.Vector3i;
 
 /**
  *
@@ -39,13 +42,29 @@ public class Chunk {
     public static final BitSize BLOCKS = new BitSize(4);
     // Stores all the blocks in the chunk
     private final AtomicBlockStore blocks;
+    // A reference to the chunk's world
+    private final World world;
+    // The chunk's position
+    private final Vector3i position;
 
-    public Chunk() {
+    public Chunk(World world, Vector3i position) {
+        this.world = world;
+        this.position = position;
         blocks = new AtomicPaletteBlockStore(BLOCKS.BITS, true, 10);
     }
 
-    public Chunk(short[] blocks, short[] data) {
+    public Chunk(World world, Vector3i position, short[] blocks, short[] data) {
+        this.world = world;
+        this.position = position;
         this.blocks = new AtomicPaletteBlockStore(BLOCKS.BITS, true, false, 10, blocks, data);
+    }
+
+    public World getWorld() {
+        return world;
+    }
+
+    public Vector3i getPosition() {
+        return position;
     }
 
     public Block getBlock(int x, int y, int z) {
@@ -53,7 +72,7 @@ public class Chunk {
     }
 
     public Block getBlock(Vector3i position) {
-        return new Block(Material.getPacked(blocks.getFullData(position.getX() & BLOCKS.MASK, position.getY() & BLOCKS.MASK, position.getZ() & BLOCKS.MASK)), position);
+        return new Block(getMaterial(position), position);
     }
 
     public void setBlock(Block block) {
@@ -74,5 +93,27 @@ public class Chunk {
 
     public void setMaterial(int x, int y, int z, Material material) {
         blocks.setBlock(x & BLOCKS.MASK, y & BLOCKS.MASK, z & BLOCKS.MASK, material);
+    }
+
+    public ChunkSnapshot buildSnapshot() {
+        return new ChunkSnapshot(world, position, blocks.getBlockIdArray(), blocks.getDataArray());
+    }
+
+    public void updateSnapshot(ChunkSnapshot old) {
+        if (old.getPosition() != position || old.getWorld() != world) {
+            throw new IllegalArgumentException("Cannot accept a chunk snapshot from another position or world");
+        }
+        // TODO: make better use of the dirty block system
+        if (!blocks.isDirty()) {
+            return;
+        }
+        final Lock lock = old.getLock().writeLock();
+        lock.lock();
+        try {
+            blocks.getBlockIdArray(old.getBlockIDs());
+            blocks.getDataArray(old.getBlockSubIDs());
+        } finally {
+            lock.unlock();
+        }
     }
 }

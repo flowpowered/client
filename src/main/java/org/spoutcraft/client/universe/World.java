@@ -23,16 +23,40 @@
  */
 package org.spoutcraft.client.universe;
 
-import org.spoutcraft.client.util.map.TripleIntObjectMap;
-import org.spoutcraft.client.util.map.impl.TTripleInt21ObjectHashMap;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 import org.spout.math.vector.Vector3i;
+
+import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
+import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
+import org.spoutcraft.client.util.map.TripleIntObjectMap;
+import org.spoutcraft.client.util.map.impl.TTripleInt21ObjectHashMap;
 
 /**
  *
  */
 public class World {
     private final TripleIntObjectMap<Chunk> chunks = new TTripleInt21ObjectHashMap<>();
+    private final UUID id;
+
+    public World() {
+        id = UUID.randomUUID();
+    }
+
+    public UUID getID() {
+        return id;
+    }
+
+    public boolean hasChunk(Vector3i position) {
+        return hasChunk(position.getX(), position.getY(), position.getZ());
+    }
+
+    public boolean hasChunk(int x, int y, int z) {
+        return chunks.containsKey(x, y, z);
+    }
 
     public Chunk getChunk(Vector3i position) {
         return getChunk(position.getX(), position.getY(), position.getZ());
@@ -42,12 +66,9 @@ public class World {
         return chunks.get(x, y, z);
     }
 
-    public Chunk setChunk(Vector3i position, Chunk chunk) {
-        return setChunk(position.getX(), position.getY(), position.getZ(), chunk);
-    }
-
-    public Chunk setChunk(int x, int y, int z, Chunk chunk) {
-        return chunks.put(x, y, z, chunk);
+    public Chunk setChunk(Chunk chunk) {
+        final Vector3i position = chunk.getPosition();
+        return chunks.put(position.getX(), position.getY(), position.getZ(), chunk);
     }
 
     public Chunk removeChunk(Vector3i position) {
@@ -56,5 +77,57 @@ public class World {
 
     public Chunk removeChunk(int x, int y, int z) {
         return chunks.remove(x, y, z);
+    }
+
+    public Collection<Chunk> getChunks() {
+        return chunks.valueCollection();
+    }
+
+    public WorldSnapshot buildSnapshot() {
+        final WorldSnapshot snapshot = new WorldSnapshot(id);
+        for (Chunk chunk : chunks.valueCollection()) {
+            snapshot.setChunk(chunk.buildSnapshot());
+        }
+        return snapshot;
+    }
+
+    public void updateSnapshot(WorldSnapshot old) {
+        if (old.getID() != id) {
+            throw new IllegalArgumentException("Cannot update a world with another ID");
+        }
+        final Set<Vector3i> validChunks = new HashSet<>();
+        for (Chunk chunk : chunks.valueCollection()) {
+            final Vector3i chunkPosition = chunk.getPosition();
+            final ChunkSnapshot oldChunk = old.getChunk(chunkPosition);
+            if (oldChunk != null) {
+                chunk.updateSnapshot(oldChunk);
+            } else {
+                old.setChunk(chunk.buildSnapshot());
+            }
+            validChunks.add(chunkPosition);
+        }
+        for (ChunkSnapshot chunkSnapshot : old.getChunks()) {
+            final Vector3i chunkSnapshotPosition = chunkSnapshot.getPosition();
+            if (!validChunks.contains(chunkSnapshotPosition)) {
+                old.removeChunk(chunkSnapshotPosition);
+            }
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof World)) {
+            return false;
+        }
+        final World world = (World) o;
+        return id.equals(world.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 }

@@ -23,20 +23,71 @@
  */
 package org.spoutcraft.client;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
+
+import org.spout.math.vector.Vector3i;
+
 import org.spoutcraft.client.ticking.TickingElement;
+import org.spoutcraft.client.universe.Chunk;
+import org.spoutcraft.client.universe.World;
+import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 
 /**
  * Contains and manages all the voxel worlds.
  */
 public class Universe extends TickingElement {
     private static final int TPS = 20;
+    private final Map<UUID, World> worlds = new HashMap<>();
+    private final Map<UUID, WorldSnapshot> worldSnapshots = new HashMap<>();
 
     public Universe() {
         super(TPS);
     }
 
     @Override
-    public void run() {
+    public void onStart() {
+        System.out.println("Universe start");
+
+        // TEST CODE
+        final short[] halfChunkIDs = new short[Chunk.BLOCKS.VOLUME];
+        final short[] halfChunkSubIDs = new short[Chunk.BLOCKS.VOLUME];
+        for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
+            for (int yy = 0; yy < Chunk.BLOCKS.SIZE / 2; yy++) {
+                for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
+                    halfChunkIDs[yy << Chunk.BLOCKS.DOUBLE_BITS | zz << Chunk.BLOCKS.BITS | xx] = 1;
+                }
+            }
+        }
+        final World world = new World();
+        for (int xx = 0; xx < 10; xx++) {
+            for (int zz = 0; zz < 10; zz++) {
+                world.setChunk(new Chunk(world, new Vector3i(xx, 0, zz), halfChunkIDs, halfChunkSubIDs));
+            }
+        }
+        worlds.put(world.getID(), world);
+        worldSnapshots.put(world.getID(), world.buildSnapshot());
+    }
+
+    @Override
+    public void onTick() {
         System.out.println("Universe tick");
+
+        // TEST CODE
+        for (Entry<UUID, World> entry : worlds.entrySet()) {
+            final UUID id = entry.getKey();
+            worlds.get(id).updateSnapshot(worldSnapshots.get(id));
+        }
+    }
+
+    @Override
+    public void onStop() {
+        System.out.println("Universe stop");
+
+        // TEST CODE
+        worlds.clear();
+        worldSnapshots.clear();
     }
 }
