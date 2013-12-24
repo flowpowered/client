@@ -29,7 +29,7 @@ import com.flowpowered.networking.Codec;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
-import org.spoutcraft.client.game.Gamemode;
+import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.networking.ByteBufUtils;
 import org.spoutcraft.client.networking.message.JoinGameMessage;
@@ -44,12 +44,12 @@ public class JoinGameCodec extends Codec<JoinGameMessage> {
     @Override
     public JoinGameMessage decode(ByteBuf buf) throws IOException {
         final int playerID = buf.readInt();
-        final Gamemode gamemode = Gamemode.get(buf.readUnsignedByte());
+        final GameMode gameMode = GameMode.get(buf.readUnsignedByte());
         final Dimension dimension = Dimension.get(buf.readByte());
         final Difficulty difficulty = Difficulty.get(buf.readUnsignedByte());
         final short maxPlayers = buf.readUnsignedByte();
         final LevelType levelType = LevelType.get(ByteBufUtils.readUTF8(buf));
-        return new JoinGameMessage(playerID, gamemode, dimension, difficulty, maxPlayers, levelType);
+        return new JoinGameMessage(playerID, gameMode, dimension, difficulty, maxPlayers, levelType);
     }
 
     @Override

@@ -26,20 +26,20 @@ package org.spoutcraft.client.networking.message;
 import com.flowpowered.networking.Message;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
-import org.spoutcraft.client.game.Gamemode;
+import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
 
 public class JoinGameMessage implements Message {
     private final int playerId;
-    private final Gamemode gamemode;
+    private final GameMode gameMode;
     private final Dimension dimension;
     private final Difficulty difficulty;
     private final short maxPlayers;
     private final LevelType levelType;
 
-    public JoinGameMessage(int playerId, Gamemode gamemode, Dimension dimension, Difficulty difficulty, short maxPlayers, LevelType levelType) {
+    public JoinGameMessage(int playerId, GameMode gameMode, Dimension dimension, Difficulty difficulty, short maxPlayers, LevelType levelType) {
         this.playerId = playerId;
-        this.gamemode = gamemode;
+        this.gameMode = gameMode;
         this.dimension = dimension;
         this.difficulty = difficulty;
         this.maxPlayers = maxPlayers;
@@ -50,8 +50,8 @@ public class JoinGameMessage implements Message {
         return playerId;
     }
 
-    public Gamemode getGamemode() {
-        return gamemode;
+    public GameMode getGameMode() {
+        return gameMode;
     }
 
     public Dimension getDimension() {

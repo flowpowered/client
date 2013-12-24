@@ -31,10 +31,10 @@ import org.spoutcraft.client.networking.ByteBufUtils;
 import org.spoutcraft.client.networking.message.HandshakeMessage;
 
 public class HandshakeCodec extends Codec<HandshakeMessage> {
-    public static final int OPCODE = 0;
+    public static final int OP_CODE = 0;
 
     public HandshakeCodec() {
-        super(HandshakeMessage.class, OPCODE);
+        super(HandshakeMessage.class, OP_CODE);
     }
 
     @Override

@@ -27,8 +27,6 @@ import java.io.File;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.spoutcraft.client.networking.message.HandshakeMessage;
-import org.spoutcraft.client.networking.protocol.ClientProtocol;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -47,18 +45,18 @@ public class Main {
         final String osPath;
         final String[] nativeLibs;
         if (SystemUtils.IS_OS_WINDOWS) {
-            nativeLibs = new String[] {
+            nativeLibs = new String[]{
                     "jinput-dx8_64.dll", "jinput-dx8.dll", "jinput-raw_64.dll", "jinput-raw.dll",
                     "jinput-wintab.dll", "lwjgl.dll", "lwjgl64.dll", "OpenAL32.dll", "OpenAL64.dll"
             };
             osPath = "windows/";
         } else if (SystemUtils.IS_OS_MAC) {
-            nativeLibs = new String[] {
+            nativeLibs = new String[]{
                     "libjinput-osx.jnilib", "liblwjgl.jnilib", "openal.dylib"
             };
             osPath = "mac/";
         } else if (SystemUtils.IS_OS_LINUX) {
-            nativeLibs = new String[] {
+            nativeLibs = new String[]{
                     "liblwjgl.so", "liblwjgl64.so", "libopenal.so", "libopenal64.so", "libjinput-linux.so",
                     "libjinput-linux64.so"
             };

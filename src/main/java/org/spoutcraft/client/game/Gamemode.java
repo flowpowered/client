@@ -25,22 +25,21 @@ package org.spoutcraft.client.game;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 
-@SuppressWarnings ("unchecked")
-public enum Gamemode {
+public enum GameMode {
     ADVENTURE(2),
     CREATIVE(1),
     HARDCORE(3),
     SURVIVAL(0);
     private final int value;
-    private static final TIntObjectHashMap map = new TIntObjectHashMap();
+    private static final TIntObjectHashMap<GameMode> map = new TIntObjectHashMap<>();
 
     static {
-        for (Gamemode mode : Gamemode.values()) {
+        for (GameMode mode : GameMode.values()) {
             map.put(mode.value(), mode);
         }
     }
 
-    private Gamemode(int value) {
+    private GameMode(int value) {
         this.value = value;
     }
 
@@ -48,11 +47,11 @@ public enum Gamemode {
         return value;
     }
 
-    public static Gamemode get(int id) {
-        return (Gamemode) map.get(id);
+    public static GameMode get(int id) {
+        return map.get(id);
     }
 
-    public static Gamemode get(String name) {
+    public static GameMode get(String name) {
         return valueOf(name.toUpperCase());
     }
 }

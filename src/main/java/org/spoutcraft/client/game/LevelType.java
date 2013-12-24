@@ -26,7 +26,7 @@ package org.spoutcraft.client.game;
 public enum LevelType {
     DEFAULT,
     FLAT,
-    LARGEBIOMES,
+    LARGE_BIOMES,
     AMPLIFIED,
     DEFAULT_1_1;
 

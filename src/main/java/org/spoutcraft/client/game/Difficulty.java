@@ -25,14 +25,13 @@ package org.spoutcraft.client.game;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 
-@SuppressWarnings ("unchecked")
 public enum Difficulty {
     EASY(0),
     HARD(3),
     NORMAL(2),
     PEACEFUL(1);
     private final int value;
-    private static final TIntObjectHashMap map = new TIntObjectHashMap();
+    private static final TIntObjectHashMap<Difficulty> map = new TIntObjectHashMap<>();
 
     static {
         for (Difficulty dim : Difficulty.values()) {
@@ -49,7 +48,7 @@ public enum Difficulty {
     }
 
     public static Difficulty get(int id) {
-        return (Difficulty) map.get(id);
+        return map.get(id);
     }
 
     public static Difficulty get(String name) {

@@ -42,22 +42,22 @@ public abstract class ClientProtocol extends Protocol {
     @Override
     public Codec<?> readHeader(ByteBuf buf) throws UnknownPacketException {
         int length = buf.readInt();
-        int opcode = buf.readInt();
+        int opCode = buf.readInt();
 
-        final Codec<?> codec = getCodecLookupService().find(opcode);
+        final Codec<?> codec = getCodecLookupService().find(opCode);
         if (codec == null) {
-            throw new UnknownPacketException(length, opcode);
+            throw new UnknownPacketException(length, opCode);
         }
         return codec;
     }
 
     @Override
     public ByteBuf writeHeader(Codec<?> codec, ByteBuf data, ByteBuf out) {
-        //Length -> opcode -> data
+        //Length -> opCode -> data
         final int length = data.capacity();
-        final int opcode = codec.getOpcode();
+        final int opCode = codec.getOpcode();
         out.writeInt(length);
-        out.writeInt(opcode);
+        out.writeInt(opCode);
         return out;
     }
 }

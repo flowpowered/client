@@ -23,13 +23,13 @@
  */
 package org.spoutcraft.client.entity;
 
-import org.spoutcraft.client.universe.World;
-
 import org.spout.math.vector.Vector3f;
+
+import org.spoutcraft.client.universe.World;
 
 /**
  * Entities are objects which are dynamic unlike their static {@link org.spoutcraft.client.universe.block.Block} brethren.
- *
+ * <p/>
  * TODO Make other players just entities (should be easily done)? TODO Component system so entities don't store logic?
  */
 public class Entity {
@@ -43,6 +43,7 @@ public class Entity {
     public Entity(int id, String displayName, World world, Vector3f position) {
         this.id = id;
         this.displayName = displayName;
+        this.world = world;
         this.position = position;
     }
 

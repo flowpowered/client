@@ -31,10 +31,10 @@ import org.spoutcraft.client.networking.ByteBufUtils;
 import org.spoutcraft.client.networking.message.LoginSuccessMessage;
 
 public class LoginSuccessCodec extends Codec<LoginSuccessMessage> {
-    public static final int OPCODE = 2;
+    public static final int OP_CODE = 2;
 
     public LoginSuccessCodec() {
-        super(LoginSuccessMessage.class, OPCODE);
+        super(LoginSuccessMessage.class, OP_CODE);
     }
 
     @Override

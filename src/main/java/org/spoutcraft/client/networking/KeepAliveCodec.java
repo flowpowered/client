@@ -30,10 +30,10 @@ import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.networking.message.KeepAliveMessage;
 
 public class KeepAliveCodec extends Codec<KeepAliveMessage> {
-    public static final int OPCODE = 0;
+    public static final int OP_CODE = 0;
 
     public KeepAliveCodec() {
-        super(KeepAliveMessage.class, OPCODE);
+        super(KeepAliveMessage.class, OP_CODE);
     }
 
     @Override

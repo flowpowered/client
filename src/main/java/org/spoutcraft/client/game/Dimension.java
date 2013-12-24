@@ -25,13 +25,12 @@ package org.spoutcraft.client.game;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 
-@SuppressWarnings ("unchecked")
 public enum Dimension {
     NORMAL(0),
     NETHER(-1),
     THE_END(1);
     private final int value;
-    private static final TIntObjectHashMap map = new TIntObjectHashMap();
+    private static final TIntObjectHashMap<Dimension> map = new TIntObjectHashMap<>();
 
     static {
         for (Dimension dim : Dimension.values()) {
@@ -48,7 +47,7 @@ public enum Dimension {
     }
 
     public static Dimension get(int id) {
-        return (Dimension) map.get(id);
+        return map.get(id);
     }
 
     public static Dimension get(String name) {
