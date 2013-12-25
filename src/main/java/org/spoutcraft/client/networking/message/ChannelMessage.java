@@ -23,24 +23,31 @@
  */
 package org.spoutcraft.client.networking.message;
 
-import java.util.EnumSet;
-
 import com.flowpowered.networking.Message;
 
 public abstract class ChannelMessage implements Message {
-    private final EnumSet<Channel> read = EnumSet.noneOf(Channel.class);
+    private short read;
 
-    public void setChannelRead(Channel c) {
-        read.add(c);
+    public void setChannelRead(Channel channel) {
+        read |= channel.getMask();
     }
 
-    public boolean isChannelRead(Channel c) {
-        return read.contains(c);
+    public boolean isChannelRead(Channel channel) {
+        return (read & channel.getMask()) == channel.getMask();
     }
-}
 
-enum Channel {
-    UNIVERSE,
-    INTERFACE,
+    public static enum Channel {
+        UNIVERSE((short) 1),
+        INTERFACE((short) 2);
+        private final short mask;
+
+        private Channel(short mask) {
+            this.mask = mask;
+        }
+
+        public short getMask() {
+            return mask;
+        }
+    }
 }
 
