@@ -28,7 +28,7 @@ import org.spoutcraft.client.networking.codec.JoinGameCodec;
 
 public class PlayProtocol extends ClientProtocol {
     public PlayProtocol() {
-        super("Client-Play", 1);
+        super("Play", 1);
 
         //TODO Put handlers here
         registerMessage(KeepAliveCodec.class, KeepAliveCodec.class);

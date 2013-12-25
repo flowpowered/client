@@ -27,7 +27,7 @@ import org.spoutcraft.client.networking.codec.HandshakeCodec;
 
 public class HandshakeProtocol extends ClientProtocol {
     public HandshakeProtocol() {
-        super("Client-Handshake", 1);
+        super("Handshake", 1);
 
         registerMessage(HandshakeCodec.class, null);
     }

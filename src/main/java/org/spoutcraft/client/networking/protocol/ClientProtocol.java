@@ -64,7 +64,7 @@ public abstract class ClientProtocol extends Protocol {
     @Override
     public ByteBuf writeHeader(Codec<?> codec, ByteBuf data, ByteBuf out) {
         //Length -> opCode -> data
-        final int length = data.capacity();
+        final int length = data.readableBytes();
         final int opCode = codec.getOpcode();
         ByteBufUtils.writeVarInt(out, length);
         ByteBufUtils.writeVarInt(out, opCode);
