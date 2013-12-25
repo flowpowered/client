@@ -23,10 +23,13 @@
  */
 package org.spoutcraft.client.networking.protocol;
 
+import java.io.IOException;
+
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.exception.UnknownPacketException;
 import com.flowpowered.networking.protocol.Protocol;
 import io.netty.buffer.ByteBuf;
+import org.spoutcraft.client.networking.ByteBufUtils;
 
 /**
  * The protocol used for client communication.
@@ -41,8 +44,15 @@ public abstract class ClientProtocol extends Protocol {
 
     @Override
     public Codec<?> readHeader(ByteBuf buf) throws UnknownPacketException {
-        int length = buf.readInt();
-        int opCode = buf.readInt();
+        int length = -1;
+        int opCode = -1;
+
+        try {
+            length = ByteBufUtils.readVarInt(buf);
+            opCode = ByteBufUtils.readVarInt(buf);
+        } catch (IOException e) {
+            throw new UnknownPacketException(length, opCode);
+        }
 
         final Codec<?> codec = getCodecLookupService().find(opCode);
         if (codec == null) {
@@ -56,8 +66,8 @@ public abstract class ClientProtocol extends Protocol {
         //Length -> opCode -> data
         final int length = data.capacity();
         final int opCode = codec.getOpcode();
-        out.writeInt(length);
-        out.writeInt(opCode);
+        ByteBufUtils.writeVarInt(out, length);
+        ByteBufUtils.writeVarInt(out, opCode);
         return out;
     }
 }

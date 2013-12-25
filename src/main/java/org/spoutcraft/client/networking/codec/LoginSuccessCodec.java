@@ -24,13 +24,19 @@
 package org.spoutcraft.client.networking.codec;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import com.flowpowered.networking.Codec;
+import com.flowpowered.networking.MessageHandler;
+import com.flowpowered.networking.session.PulsingSession;
+import com.flowpowered.networking.session.Session;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.networking.ByteBufUtils;
+import org.spoutcraft.client.networking.ClientSession;
 import org.spoutcraft.client.networking.message.LoginSuccessMessage;
+import org.spoutcraft.client.networking.protocol.PlayProtocol;
 
-public class LoginSuccessCodec extends Codec<LoginSuccessMessage> {
+public class LoginSuccessCodec extends Codec<LoginSuccessMessage> implements MessageHandler<LoginSuccessMessage> {
     public static final int OP_CODE = 2;
 
     public LoginSuccessCodec() {
@@ -47,5 +53,16 @@ public class LoginSuccessCodec extends Codec<LoginSuccessMessage> {
     @Override
     public ByteBuf encode(ByteBuf buf, LoginSuccessMessage message) throws IOException {
         throw new IOException("The client should not send a login success to the Minecraft server!");
+    }
+
+    @Override
+    public void handle(Session session, LoginSuccessMessage message) {
+        System.out.println("Server says login is successful...Woo!!");
+
+        final ClientSession clientSession = (ClientSession) session;
+        clientSession.setProtocol(new PlayProtocol());
+        clientSession.setUUID(UUID.fromString(message.getUUID()));
+        clientSession.setUsername(message.getUsername());
+        clientSession.setState(PulsingSession.State.OPEN);
     }
 }

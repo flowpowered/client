@@ -23,54 +23,43 @@
  */
 package org.spoutcraft.client;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import org.spoutcraft.client.networking.GameNetworkClient;
-import org.spoutcraft.client.networking.NetworkPulser;
+import org.spoutcraft.client.networking.Network;
 
 /**
  * The game class.
  */
 public class Game {
-    private final Universe universe = new Universe();
-    private final Interface nterface = new Interface();
-    private final NetworkPulser pulser = new NetworkPulser();
-    private GameNetworkClient network;
+    private final Universe universe;
+    private final Interface nterface;
+    private final Network network;
+
+    public Game() {
+        universe = new Universe();
+        nterface = new Interface();
+        network = new Network();
+    }
 
     public void start() {
         universe.start();
         nterface.start();
-        pulser.start();
+        network.start();
     }
 
     public void stop() {
         nterface.stop();
         universe.stop();
-        pulser.stop();
+        network.stop();
     }
 
-    public boolean connect() throws Exception {
-        return connect(new InetSocketAddress(25565));
+    public Universe getUniverse() {
+        return universe;
     }
 
-    public boolean connect(SocketAddress address) throws Exception {
-        network = new GameNetworkClient();
-        Future<Void> future = network.connect(address);
-        try {
-            future.get(10, TimeUnit.SECONDS);
-        } catch (InterruptedException | TimeoutException | ExecutionException e) {
-            return false;
-        }
-        pulser.setClient(network);
-        return true;
+    public Interface getInterface() {
+        return nterface;
     }
 
-    public GameNetworkClient getNetwork() {
+    public Network getNetwork() {
         return network;
     }
 }

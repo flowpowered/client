@@ -21,13 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.handler;
+package org.spoutcraft.client.networking.codec;
 
+import java.io.IOException;
+
+import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
 import com.flowpowered.networking.session.Session;
+import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.networking.message.KeepAliveMessage;
 
-public class KeepAliveHandler implements MessageHandler<KeepAliveMessage> {
+public class KeepAliveCodec extends Codec<KeepAliveMessage> implements MessageHandler<KeepAliveMessage> {
+    public static final int OP_CODE = 0;
+
+    public KeepAliveCodec() {
+        super(KeepAliveMessage.class, OP_CODE);
+    }
+
+    @Override
+    public KeepAliveMessage decode(ByteBuf buf) throws IOException {
+        return new KeepAliveMessage(buf.readInt());
+    }
+
+    @Override
+    public ByteBuf encode(ByteBuf buf, KeepAliveMessage message) throws IOException {
+        buf.writeInt(message.getRandom());
+        return buf;
+    }
+
     @Override
     public void handle(Session session, KeepAliveMessage message) {
         session.send(new KeepAliveMessage(message.getRandom()));

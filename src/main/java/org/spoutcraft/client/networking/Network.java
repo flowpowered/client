@@ -23,18 +23,27 @@
  */
 package org.spoutcraft.client.networking;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.spoutcraft.client.ticking.TickingElement;
 
-public class NetworkPulser extends TickingElement {
-    private GameNetworkClient client;
+public class Network extends TickingElement {
+    private final GameNetworkClient client = new GameNetworkClient();
 
-    public NetworkPulser() {
+    public Network() {
         super(20);
     }
 
     @Override
     public void onTick() {
-        if (client != null && client.getSession() != null) client.getSession().pulse();
+        if (client.getSession() != null) {
+            client.getSession().pulse();
+        }
     }
 
     @Override
@@ -46,7 +55,21 @@ public class NetworkPulser extends TickingElement {
     public void onStop() {        
     }
 
-    public void setClient(GameNetworkClient client) {
-        this.client = client;
+    public boolean connect() throws Exception {
+        return connect(new InetSocketAddress(25565));
+    }
+
+    public boolean connect(SocketAddress address) throws Exception {
+        Future<Void> future = client.connect(address);
+        try {
+            future.get(10, TimeUnit.SECONDS);
+        } catch (InterruptedException | TimeoutException | ExecutionException e) {
+            return false;
+        }
+        return true;
+    }
+
+    public ClientSession getSession() {
+        return client.getSession();
     }
 }

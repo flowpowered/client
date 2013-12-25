@@ -26,6 +26,8 @@ package org.spoutcraft.client.networking.codec;
 import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
+import com.flowpowered.networking.MessageHandler;
+import com.flowpowered.networking.session.Session;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.networking.ByteBufUtils;
 import org.spoutcraft.client.networking.message.HandshakeMessage;
@@ -44,10 +46,10 @@ public class HandshakeCodec extends Codec<HandshakeMessage> {
 
     @Override
     public ByteBuf encode(ByteBuf buf, HandshakeMessage message) throws IOException {
-        buf.writeInt(message.getVersion());
+        ByteBufUtils.writeVarInt(buf, message.getVersion());
         ByteBufUtils.writeUTF8(buf, message.getAddress());
         buf.writeShort(message.getPort());
-        buf.writeInt(message.getState().value());
+        ByteBufUtils.writeVarInt(buf, message.getState().value());
         return buf;
     }
 }

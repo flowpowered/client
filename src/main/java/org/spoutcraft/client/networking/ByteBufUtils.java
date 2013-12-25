@@ -29,27 +29,66 @@ import io.netty.buffer.ByteBuf;
 import org.apache.commons.io.Charsets;
 
 public class ByteBufUtils {
-    public static void writeUTF8(ByteBuf buf, String str) throws IOException {
-        int len = str.length();
-        if (len >= Short.MAX_VALUE) {
-            throw new IOException("Attempt to write a String with a length greater than Short.MAX_VALUE to ByteBuf!");
-        }
-        //Write the String's length
-        buf.writeByte(len);
-
-        //Write the String
-        for (int i = 0; i < len; i++) {
-            buf.writeChar(str.charAt(i));
-        }
-    }
-
-    public static String readUTF8(ByteBuf buf) {
+    public static String readUTF8(ByteBuf buf) throws IOException {
         //Read size of String
-        int len = buf.readInt(); //TODO Test this
+        int len = readVarInt(buf);
         byte[] data = new byte[len];
 
         //Read bytes of String from length
         buf.readBytes(data, 0, len);
         return new String(data, Charsets.UTF_8);
+    }
+
+    public static void writeUTF8(ByteBuf buf, String value) throws IOException {
+        int len = value.length();
+        if (len >= Short.MAX_VALUE) {
+            throw new IOException("Attempt to write a string with a length greater than Short.MAX_VALUE to ByteBuf!");
+        }
+        //Write the String's length
+        writeVarInt(buf, len);
+
+        //Write the String
+        for (int i = 0; i < len; i++) {
+            buf.writeChar(value.charAt(i));
+        }
+    }
+
+    public static int readVarInt(ByteBuf buf) throws IOException {
+        int out = 0;
+        int bytes = 0;
+        byte in;
+        while (true) {
+            in = buf.readByte();
+
+            out |= (in & 0x7F) << (bytes * 7);
+
+            if (bytes > 32) {
+                throw new IOException("Attempt to read int bigger than allowed for a varint!");
+            }
+
+            if ((in & 0x80) != 0x80) {
+                break;
+            }
+        }
+
+        return out;
+    }
+
+    public static void writeVarInt(ByteBuf buf, int value) {
+        int part;
+        while (true) {
+            part = value & 0x7F;
+
+            value >>>= 7;
+            if (value != 0) {
+                part |= 0x80;
+            }
+
+            buf.writeByte(part);
+
+            if (value == 0) {
+                break;
+            }
+        }
     }
 }

@@ -25,7 +25,6 @@ package org.spoutcraft.client.networking.protocol;
 
 import org.spoutcraft.client.networking.codec.LoginStartCodec;
 import org.spoutcraft.client.networking.codec.LoginSuccessCodec;
-import org.spoutcraft.client.networking.handler.LoginSuccessHandler;
 
 public class LoginProtocol extends ClientProtocol {
     public LoginProtocol() {
@@ -33,6 +32,6 @@ public class LoginProtocol extends ClientProtocol {
 
         //TODO Put handlers here
         registerMessage(LoginStartCodec.class, null);
-        registerMessage(LoginSuccessCodec.class, LoginSuccessHandler.class);
+        registerMessage(LoginSuccessCodec.class, LoginSuccessCodec.class);
     }
 }
