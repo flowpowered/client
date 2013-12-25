@@ -23,13 +23,13 @@
  */
 package org.spoutcraft.client.networking.message.handshake;
 
-import com.flowpowered.networking.Message;
+import org.spoutcraft.client.networking.message.ChannelMessage;
 import org.spoutcraft.client.networking.protocol.ClientProtocol;
 
 /**
  * Server-bound message that initiates the connection process to the server
  */
-public class HandshakeMessage implements Message {
+public class HandshakeMessage extends ChannelMessage {
     private final int version;
     private final String address;
     private final int port;

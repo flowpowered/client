@@ -23,16 +23,16 @@
  */
 package org.spoutcraft.client.networking.message.play;
 
-import com.flowpowered.networking.Message;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
+import org.spoutcraft.client.networking.message.ChannelMessage;
 
 /**
  * Client-bound message that instructs the client to setup the game with the following attributes.
  */
-public class JoinGameMessage implements Message {
+public class JoinGameMessage extends ChannelMessage {
     private final int playerId;
     private final GameMode gameMode;
     private final Dimension dimension;

@@ -21,31 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.message.login;
+package org.spoutcraft.client.networking.message;
 
-import org.spoutcraft.client.networking.message.ChannelMessage;
+import java.util.EnumSet;
 
-/**
- * Server-bound message that informs the server that the client is ready to start the login process.
- */
-public class LoginStartMessage extends ChannelMessage {
-    private final String username;
+import com.flowpowered.networking.Message;
 
-    /**
-     * Constructs a new login start
-     *
-     * @param username The username provided by the user (i.e. the login name used in the Minecraft launcher)
-     */
-    public LoginStartMessage(String username) {
-        this.username = username;
+public abstract class ChannelMessage implements Message {
+    private final EnumSet<Channel> read = EnumSet.noneOf(Channel.class);
+
+    public void setChannelRead(Channel c) {
+        read.add(c);
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public boolean isAsync() {
-        return true;
+    public boolean isChannelRead(Channel c) {
+        return read.contains(c);
     }
 }
+
+enum Channel {
+    UNIVERSE,
+    INTERFACE,
+}
+

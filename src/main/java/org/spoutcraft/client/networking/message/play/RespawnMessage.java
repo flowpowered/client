@@ -23,17 +23,17 @@
  */
 package org.spoutcraft.client.networking.message.play;
 
-import com.flowpowered.networking.Message;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
+import org.spoutcraft.client.networking.message.ChannelMessage;
 
 /**
  * Client-bound {@link com.flowpowered.networking.Message} that instructs the client to respawn, updating the active
  * {@link org.spoutcraft.client.universe.World}'s characteristics.
  */
-public class RespawnMessage implements Message {
+public class RespawnMessage extends ChannelMessage {
     private final Dimension dimension;
     private final Difficulty difficulty;
     private final GameMode gameMode;

@@ -23,9 +23,9 @@
  */
 package org.spoutcraft.client.networking.message.play;
 
-import com.flowpowered.networking.Message;
+import org.spoutcraft.client.networking.message.ChannelMessage;
 
-public class ClientStatusMessage implements Message {
+public class ClientStatusMessage extends ChannelMessage {
     private final ClientState state;
 
     /**

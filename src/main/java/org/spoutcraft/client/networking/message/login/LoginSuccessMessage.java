@@ -23,14 +23,14 @@
  */
 package org.spoutcraft.client.networking.message.login;
 
-import com.flowpowered.networking.Message;
+import org.spoutcraft.client.networking.message.ChannelMessage;
 
 /**
  * Client bound message that instructs the client that login was successful to the server.
  * </p>
  * If the server is in online mode, this occurs after encryption. Otherwise, this occurs after {@link LoginStartMessage} is sent.
  */
-public class LoginSuccessMessage implements Message {
+public class LoginSuccessMessage extends ChannelMessage {
     private final String uuid;
     private final String username;
 

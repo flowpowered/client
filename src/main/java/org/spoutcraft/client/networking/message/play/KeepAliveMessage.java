@@ -23,7 +23,7 @@
  */
 package org.spoutcraft.client.networking.message.play;
 
-import com.flowpowered.networking.Message;
+import org.spoutcraft.client.networking.message.ChannelMessage;
 
 /**
  * Two-way message used to keep alive the session:
@@ -33,7 +33,7 @@ import com.flowpowered.networking.Message;
  * </p>
  * If the server doesn't receive a response within a timeout period, it will terminate the session.
  */
-public class KeepAliveMessage implements Message {
+public class KeepAliveMessage extends ChannelMessage {
     private final int random;
 
     /**

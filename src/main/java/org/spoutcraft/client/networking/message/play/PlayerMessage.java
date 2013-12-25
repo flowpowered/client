@@ -23,7 +23,7 @@
  */
 package org.spoutcraft.client.networking.message.play;
 
-import com.flowpowered.networking.Message;
+import org.spoutcraft.client.networking.message.ChannelMessage;
 
 /**
  * Server bound message that tells the server when the client is:
@@ -34,7 +34,7 @@ import com.flowpowered.networking.Message;
  * </p>
  * onGround should be false anytime the client isn't on the ground.
  */
-public class PlayerMessage implements Message {
+public class PlayerMessage extends ChannelMessage {
     private final boolean onGround;
 
     /**
