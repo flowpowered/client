@@ -24,7 +24,6 @@
 package org.spoutcraft.client.networking.codec;
 
 import java.io.IOException;
-import java.util.UUID;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;

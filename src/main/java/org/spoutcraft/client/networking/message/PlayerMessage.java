@@ -21,32 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking;
+package org.spoutcraft.client.networking.message;
 
-import com.flowpowered.networking.NetworkClient;
-import com.flowpowered.networking.session.Session;
-import io.netty.channel.Channel;
-import org.spoutcraft.client.networking.protocol.HandshakeProtocol;
+import com.flowpowered.networking.Message;
 
-/**
- * The network entry point for the client. Handles connecting to the server as well as creating {@link Session}s.
- */
-public class GameNetworkClient extends NetworkClient {
-    private ClientSession session;
+public class PlayerMessage implements Message {
+    private final boolean onGround;
 
-    @Override
-    public Session newSession(Channel channel) {
-        session = new ClientSession(channel, new HandshakeProtocol());
-        return session;
+    public PlayerMessage(boolean onGround) {
+        this.onGround = onGround;
+    }
+
+    public boolean isOnGround() {
+        return onGround;
     }
 
     @Override
-    public void sessionInactivated(Session session) {
-        //TODO Show generic client GUI for disconnection
-        session = null;
-    }
-
-    public ClientSession getSession() {
-        return session;
+    public boolean isAsync() {
+        return true;
     }
 }

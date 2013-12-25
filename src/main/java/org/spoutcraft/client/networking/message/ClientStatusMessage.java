@@ -21,32 +21,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking;
+package org.spoutcraft.client.networking.message;
 
-import com.flowpowered.networking.NetworkClient;
-import com.flowpowered.networking.session.Session;
-import io.netty.channel.Channel;
-import org.spoutcraft.client.networking.protocol.HandshakeProtocol;
+import com.flowpowered.networking.Message;
 
-/**
- * The network entry point for the client. Handles connecting to the server as well as creating {@link Session}s.
- */
-public class GameNetworkClient extends NetworkClient {
-    private ClientSession session;
+public class ClientStatusMessage implements Message {
+    private final ClientState state;
 
-    @Override
-    public Session newSession(Channel channel) {
-        session = new ClientSession(channel, new HandshakeProtocol());
-        return session;
+    public ClientStatusMessage(ClientState state) {
+        this.state = state;
+    }
+
+    public ClientState getState() {
+        return state;
     }
 
     @Override
-    public void sessionInactivated(Session session) {
-        //TODO Show generic client GUI for disconnection
-        session = null;
+    public boolean isAsync() {
+        return true;
     }
 
-    public ClientSession getSession() {
-        return session;
+    public enum ClientState {
+        /**
+         * This informs the server that the client is ready to login/respawn from death
+         */
+        RESPAWN(0),
+        /**
+         * This informs the server that the client is ready to receive stats (snooping)
+         */
+        REQUEST_STATS(1),
+        /**
+         * This informs the server that the client is opening an inventory achievement
+         */
+        OPEN_INVENTORY_ACHIEVEMENT(2);
+        private final int value;
+
+        private ClientState(int value) {
+            this.value = value;
+        }
+
+        public int value() {
+            return value;
+        }
     }
 }

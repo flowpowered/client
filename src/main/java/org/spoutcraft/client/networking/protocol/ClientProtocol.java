@@ -24,7 +24,6 @@
 package org.spoutcraft.client.networking.protocol;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.exception.UnknownPacketException;

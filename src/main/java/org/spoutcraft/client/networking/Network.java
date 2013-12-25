@@ -48,7 +48,7 @@ public class Network extends TickingElement {
 
     @Override
     public void onStart() {
-        
+
     }
 
     @Override

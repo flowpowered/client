@@ -21,32 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking;
+package org.spoutcraft.client.networking.codec;
 
-import com.flowpowered.networking.NetworkClient;
-import com.flowpowered.networking.session.Session;
-import io.netty.channel.Channel;
-import org.spoutcraft.client.networking.protocol.HandshakeProtocol;
+import java.io.IOException;
 
-/**
- * The network entry point for the client. Handles connecting to the server as well as creating {@link Session}s.
- */
-public class GameNetworkClient extends NetworkClient {
-    private ClientSession session;
+import com.flowpowered.networking.Codec;
+import io.netty.buffer.ByteBuf;
+import org.spoutcraft.client.networking.message.PlayerMessage;
 
-    @Override
-    public Session newSession(Channel channel) {
-        session = new ClientSession(channel, new HandshakeProtocol());
-        return session;
+public class PlayerCodec extends Codec<PlayerMessage> {
+    public static final int OP_CODE = 3;
+
+    public PlayerCodec() {
+        super(PlayerMessage.class, OP_CODE);
     }
 
     @Override
-    public void sessionInactivated(Session session) {
-        //TODO Show generic client GUI for disconnection
-        session = null;
+    public PlayerMessage decode(ByteBuf buf) throws IOException {
+        throw new IOException("The client does not receive a player (message) from the Minecraft server!");
     }
 
-    public ClientSession getSession() {
-        return session;
+    @Override
+    public ByteBuf encode(ByteBuf buf, PlayerMessage message) throws IOException {
+        buf.writeBoolean(message.isOnGround());
+        return buf;
     }
 }

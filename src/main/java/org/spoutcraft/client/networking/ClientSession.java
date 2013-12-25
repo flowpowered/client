@@ -23,8 +23,6 @@
  */
 package org.spoutcraft.client.networking;
 
-import java.util.UUID;
-
 import com.flowpowered.networking.protocol.Protocol;
 import com.flowpowered.networking.session.PulsingSession;
 import io.netty.channel.Channel;

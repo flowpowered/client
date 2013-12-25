@@ -34,7 +34,6 @@ import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.networking.ByteBufUtils;
-import org.spoutcraft.client.networking.message.HandshakeMessage;
 import org.spoutcraft.client.networking.message.JoinGameMessage;
 
 public class JoinGameCodec extends Codec<JoinGameMessage> implements MessageHandler<JoinGameMessage> {
