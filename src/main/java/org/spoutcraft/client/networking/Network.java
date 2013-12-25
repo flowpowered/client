@@ -48,19 +48,21 @@ public class Network extends TickingElement {
 
     @Override
     public void onStart() {
-
+        System.out.println("Network start");
     }
 
     @Override
     public void onStop() {
+        System.out.println("Network stop");
+
         client.shutdown();
     }
 
-    public boolean connect() throws Exception {
+    public boolean connect() {
         return connect(new InetSocketAddress(25565));
     }
 
-    public boolean connect(SocketAddress address) throws Exception {
+    public boolean connect(SocketAddress address) {
         Future<Void> future = client.connect(address);
         try {
             future.get(10, TimeUnit.SECONDS);

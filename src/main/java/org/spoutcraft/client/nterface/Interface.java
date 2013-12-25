@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.nterface;
 
 import org.spoutcraft.client.ticking.TickingElement;
 
@@ -42,7 +42,6 @@ public class Interface extends TickingElement {
 
     @Override
     public void onTick() {
-        System.out.println("Interface tick");
     }
 
     @Override

@@ -24,6 +24,8 @@
 package org.spoutcraft.client;
 
 import org.spoutcraft.client.networking.Network;
+import org.spoutcraft.client.nterface.Interface;
+import org.spoutcraft.client.universe.Universe;
 
 /**
  * The game class.
@@ -43,6 +45,11 @@ public class Game {
         universe.start();
         nterface.start();
         network.start();
+
+        // TEST CODE
+        if (!network.connect()) {
+            System.out.println("Connect failed");
+        }
     }
 
     public void stop() {

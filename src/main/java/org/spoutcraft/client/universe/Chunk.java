@@ -103,15 +103,16 @@ public class Chunk {
         if (old.getPosition() != position || old.getWorld() != world) {
             throw new IllegalArgumentException("Cannot accept a chunk snapshot from another position or world");
         }
-        // TODO: make better use of the dirty block system
         if (!blocks.isDirty()) {
             return;
         }
         final Lock lock = old.getLock().writeLock();
         lock.lock();
         try {
+            // TODO: update only the dirty blocks, unless the dirty arrays are overflown
             blocks.getBlockIdArray(old.getBlockIDs());
             blocks.getDataArray(old.getBlockSubIDs());
+            blocks.resetDirtyArrays();
         } finally {
             lock.unlock();
         }

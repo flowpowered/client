@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.universe;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,8 +29,6 @@ import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.spoutcraft.client.ticking.TickingElement;
-import org.spoutcraft.client.universe.Chunk;
-import org.spoutcraft.client.universe.World;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 
 import org.spout.math.vector.Vector3i;
@@ -73,7 +71,6 @@ public class Universe extends TickingElement {
 
     @Override
     public void onTick() {
-        System.out.println("Universe tick");
 
         // TEST CODE
         for (Entry<UUID, World> entry : worlds.entrySet()) {

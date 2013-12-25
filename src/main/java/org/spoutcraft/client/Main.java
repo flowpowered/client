@@ -33,9 +33,6 @@ public class Main {
         deploy();
         final Game game = new Game();
         game.start();
-        if (!game.getNetwork().connect()) {
-            System.out.println("Connect failed.");
-        }
         Thread.sleep(15000);
         game.stop();
     }
