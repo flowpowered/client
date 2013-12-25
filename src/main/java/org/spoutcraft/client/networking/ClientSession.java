@@ -69,7 +69,6 @@ public class ClientSession extends PulsingSession {
     public void onReady() {
         send(SendType.FORCE, new HandshakeMessage(ClientProtocol.VERSION, "localhost", ClientProtocol.DEFAULT_PORT, HandshakeMessage.HandshakeState.LOGIN));
         setProtocol(new LoginProtocol());
-        System.out.println("Login Protocol Set!");
-        send(SendType.FORCE, new LoginStartMessage("Player1"));
+        send(SendType.FORCE, new LoginStartMessage("Spoutcrafty"));
     }
 }

@@ -30,27 +30,23 @@ import org.apache.commons.io.Charsets;
 
 public class ByteBufUtils {
     public static String readUTF8(ByteBuf buf) throws IOException {
-        //Read size of String
+        //Read the string's length
         int len = readVarInt(buf);
-        byte[] data = new byte[len];
 
-        //Read bytes of String from length
-        buf.readBytes(data, 0, len);
-        return new String(data, Charsets.UTF_8);
+        byte[] bytes = new byte[len];
+        buf.readBytes(bytes);
+
+        return new String(bytes, Charsets.UTF_8);
     }
 
     public static void writeUTF8(ByteBuf buf, String value) throws IOException {
-        int len = value.length();
-        if (len >= Short.MAX_VALUE) {
+        final byte[] bytes = value.getBytes(Charsets.UTF_8);
+        if (bytes.length >= Short.MAX_VALUE) {
             throw new IOException("Attempt to write a string with a length greater than Short.MAX_VALUE to ByteBuf!");
         }
-        //Write the String's length
-        writeVarInt(buf, len);
-
-        //Write the String
-        for (int i = 0; i < len; i++) {
-            buf.writeChar(value.charAt(i));
-        }
+        //Write the string's length
+        writeVarInt(buf, bytes.length);
+        buf.writeBytes(bytes);
     }
 
     public static int readVarInt(ByteBuf buf) throws IOException {

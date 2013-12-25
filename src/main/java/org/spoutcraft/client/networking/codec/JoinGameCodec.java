@@ -38,10 +38,10 @@ import org.spoutcraft.client.networking.message.HandshakeMessage;
 import org.spoutcraft.client.networking.message.JoinGameMessage;
 
 public class JoinGameCodec extends Codec<JoinGameMessage> implements MessageHandler<JoinGameMessage> {
-    public static final int OPCODE = 1;
+    public static final int OP_CODE = 1;
 
     public JoinGameCodec() {
-        super(JoinGameMessage.class, OPCODE);
+        super(JoinGameMessage.class, OP_CODE);
     }
 
     @Override
