@@ -28,10 +28,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.spout.math.vector.Vector3i;
+
 import org.spoutcraft.client.ticking.TickingElement;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
-
-import org.spout.math.vector.Vector3i;
 
 /**
  * Contains and manages all the voxel worlds.
@@ -40,6 +40,7 @@ public class Universe extends TickingElement {
     private static final int TPS = 20;
     private final Map<UUID, World> worlds = new HashMap<>();
     private final Map<UUID, WorldSnapshot> worldSnapshots = new HashMap<>();
+    private final Map<String, UUID> worldIDsByName = new HashMap<>();
 
     public Universe() {
         super(TPS);
@@ -59,7 +60,7 @@ public class Universe extends TickingElement {
                 }
             }
         }
-        final World world = new World();
+        final World world = new World("test");
         for (int xx = 0; xx < 10; xx++) {
             for (int zz = 0; zz < 10; zz++) {
                 world.setChunk(new Chunk(world, new Vector3i(xx, 0, zz), halfChunkIDs, halfChunkSubIDs));
@@ -67,6 +68,7 @@ public class Universe extends TickingElement {
         }
         worlds.put(world.getID(), world);
         worldSnapshots.put(world.getID(), world.buildSnapshot());
+        worldIDsByName.put(world.getName(), world.getID());
     }
 
     @Override
@@ -86,5 +88,21 @@ public class Universe extends TickingElement {
         // TEST CODE
         worlds.clear();
         worldSnapshots.clear();
+    }
+
+    public World getWorld(UUID id) {
+        return worlds.get(id);
+    }
+
+    public World getWorld(String name) {
+        return worlds.get(worldIDsByName.get(name));
+    }
+
+    public WorldSnapshot getWorldSnapshot(UUID id) {
+        return worldSnapshots.get(id);
+    }
+
+    public WorldSnapshot getWorldSnapshot(String name) {
+        return worldSnapshots.get(worldIDsByName.get(name));
     }
 }
