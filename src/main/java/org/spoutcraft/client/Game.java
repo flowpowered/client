@@ -36,9 +36,9 @@ public class Game {
     private final Network network;
 
     public Game() {
-        universe = new Universe();
-        nterface = new Interface();
-        network = new Network();
+        universe = new Universe(this);
+        nterface = new Interface(this);
+        network = new Network(this);
     }
 
     public void start() {

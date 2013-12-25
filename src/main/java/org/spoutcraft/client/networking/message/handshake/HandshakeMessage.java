@@ -37,7 +37,6 @@ public class HandshakeMessage implements Message {
 
     /**
      * Constructs a new handshake
-     * </p>
      *
      * @param address The address of the server
      * @param port The port to connect to on the server

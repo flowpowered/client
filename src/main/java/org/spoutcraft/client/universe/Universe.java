@@ -28,22 +28,25 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import org.spout.math.vector.Vector3i;
-
+import org.spoutcraft.client.Game;
 import org.spoutcraft.client.ticking.TickingElement;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  * Contains and manages all the voxel worlds.
  */
 public class Universe extends TickingElement {
     private static final int TPS = 20;
+    private final Game game;
     private final Map<UUID, World> worlds = new HashMap<>();
     private final Map<UUID, WorldSnapshot> worldSnapshots = new HashMap<>();
     private final Map<String, UUID> worldIDsByName = new HashMap<>();
 
-    public Universe() {
+    public Universe(Game game) {
         super(TPS);
+        this.game = game;
     }
 
     @Override
@@ -88,6 +91,10 @@ public class Universe extends TickingElement {
         // TEST CODE
         worlds.clear();
         worldSnapshots.clear();
+    }
+
+    public Game getGame() {
+        return game;
     }
 
     public World getWorld(UUID id) {

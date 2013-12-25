@@ -42,7 +42,6 @@ public class JoinGameMessage implements Message {
 
     /**
      * Constructs a new join game
-     * </p>
      *
      * @param playerId The entity id for the {@link org.spoutcraft.client.entity.Player}
      * @param gameMode The {@link org.spoutcraft.client.game.GameMode} the {@link org.spoutcraft.client.universe.World} should be

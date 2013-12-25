@@ -23,6 +23,7 @@
  */
 package org.spoutcraft.client.nterface;
 
+import org.spoutcraft.client.Game;
 import org.spoutcraft.client.ticking.TickingElement;
 
 /**
@@ -30,9 +31,11 @@ import org.spoutcraft.client.ticking.TickingElement;
  */
 public class Interface extends TickingElement {
     private static final int TPS = 60;
+    private final Game game;
 
-    public Interface() {
+    public Interface(Game game) {
         super(TPS);
+        this.game = game;
     }
 
     @Override
@@ -47,5 +50,9 @@ public class Interface extends TickingElement {
     @Override
     public void onStop() {
         System.out.println("Interface stop");
+    }
+
+    public Game getGame() {
+        return game;
     }
 }

@@ -30,13 +30,17 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.spoutcraft.client.Game;
 import org.spoutcraft.client.ticking.TickingElement;
 
 public class Network extends TickingElement {
-    private final GameNetworkClient client = new GameNetworkClient();
+    private final Game game;
+    private final GameNetworkClient client;
 
-    public Network() {
+    public Network(Game game) {
         super(20);
+        this.game = game;
+        client = new GameNetworkClient(game);
     }
 
     @Override
@@ -70,6 +74,10 @@ public class Network extends TickingElement {
             return false;
         }
         return true;
+    }
+
+    public Game getGame() {
+        return game;
     }
 
     public ClientSession getSession() {
