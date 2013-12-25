@@ -25,14 +25,14 @@ package org.spoutcraft.client.universe;
 
 import java.util.concurrent.locks.Lock;
 
+import org.spout.math.vector.Vector3i;
+
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 import org.spoutcraft.client.universe.store.AtomicBlockStore;
 import org.spoutcraft.client.universe.store.impl.AtomicPaletteBlockStore;
 import org.spoutcraft.client.util.BitSize;
-
-import org.spout.math.vector.Vector3i;
 
 /**
  *
@@ -65,6 +65,18 @@ public class Chunk {
 
     public Vector3i getPosition() {
         return position;
+    }
+
+    public int getX() {
+        return position.getX();
+    }
+
+    public int getY() {
+        return position.getY();
+    }
+
+    public int getZ() {
+        return position.getZ();
     }
 
     public Block getBlock(int x, int y, int z) {

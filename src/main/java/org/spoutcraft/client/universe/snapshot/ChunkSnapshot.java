@@ -28,12 +28,12 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.spout.math.vector.Vector3i;
+
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.World;
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
-
-import org.spout.math.vector.Vector3i;
 
 /**
  *
@@ -58,6 +58,18 @@ public class ChunkSnapshot {
 
     public Vector3i getPosition() {
         return position;
+    }
+
+    public int getX() {
+        return position.getX();
+    }
+
+    public int getY() {
+        return position.getY();
+    }
+
+    public int getZ() {
+        return position.getZ();
     }
 
     public Block getBlock(Vector3i position) {
