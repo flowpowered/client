@@ -37,7 +37,7 @@ public enum BlockFace {
     BOTTOM(0, -1, 0, Quaternionf.fromRotationTo(Vector3f.FORWARD, Vector3f.UP.negate()), TOP),
     NORTH(-1, 0, 0, Quaternionf.fromRotationTo(Vector3f.FORWARD, Vector3f.RIGHT.negate())),
     SOUTH(1, 0, 0, Quaternionf.fromRotationTo(Vector3f.FORWARD, Vector3f.RIGHT), NORTH),
-    EAST(0, 0, -1, Quaternionf.fromRotationTo(Vector3f.FORWARD, Vector3f.FORWARD.negate())),
+    EAST(0, 0, -1, Quaternionf.fromAngleDegAxis(180, 0, 1, 0)),
     WEST(0, 0, 1, Quaternionf.IDENTITY, EAST),
     THIS(0, 0, 0, null);
     private final Vector3i offset;
