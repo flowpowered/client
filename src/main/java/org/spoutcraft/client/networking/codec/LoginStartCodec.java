@@ -31,7 +31,7 @@ import org.spoutcraft.client.networking.ByteBufUtils;
 import org.spoutcraft.client.networking.message.LoginStartMessage;
 
 public class LoginStartCodec extends Codec<LoginStartMessage> {
-    public static final int OP_CODE = 1;
+    public static final int OP_CODE = 0;
 
     public LoginStartCodec() {
         super(LoginStartMessage.class, OP_CODE);

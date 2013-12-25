@@ -24,11 +24,13 @@
 package org.spoutcraft.client.networking.protocol;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.exception.UnknownPacketException;
 import com.flowpowered.networking.protocol.Protocol;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.spoutcraft.client.networking.ByteBufUtils;
 
 /**
@@ -66,7 +68,10 @@ public abstract class ClientProtocol extends Protocol {
         //Length -> opCode -> data
         final int length = data.readableBytes();
         final int opCode = codec.getOpcode();
-        ByteBufUtils.writeVarInt(out, length);
+        //Figure out length of opcode, must be included in total length of packet
+        ByteBuf temp = Unpooled.buffer();
+        ByteBufUtils.writeVarInt(temp, opCode);
+        ByteBufUtils.writeVarInt(out, length + temp.readableBytes());
         ByteBufUtils.writeVarInt(out, opCode);
         return out;
     }

@@ -61,7 +61,7 @@ public class LoginSuccessCodec extends Codec<LoginSuccessMessage> implements Mes
 
         final ClientSession clientSession = (ClientSession) session;
         clientSession.setProtocol(new PlayProtocol());
-        clientSession.setUUID(UUID.fromString(message.getUUID()));
+        clientSession.setUUID(message.getUUID());
         clientSession.setUsername(message.getUsername());
         clientSession.setState(PulsingSession.State.OPEN);
     }

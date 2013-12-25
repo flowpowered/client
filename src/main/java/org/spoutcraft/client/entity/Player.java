@@ -42,7 +42,7 @@ public class Player extends Entity {
         this.session = session;
     }
 
-    public UUID getUUID() {
+    public String getUUID() {
         return session.getUUID();
     }
 

@@ -37,18 +37,18 @@ import org.spoutcraft.client.networking.protocol.LoginProtocol;
  * Represents an open connection to the server. All {@link com.flowpowered.networking.Message}s are sent through the session
  */
 public class ClientSession extends PulsingSession {
-    private UUID uuid;
+    private String uuid;
     private String username;
 
     public ClientSession(Channel channel, Protocol protocol) {
         super(channel, protocol);
     }
 
-    public UUID getUUID() {
+    public String getUUID() {
         return uuid;
     }
 
-    public void setUUID(UUID uuid) {
+    public void setUUID(String uuid) {
         this.uuid = uuid;
     }
 

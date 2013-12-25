@@ -52,7 +52,8 @@ public class Network extends TickingElement {
     }
 
     @Override
-    public void onStop() {        
+    public void onStop() {
+        client.shutdown();
     }
 
     public boolean connect() throws Exception {

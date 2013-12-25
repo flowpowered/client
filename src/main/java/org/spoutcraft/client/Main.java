@@ -36,7 +36,7 @@ public class Main {
         if (!game.getNetwork().connect()) {
             System.out.println("Connect failed.");
         }
-        Thread.sleep(5000);
+        Thread.sleep(15000);
         game.stop();
     }
 
