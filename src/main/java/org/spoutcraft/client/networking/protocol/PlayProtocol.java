@@ -29,11 +29,12 @@ import org.spoutcraft.client.networking.codec.play.KeepAliveCodec;
 import org.spoutcraft.client.networking.codec.play.PlayerCodec;
 import org.spoutcraft.client.networking.codec.play.RespawnCodec;
 import org.spoutcraft.client.networking.codec.play.SpawnPositionCodec;
-import org.spoutcraft.client.networking.message.play.RespawnMessage;
 
 public class PlayProtocol extends ClientProtocol {
+    public static final int HIGHEST_OP_CODE = 16;
+
     public PlayProtocol() {
-        super("Play", 7);
+        super("Play", HIGHEST_OP_CODE);
 
         //TODO Put handlers here
         registerMessage(KeepAliveCodec.class, KeepAliveCodec.class);

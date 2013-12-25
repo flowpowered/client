@@ -39,8 +39,8 @@ public abstract class ClientProtocol extends Protocol {
     public static final int DEFAULT_PORT = 25565;
     public static final int VERSION = 4;
 
-    public ClientProtocol(String name, int messageCount) {
-        super(name, DEFAULT_PORT, messageCount);
+    public ClientProtocol(String name, int highestOpcode) {
+        super(name, DEFAULT_PORT, highestOpcode + 1);
     }
 
     @Override
