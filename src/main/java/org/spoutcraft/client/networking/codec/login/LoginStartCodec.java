@@ -21,29 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.codec;
+package org.spoutcraft.client.networking.codec.login;
 
 import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
 import io.netty.buffer.ByteBuf;
-import org.spoutcraft.client.networking.message.ClientStatusMessage;
+import org.spoutcraft.client.networking.ByteBufUtils;
+import org.spoutcraft.client.networking.message.login.LoginStartMessage;
 
-public class ClientStatusCodec extends Codec<ClientStatusMessage> {
-    private static final int OP_CODE = 16;
+public class LoginStartCodec extends Codec<LoginStartMessage> {
+    public static final int OP_CODE = 0;
 
-    public ClientStatusCodec() {
-        super(ClientStatusMessage.class, OP_CODE);
+    public LoginStartCodec() {
+        super(LoginStartMessage.class, OP_CODE);
     }
 
     @Override
-    public ClientStatusMessage decode(ByteBuf buf) throws IOException {
-        throw new IOException("The client should not receive a client status from the Minecraft server!");
+    public LoginStartMessage decode(ByteBuf byteBuf) throws IOException {
+        throw new IOException("The client should not receive a login start from the Minecraft server!");
     }
 
     @Override
-    public ByteBuf encode(ByteBuf buf, ClientStatusMessage message) throws IOException {
-        buf.writeByte(message.getState().value());
+    public ByteBuf encode(ByteBuf buf, LoginStartMessage message) throws IOException {
+        ByteBufUtils.writeUTF8(buf, message.getUsername());
         return buf;
     }
 }

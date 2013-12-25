@@ -21,29 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.message;
+package org.spoutcraft.client.networking.codec.play;
 
-import com.flowpowered.networking.Message;
+import java.io.IOException;
 
-public class LoginSuccessMessage implements Message {
-    private final String uuid;
-    private final String username;
+import com.flowpowered.networking.Codec;
+import com.flowpowered.networking.MessageHandler;
+import com.flowpowered.networking.session.Session;
+import io.netty.buffer.ByteBuf;
+import org.spoutcraft.client.networking.message.play.KeepAliveMessage;
 
-    public LoginSuccessMessage(String uuid, String username) {
-        this.uuid = uuid;
-        this.username = username;
-    }
+public class KeepAliveCodec extends Codec<KeepAliveMessage> implements MessageHandler<KeepAliveMessage> {
+    public static final int OP_CODE = 0;
 
-    public String getUUID() {
-        return uuid;
-    }
-
-    public String getUsername() {
-        return username;
+    public KeepAliveCodec() {
+        super(KeepAliveMessage.class, OP_CODE);
     }
 
     @Override
-    public boolean isAsync() {
-        return true;
+    public KeepAliveMessage decode(ByteBuf buf) throws IOException {
+        return new KeepAliveMessage(buf.readInt());
+    }
+
+    @Override
+    public ByteBuf encode(ByteBuf buf, KeepAliveMessage message) throws IOException {
+        buf.writeInt(message.getRandom());
+        return buf;
+    }
+
+    @Override
+    public void handle(Session session, KeepAliveMessage message) {
+        session.send(new KeepAliveMessage(message.getRandom()));
     }
 }

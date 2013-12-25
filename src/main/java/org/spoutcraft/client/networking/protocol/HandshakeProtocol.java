@@ -23,7 +23,7 @@
  */
 package org.spoutcraft.client.networking.protocol;
 
-import org.spoutcraft.client.networking.codec.HandshakeCodec;
+import org.spoutcraft.client.networking.codec.handshake.HandshakeCodec;
 
 public class HandshakeProtocol extends ClientProtocol {
     public HandshakeProtocol() {

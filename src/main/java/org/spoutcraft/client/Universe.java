@@ -28,12 +28,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import org.spout.math.vector.Vector3i;
-
 import org.spoutcraft.client.ticking.TickingElement;
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.World;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  * Contains and manages all the voxel worlds.

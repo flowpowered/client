@@ -21,34 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.entity;
+package org.spoutcraft.client.networking.message.login;
 
-import com.flowpowered.networking.session.Session;
-import org.spoutcraft.client.networking.ClientSession;
-import org.spoutcraft.client.universe.World;
-
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.networking.Message;
 
 /**
- * The local client player which has the {@link com.flowpowered.networking.session.Session} tied to it.
+ * Server-bound message that informs the server that the client is ready to start the login process.
  */
-public class Player extends Entity {
-    private final ClientSession session;
+public class LoginStartMessage implements Message {
+    private final String username;
 
-    public Player(int id, String displayName, World world, Vector3f position, ClientSession session) {
-        super(id, displayName, world, position);
-        this.session = session;
-    }
-
-    public String getUUID() {
-        return session.getUUID();
+    /**
+     * Constructs a new login start
+     *
+     * @param username The username provided by the user (i.e. the login name used in the Minecraft launcher)
+     */
+    public LoginStartMessage(String username) {
+        this.username = username;
     }
 
     public String getUsername() {
-        return session.getUsername();
+        return username;
     }
 
-    public Session getSession() {
-        return session;
+    @Override
+    public boolean isAsync() {
+        return true;
     }
 }

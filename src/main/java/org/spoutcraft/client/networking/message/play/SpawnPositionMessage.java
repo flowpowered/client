@@ -21,30 +21,56 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.codec;
+package org.spoutcraft.client.networking.message.play;
 
-import java.io.IOException;
+import com.flowpowered.networking.Message;
 
-import com.flowpowered.networking.Codec;
-import io.netty.buffer.ByteBuf;
-import org.spoutcraft.client.networking.ByteBufUtils;
-import org.spoutcraft.client.networking.message.LoginStartMessage;
+import org.spout.math.vector.Vector3i;
 
-public class LoginStartCodec extends Codec<LoginStartMessage> {
-    public static final int OP_CODE = 0;
+/**
+ * Client bound message that instructs the client to update the compass position to the new spawn position.
+ */
+public class SpawnPositionMessage implements Message {
+    private final Vector3i position;
 
-    public LoginStartCodec() {
-        super(LoginStartMessage.class, OP_CODE);
+    /**
+     * Constructs a new spawn position
+     *
+     * @param x The x-axis coordinate (block)
+     * @param y The y-axis coordinate (block)
+     * @param z The z-axis coordinate (block)
+     */
+    public SpawnPositionMessage(int x, int y, int z) {
+        this(new Vector3i(x, y, z));
+    }
+
+    /**
+     * Constructs a new spawn position
+     *
+     * @param position {@link org.spout.math.vector.Vector3i} containing the x, y, z axis coordinates of spawn (block)
+     */
+    public SpawnPositionMessage(Vector3i position) {
+        this.position = position;
+    }
+
+    public int getX() {
+        return position.getX();
+    }
+
+    public int getY() {
+        return position.getY();
+    }
+
+    public int getZ() {
+        return position.getZ();
+    }
+
+    public Vector3i getPosition() {
+        return position;
     }
 
     @Override
-    public LoginStartMessage decode(ByteBuf byteBuf) throws IOException {
-        throw new IOException("The client should not receive a login start from the Minecraft server!");
-    }
-
-    @Override
-    public ByteBuf encode(ByteBuf buf, LoginStartMessage message) throws IOException {
-        ByteBufUtils.writeUTF8(buf, message.getUsername());
-        return buf;
+    public boolean isAsync() {
+        return true;
     }
 }

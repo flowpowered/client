@@ -21,23 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.message;
+package org.spoutcraft.client.networking.codec.play;
 
-import com.flowpowered.networking.Message;
+import java.io.IOException;
 
-public class LoginStartMessage implements Message {
-    private final String username;
+import com.flowpowered.networking.Codec;
+import io.netty.buffer.ByteBuf;
+import org.spoutcraft.client.networking.message.play.ClientStatusMessage;
 
-    public LoginStartMessage(String username) {
-        this.username = username;
-    }
+public class ClientStatusCodec extends Codec<ClientStatusMessage> {
+    private static final int OP_CODE = 16;
 
-    public String getUsername() {
-        return username;
+    public ClientStatusCodec() {
+        super(ClientStatusMessage.class, OP_CODE);
     }
 
     @Override
-    public boolean isAsync() {
-        return true;
+    public ClientStatusMessage decode(ByteBuf buf) throws IOException {
+        throw new IOException("The client should not receive a client status from the Minecraft server!");
+    }
+
+    @Override
+    public ByteBuf encode(ByteBuf buf, ClientStatusMessage message) throws IOException {
+        buf.writeByte(message.getState().value());
+        return buf;
     }
 }

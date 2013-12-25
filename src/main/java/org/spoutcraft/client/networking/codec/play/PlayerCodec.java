@@ -21,34 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.entity;
+package org.spoutcraft.client.networking.codec.play;
 
-import com.flowpowered.networking.session.Session;
-import org.spoutcraft.client.networking.ClientSession;
-import org.spoutcraft.client.universe.World;
+import java.io.IOException;
 
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.networking.Codec;
+import io.netty.buffer.ByteBuf;
+import org.spoutcraft.client.networking.message.play.PlayerMessage;
 
-/**
- * The local client player which has the {@link com.flowpowered.networking.session.Session} tied to it.
- */
-public class Player extends Entity {
-    private final ClientSession session;
+public class PlayerCodec extends Codec<PlayerMessage> {
+    public static final int OP_CODE = 3;
 
-    public Player(int id, String displayName, World world, Vector3f position, ClientSession session) {
-        super(id, displayName, world, position);
-        this.session = session;
+    public PlayerCodec() {
+        super(PlayerMessage.class, OP_CODE);
     }
 
-    public String getUUID() {
-        return session.getUUID();
+    @Override
+    public PlayerMessage decode(ByteBuf buf) throws IOException {
+        throw new IOException("The client does not receive a player (message) from the Minecraft server!");
     }
 
-    public String getUsername() {
-        return session.getUsername();
-    }
-
-    public Session getSession() {
-        return session;
+    @Override
+    public ByteBuf encode(ByteBuf buf, PlayerMessage message) throws IOException {
+        buf.writeBoolean(message.isOnGround());
+        return buf;
     }
 }

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.codec;
+package org.spoutcraft.client.networking.codec.play;
 
 import java.io.IOException;
 
@@ -29,28 +29,38 @@ import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
 import com.flowpowered.networking.session.Session;
 import io.netty.buffer.ByteBuf;
-import org.spoutcraft.client.networking.message.KeepAliveMessage;
+import org.spoutcraft.client.game.Difficulty;
+import org.spoutcraft.client.game.Dimension;
+import org.spoutcraft.client.game.GameMode;
+import org.spoutcraft.client.game.LevelType;
+import org.spoutcraft.client.networking.ByteBufUtils;
+import org.spoutcraft.client.networking.message.play.JoinGameMessage;
 
-public class KeepAliveCodec extends Codec<KeepAliveMessage> implements MessageHandler<KeepAliveMessage> {
-    public static final int OP_CODE = 0;
+public class JoinGameCodec extends Codec<JoinGameMessage> implements MessageHandler<JoinGameMessage> {
+    public static final int OP_CODE = 1;
 
-    public KeepAliveCodec() {
-        super(KeepAliveMessage.class, OP_CODE);
+    public JoinGameCodec() {
+        super(JoinGameMessage.class, OP_CODE);
     }
 
     @Override
-    public KeepAliveMessage decode(ByteBuf buf) throws IOException {
-        return new KeepAliveMessage(buf.readInt());
+    public JoinGameMessage decode(ByteBuf buf) throws IOException {
+        final int playerID = buf.readInt();
+        final GameMode gameMode = GameMode.get(buf.readUnsignedByte());
+        final Dimension dimension = Dimension.get(buf.readByte());
+        final Difficulty difficulty = Difficulty.get(buf.readUnsignedByte());
+        final short maxPlayers = buf.readUnsignedByte();
+        final LevelType levelType = LevelType.get(ByteBufUtils.readUTF8(buf));
+        return new JoinGameMessage(playerID, gameMode, dimension, difficulty, maxPlayers, levelType);
     }
 
     @Override
-    public ByteBuf encode(ByteBuf buf, KeepAliveMessage message) throws IOException {
-        buf.writeInt(message.getRandom());
-        return buf;
+    public ByteBuf encode(ByteBuf buf, JoinGameMessage message) throws IOException {
+        throw new IOException("The client cannot send a join game to the Minecraft server!");
     }
 
     @Override
-    public void handle(Session session, KeepAliveMessage message) {
-        session.send(new KeepAliveMessage(message.getRandom()));
+    public void handle(Session session, JoinGameMessage message) {
+        System.out.println("Server instructed client to join game!");
     }
 }

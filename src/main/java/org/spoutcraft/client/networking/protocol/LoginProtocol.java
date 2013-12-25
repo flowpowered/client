@@ -23,8 +23,8 @@
  */
 package org.spoutcraft.client.networking.protocol;
 
-import org.spoutcraft.client.networking.codec.LoginStartCodec;
-import org.spoutcraft.client.networking.codec.LoginSuccessCodec;
+import org.spoutcraft.client.networking.codec.login.LoginStartCodec;
+import org.spoutcraft.client.networking.codec.login.LoginSuccessCodec;
 
 public class LoginProtocol extends ClientProtocol {
     public LoginProtocol() {

@@ -21,46 +21,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.codec;
+package org.spoutcraft.client.networking.codec.login;
 
 import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
+import com.flowpowered.networking.session.PulsingSession;
 import com.flowpowered.networking.session.Session;
 import io.netty.buffer.ByteBuf;
-import org.spoutcraft.client.game.Difficulty;
-import org.spoutcraft.client.game.Dimension;
-import org.spoutcraft.client.game.GameMode;
-import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.networking.ByteBufUtils;
-import org.spoutcraft.client.networking.message.JoinGameMessage;
+import org.spoutcraft.client.networking.ClientSession;
+import org.spoutcraft.client.networking.message.login.LoginSuccessMessage;
+import org.spoutcraft.client.networking.protocol.PlayProtocol;
 
-public class JoinGameCodec extends Codec<JoinGameMessage> implements MessageHandler<JoinGameMessage> {
-    public static final int OP_CODE = 1;
+public class LoginSuccessCodec extends Codec<LoginSuccessMessage> implements MessageHandler<LoginSuccessMessage> {
+    public static final int OP_CODE = 2;
 
-    public JoinGameCodec() {
-        super(JoinGameMessage.class, OP_CODE);
+    public LoginSuccessCodec() {
+        super(LoginSuccessMessage.class, OP_CODE);
     }
 
     @Override
-    public JoinGameMessage decode(ByteBuf buf) throws IOException {
-        final int playerID = buf.readInt();
-        final GameMode gameMode = GameMode.get(buf.readUnsignedByte());
-        final Dimension dimension = Dimension.get(buf.readByte());
-        final Difficulty difficulty = Difficulty.get(buf.readUnsignedByte());
-        final short maxPlayers = buf.readUnsignedByte();
-        final LevelType levelType = LevelType.get(ByteBufUtils.readUTF8(buf));
-        return new JoinGameMessage(playerID, gameMode, dimension, difficulty, maxPlayers, levelType);
+    public LoginSuccessMessage decode(ByteBuf buf) throws IOException {
+        final String uuid = ByteBufUtils.readUTF8(buf);
+        final String username = ByteBufUtils.readUTF8(buf);
+        return new LoginSuccessMessage(uuid, username);
     }
 
     @Override
-    public ByteBuf encode(ByteBuf buf, JoinGameMessage message) throws IOException {
-        throw new IOException("The client cannot send a join game to the Minecraft server!");
+    public ByteBuf encode(ByteBuf buf, LoginSuccessMessage message) throws IOException {
+        throw new IOException("The client should not send a login success to the Minecraft server!");
     }
 
     @Override
-    public void handle(Session session, JoinGameMessage joinGameMessage) {
-        System.out.println("Server instructed client to join game!");
+    public void handle(Session session, LoginSuccessMessage message) {
+        System.out.println("Server says login is successful...Woo!!");
+
+        final ClientSession clientSession = (ClientSession) session;
+        clientSession.setProtocol(new PlayProtocol());
+        clientSession.setUUID(message.getUUID());
+        clientSession.setUsername(message.getUsername());
+        clientSession.setState(PulsingSession.State.OPEN);
     }
 }

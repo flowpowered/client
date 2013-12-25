@@ -21,23 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.message;
+package org.spoutcraft.client.networking.codec.handshake;
 
-import com.flowpowered.networking.Message;
+import java.io.IOException;
 
-public class PlayerMessage implements Message {
-    private final boolean onGround;
+import com.flowpowered.networking.Codec;
+import io.netty.buffer.ByteBuf;
+import org.spoutcraft.client.networking.ByteBufUtils;
+import org.spoutcraft.client.networking.message.handshake.HandshakeMessage;
 
-    public PlayerMessage(boolean onGround) {
-        this.onGround = onGround;
-    }
+public class HandshakeCodec extends Codec<HandshakeMessage> {
+    public static final int OP_CODE = 0;
 
-    public boolean isOnGround() {
-        return onGround;
+    public HandshakeCodec() {
+        super(HandshakeMessage.class, OP_CODE);
     }
 
     @Override
-    public boolean isAsync() {
-        return true;
+    public HandshakeMessage decode(ByteBuf byteBuf) throws IOException {
+        throw new IOException("The client should not receive a handshake from the Minecraft server!");
+    }
+
+    @Override
+    public ByteBuf encode(ByteBuf buf, HandshakeMessage message) throws IOException {
+        ByteBufUtils.writeVarInt(buf, message.getVersion());
+        ByteBufUtils.writeUTF8(buf, message.getAddress());
+        buf.writeShort(message.getPort());
+        ByteBufUtils.writeVarInt(buf, message.getState().value());
+        return buf;
     }
 }

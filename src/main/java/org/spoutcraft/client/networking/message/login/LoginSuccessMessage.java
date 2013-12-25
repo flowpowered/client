@@ -21,19 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.message;
+package org.spoutcraft.client.networking.message.login;
 
 import com.flowpowered.networking.Message;
 
-public class KeepAliveMessage implements Message {
-    private final int random;
+/**
+ * Client bound message that instructs the client that login was successful to the server.
+ * </p>
+ * If the server is in online mode, this occurs after encryption. Otherwise, this occurs after {@link LoginStartMessage} is sent.
+ */
+public class LoginSuccessMessage implements Message {
+    private final String uuid;
+    private final String username;
 
-    public KeepAliveMessage(int random) {
-        this.random = random;
+    /**
+     * Constructs a new login success
+     *
+     * @param uuid The unique identifier of this session
+     * @param username The username of this session
+     */
+    public LoginSuccessMessage(String uuid, String username) {
+        this.uuid = uuid;
+        this.username = username;
     }
 
-    public int getRandom() {
-        return random;
+    public String getUUID() {
+        return uuid;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     @Override

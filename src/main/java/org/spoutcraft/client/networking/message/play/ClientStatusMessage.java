@@ -21,41 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.message;
+package org.spoutcraft.client.networking.message.play;
 
 import com.flowpowered.networking.Message;
-import org.spoutcraft.client.networking.protocol.ClientProtocol;
 
-public class HandshakeMessage implements Message {
-    private final int version;
-    private final String address;
-    private final int port;
-    private final HandshakeState state;
+public class ClientStatusMessage implements Message {
+    private final ClientState state;
 
-    public HandshakeMessage(String address, int port, HandshakeState state) {
-        this(ClientProtocol.VERSION, address, port, state);
-    }
-
-    public HandshakeMessage(int version, String address, int port, HandshakeState state) {
-        this.version = version;
-        this.address = address;
-        this.port = port;
+    /**
+     * Constructs a new client status
+     *
+     * @param state The {@link ClientStatusMessage.ClientState}
+     */
+    public ClientStatusMessage(ClientState state) {
         this.state = state;
     }
 
-    public int getVersion() {
-        return version;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public HandshakeState getState() {
+    public ClientState getState() {
         return state;
     }
 
@@ -64,23 +46,27 @@ public class HandshakeMessage implements Message {
         return true;
     }
 
-    public enum HandshakeState {
+    public enum ClientState {
         /**
-         * Client is asking for server status (i.e. Multiplayer menu in the Minecraft client)
+         * This informs the server that the client is ready to login/respawn from death
          */
-        STATUS(1),
+        RESPAWN(0),
         /**
-         * Client is attempting to login to a server
+         * This informs the server that the client is ready to receive stats (snooping)
          */
-        LOGIN(2);
-        private final int state;
+        REQUEST_STATS(1),
+        /**
+         * This informs the server that the client is opening an inventory achievement
+         */
+        OPEN_INVENTORY_ACHIEVEMENT(2);
+        private final int value;
 
-        private HandshakeState(int state) {
-            this.state = state;
+        private ClientState(int value) {
+            this.value = value;
         }
 
         public int value() {
-            return state;
+            return value;
         }
     }
 }

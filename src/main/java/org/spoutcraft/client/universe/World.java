@@ -28,12 +28,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.spout.math.vector.Vector3i;
-
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.util.map.TripleIntObjectMap;
 import org.spoutcraft.client.util.map.impl.TTripleInt21ObjectHashMap;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  *
@@ -41,6 +41,7 @@ import org.spoutcraft.client.util.map.impl.TTripleInt21ObjectHashMap;
 public class World {
     private final TripleIntObjectMap<Chunk> chunks = new TTripleInt21ObjectHashMap<>();
     private final UUID id;
+    private Vector3i spawnPosition;
 
     public World() {
         id = UUID.randomUUID();
@@ -48,6 +49,14 @@ public class World {
 
     public UUID getID() {
         return id;
+    }
+
+    public Vector3i getSpawnPosition() {
+        return spawnPosition;
+    }
+
+    public void setSpawnPosition(Vector3i spawnPosition) {
+        this.spawnPosition = spawnPosition;
     }
 
     public boolean hasChunk(Vector3i position) {

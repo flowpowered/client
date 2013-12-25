@@ -21,33 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.codec;
+package org.spoutcraft.client.networking.message.play;
 
-import java.io.IOException;
+import com.flowpowered.networking.Message;
 
-import com.flowpowered.networking.Codec;
-import io.netty.buffer.ByteBuf;
-import org.spoutcraft.client.networking.ByteBufUtils;
-import org.spoutcraft.client.networking.message.HandshakeMessage;
+/**
+ * Two-way message used to keep alive the session:
+ * </p>
+ * A. The server sends a random int value
+ * B. The client returns the very same message
+ * </p>
+ * If the server doesn't receive a response within a timeout period, it will terminate the session.
+ */
+public class KeepAliveMessage implements Message {
+    private final int random;
 
-public class HandshakeCodec extends Codec<HandshakeMessage> {
-    public static final int OP_CODE = 0;
+    /**
+     * Constructs a new keep alive
+     *
+     * @param random Random value
+     */
+    public KeepAliveMessage(int random) {
+        this.random = random;
+    }
 
-    public HandshakeCodec() {
-        super(HandshakeMessage.class, OP_CODE);
+    public int getRandom() {
+        return random;
     }
 
     @Override
-    public HandshakeMessage decode(ByteBuf byteBuf) throws IOException {
-        throw new IOException("The client should not receive a handshake from the Minecraft server!");
-    }
-
-    @Override
-    public ByteBuf encode(ByteBuf buf, HandshakeMessage message) throws IOException {
-        ByteBufUtils.writeVarInt(buf, message.getVersion());
-        ByteBufUtils.writeUTF8(buf, message.getAddress());
-        buf.writeShort(message.getPort());
-        ByteBufUtils.writeVarInt(buf, message.getState().value());
-        return buf;
+    public boolean isAsync() {
+        return true;
     }
 }

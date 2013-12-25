@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.message;
+package org.spoutcraft.client.networking.message.play;
 
 import com.flowpowered.networking.Message;
 import org.spoutcraft.client.game.Difficulty;
@@ -29,6 +29,9 @@ import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
 
+/**
+ * Client-bound message that instructs the client to setup the game with the following attributes.
+ */
 public class JoinGameMessage implements Message {
     private final int playerId;
     private final GameMode gameMode;
@@ -37,6 +40,17 @@ public class JoinGameMessage implements Message {
     private final short maxPlayers;
     private final LevelType levelType;
 
+    /**
+     * Constructs a new join game
+     * </p>
+     *
+     * @param playerId The entity id for the {@link org.spoutcraft.client.entity.Player}
+     * @param gameMode The {@link org.spoutcraft.client.game.GameMode} the {@link org.spoutcraft.client.universe.World} should be
+     * @param dimension The {@link org.spoutcraft.client.game.Dimension} the {@link org.spoutcraft.client.universe.World} should be
+     * @param difficulty The {@link org.spoutcraft.client.game.Difficulty} the {@link org.spoutcraft.client.universe.World} should be
+     * @param maxPlayers The max players the server supports, used when rendering the player list
+     * @param levelType The {@link org.spoutcraft.client.game.LevelType} the {@link org.spoutcraft.client.universe.World} should be
+     */
     public JoinGameMessage(int playerId, GameMode gameMode, Dimension dimension, Difficulty difficulty, short maxPlayers, LevelType levelType) {
         this.playerId = playerId;
         this.gameMode = gameMode;

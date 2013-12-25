@@ -21,29 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.codec;
+package org.spoutcraft.client.networking.message.play;
 
-import java.io.IOException;
+import com.flowpowered.networking.Message;
 
-import com.flowpowered.networking.Codec;
-import io.netty.buffer.ByteBuf;
-import org.spoutcraft.client.networking.message.PlayerMessage;
+/**
+ * Server bound message that tells the server when the client is:
+ * </p>
+ * A. In the air
+ * B. Swimming
+ * C. On the ground
+ * </p>
+ * onGround should be false anytime the client isn't on the ground.
+ */
+public class PlayerMessage implements Message {
+    private final boolean onGround;
 
-public class PlayerCodec extends Codec<PlayerMessage> {
-    public static final int OP_CODE = 3;
+    /**
+     * Constructs a new player message
+     *
+     * @param onGround True if on ground, false if in the air or swimming
+     */
+    public PlayerMessage(boolean onGround) {
+        this.onGround = onGround;
+    }
 
-    public PlayerCodec() {
-        super(PlayerMessage.class, OP_CODE);
+    public boolean isOnGround() {
+        return onGround;
     }
 
     @Override
-    public PlayerMessage decode(ByteBuf buf) throws IOException {
-        throw new IOException("The client does not receive a player (message) from the Minecraft server!");
-    }
-
-    @Override
-    public ByteBuf encode(ByteBuf buf, PlayerMessage message) throws IOException {
-        buf.writeBoolean(message.isOnGround());
-        return buf;
+    public boolean isAsync() {
+        return true;
     }
 }

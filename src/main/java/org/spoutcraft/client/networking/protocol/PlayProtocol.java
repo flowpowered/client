@@ -23,19 +23,21 @@
  */
 package org.spoutcraft.client.networking.protocol;
 
-import org.spoutcraft.client.networking.codec.ClientStatusCodec;
-import org.spoutcraft.client.networking.codec.JoinGameCodec;
-import org.spoutcraft.client.networking.codec.KeepAliveCodec;
-import org.spoutcraft.client.networking.codec.PlayerCodec;
+import org.spoutcraft.client.networking.codec.play.ClientStatusCodec;
+import org.spoutcraft.client.networking.codec.play.JoinGameCodec;
+import org.spoutcraft.client.networking.codec.play.KeepAliveCodec;
+import org.spoutcraft.client.networking.codec.play.PlayerCodec;
+import org.spoutcraft.client.networking.codec.play.SpawnPositionCodec;
 
 public class PlayProtocol extends ClientProtocol {
     public PlayProtocol() {
-        super("Play", 5);
+        super("Play", 6);
 
         //TODO Put handlers here
         registerMessage(KeepAliveCodec.class, KeepAliveCodec.class);
         registerMessage(JoinGameCodec.class, JoinGameCodec.class);
         registerMessage(PlayerCodec.class, null);
         registerMessage(ClientStatusCodec.class, null);
+        registerMessage(SpawnPositionCodec.class, SpawnPositionCodec.class);
     }
 }

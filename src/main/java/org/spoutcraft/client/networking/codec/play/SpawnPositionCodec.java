@@ -21,47 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.networking.codec;
+package org.spoutcraft.client.networking.codec.play;
 
 import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
-import com.flowpowered.networking.session.PulsingSession;
 import com.flowpowered.networking.session.Session;
 import io.netty.buffer.ByteBuf;
-import org.spoutcraft.client.networking.ByteBufUtils;
-import org.spoutcraft.client.networking.ClientSession;
-import org.spoutcraft.client.networking.message.LoginSuccessMessage;
-import org.spoutcraft.client.networking.protocol.PlayProtocol;
+import org.spoutcraft.client.networking.message.play.SpawnPositionMessage;
 
-public class LoginSuccessCodec extends Codec<LoginSuccessMessage> implements MessageHandler<LoginSuccessMessage> {
-    public static final int OP_CODE = 2;
+public class SpawnPositionCodec extends Codec<SpawnPositionMessage> implements MessageHandler<SpawnPositionMessage> {
+    public static final int OP_CODE = 5;
 
-    public LoginSuccessCodec() {
-        super(LoginSuccessMessage.class, OP_CODE);
+    public SpawnPositionCodec() {
+        super(SpawnPositionMessage.class, OP_CODE);
     }
 
     @Override
-    public LoginSuccessMessage decode(ByteBuf buf) throws IOException {
-        final String uuid = ByteBufUtils.readUTF8(buf);
-        final String username = ByteBufUtils.readUTF8(buf);
-        return new LoginSuccessMessage(uuid, username);
+    public SpawnPositionMessage decode(ByteBuf buf) throws IOException {
+        final int x = buf.readInt();
+        final int y = buf.readInt();
+        final int z = buf.readInt();
+        return new SpawnPositionMessage(x, y, z);
     }
 
     @Override
-    public ByteBuf encode(ByteBuf buf, LoginSuccessMessage message) throws IOException {
-        throw new IOException("The client should not send a login success to the Minecraft server!");
+    public ByteBuf encode(ByteBuf buf, SpawnPositionMessage message) throws IOException {
+        throw new IOException("The client should not send a spawn position to the Minecraft server!");
     }
 
     @Override
-    public void handle(Session session, LoginSuccessMessage message) {
-        System.out.println("Server says login is successful...Woo!!");
-
-        final ClientSession clientSession = (ClientSession) session;
-        clientSession.setProtocol(new PlayProtocol());
-        clientSession.setUUID(message.getUUID());
-        clientSession.setUsername(message.getUsername());
-        clientSession.setState(PulsingSession.State.OPEN);
+    public void handle(Session session, SpawnPositionMessage message) {
+        System.out.println("Server sent new coordinates for spawn!");
     }
 }
