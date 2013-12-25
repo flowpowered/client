@@ -31,7 +31,7 @@ public class ClientStatusMessage implements Message {
     /**
      * Constructs a new client status
      *
-     * @param state The {@link ClientStatusMessage.ClientState}
+     * @param state See {@link org.spoutcraft.client.networking.message.play.ClientStatusMessage.ClientState}
      */
     public ClientStatusMessage(ClientState state) {
         this.state = state;

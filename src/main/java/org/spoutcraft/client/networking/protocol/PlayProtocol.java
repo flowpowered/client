@@ -27,11 +27,13 @@ import org.spoutcraft.client.networking.codec.play.ClientStatusCodec;
 import org.spoutcraft.client.networking.codec.play.JoinGameCodec;
 import org.spoutcraft.client.networking.codec.play.KeepAliveCodec;
 import org.spoutcraft.client.networking.codec.play.PlayerCodec;
+import org.spoutcraft.client.networking.codec.play.RespawnCodec;
 import org.spoutcraft.client.networking.codec.play.SpawnPositionCodec;
+import org.spoutcraft.client.networking.message.play.RespawnMessage;
 
 public class PlayProtocol extends ClientProtocol {
     public PlayProtocol() {
-        super("Play", 6);
+        super("Play", 7);
 
         //TODO Put handlers here
         registerMessage(KeepAliveCodec.class, KeepAliveCodec.class);
@@ -39,5 +41,6 @@ public class PlayProtocol extends ClientProtocol {
         registerMessage(PlayerCodec.class, null);
         registerMessage(ClientStatusCodec.class, null);
         registerMessage(SpawnPositionCodec.class, SpawnPositionCodec.class);
+        registerMessage(RespawnCodec.class, RespawnCodec.class);
     }
 }

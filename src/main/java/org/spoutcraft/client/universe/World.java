@@ -28,12 +28,16 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.spout.math.vector.Vector3i;
-
+import org.spoutcraft.client.game.Difficulty;
+import org.spoutcraft.client.game.Dimension;
+import org.spoutcraft.client.game.GameMode;
+import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.util.map.TripleIntObjectMap;
 import org.spoutcraft.client.util.map.impl.TTripleInt21ObjectHashMap;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  *
@@ -42,15 +46,32 @@ public class World {
     private final TripleIntObjectMap<Chunk> chunks = new TTripleInt21ObjectHashMap<>();
     private final UUID id;
     private final String name;
+    //Characteristics
     private Vector3i spawnPosition;
+    private GameMode gameMode;
+    private Dimension dimension;
+    private Difficulty difficulty;
+    private LevelType levelType;
 
     public World(String name) {
         this(UUID.randomUUID(), name);
     }
 
     public World(UUID id, String name) {
+        this(id, name, GameMode.SURVIVAL, Dimension.NORMAL, Difficulty.NORMAL, LevelType.DEFAULT);
+    }
+
+    public World(String name, GameMode gameMode, Dimension dimension, Difficulty difficulty, LevelType levelType) {
+        this(UUID.randomUUID(), name, gameMode, dimension, difficulty, levelType);
+    }
+
+    public World(UUID id, String name, GameMode gameMode, Dimension dimension, Difficulty difficulty, LevelType levelType) {
         this.id = id;
         this.name = name;
+        this.gameMode = gameMode;
+        this.difficulty = difficulty;
+        this.dimension = dimension;
+        this.levelType = levelType;
     }
 
     public UUID getID() {
@@ -131,6 +152,38 @@ public class World {
                 old.removeChunk(chunkSnapshotPosition);
             }
         }
+    }
+
+    public GameMode getGameMode() {
+        return gameMode;
+    }
+
+    public void setGameMode(GameMode gameMode) {
+        this.gameMode = gameMode;
+    }
+
+    public Dimension getDimension() {
+        return dimension;
+    }
+
+    public void setDimension(Dimension dimension) {
+        this.dimension = dimension;
+    }
+
+    public Difficulty getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(Difficulty difficulty) {
+        this.difficulty = difficulty;
+    }
+
+    public LevelType getLevelType() {
+        return levelType;
+    }
+
+    public void setLevelType(LevelType levelType) {
+        this.levelType = levelType;
     }
 
     @Override

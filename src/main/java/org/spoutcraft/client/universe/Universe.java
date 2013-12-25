@@ -29,6 +29,12 @@ import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.spoutcraft.client.Game;
+import org.spoutcraft.client.game.Difficulty;
+import org.spoutcraft.client.game.Dimension;
+import org.spoutcraft.client.game.GameMode;
+import org.spoutcraft.client.game.LevelType;
+import org.spoutcraft.client.networking.message.play.JoinGameMessage;
+import org.spoutcraft.client.networking.message.play.RespawnMessage;
 import org.spoutcraft.client.ticking.TickingElement;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 
@@ -43,6 +49,7 @@ public class Universe extends TickingElement {
     private final Map<UUID, World> worlds = new HashMap<>();
     private final Map<UUID, WorldSnapshot> worldSnapshots = new HashMap<>();
     private final Map<String, UUID> worldIDsByName = new HashMap<>();
+    private World activeWorld;
 
     public Universe(Game game) {
         super(TPS);
@@ -111,5 +118,51 @@ public class Universe extends TickingElement {
 
     public WorldSnapshot getWorldSnapshot(String name) {
         return worldSnapshots.get(worldIDsByName.get(name));
+    }
+
+    /**
+     * Creates a {@link org.spoutcraft.client.universe.World} from a variety of characteristics.
+     * @param gameMode See {@link org.spoutcraft.client.game.GameMode}
+     * @param dimension See {@link org.spoutcraft.client.game.Dimension}
+     * @param difficulty See {@link org.spoutcraft.client.game.Difficulty}
+     * @param levelType See {@link org.spoutcraft.client.game.Difficulty}
+     * @param isActive True if the created {@link org.spoutcraft.client.universe.World} should be made active (receives {@link org.spoutcraft.client.universe.Chunk}s)
+     * @return The constructed {@link org.spoutcraft.client.universe.World}
+     */
+    public World createWorld(GameMode gameMode, Dimension dimension, Difficulty difficulty, LevelType levelType, boolean isActive) {
+        final World world = new World("world-" + dimension.name(), gameMode, dimension, difficulty, levelType);
+        worlds.put(world.getID(), world);
+        if (isActive) {
+            activeWorld = world;
+        }
+        return world;
+    }
+
+    /**
+     * Creates a {@link org.spoutcraft.client.universe.World} from a {@link org.spoutcraft.client.networking.message.play.JoinGameMessage}
+     * @param message See {@link org.spoutcraft.client.networking.message.play.JoinGameMessage}
+     * @return The constructed {@link org.spoutcraft.client.universe.World}
+     */
+    public World createWorld(JoinGameMessage message) {
+        return createWorld(message.getGameMode(), message.getDimension(), message.getDifficulty(), message.getLevelType(), true);
+    }
+
+    /**
+     * Updates a {@link org.spoutcraft.client.universe.World} from a {@link org.spoutcraft.client.networking.message.play.RespawnMessage}
+     * @param message See {@link org.spoutcraft.client.networking.message.play.RespawnMessage}
+     * @return The constructed {@link org.spoutcraft.client.universe.World}
+     */
+    public World updateWorld(RespawnMessage message) {
+        final World world;
+        if (message.getDimension() == activeWorld.getDimension()) {
+            world = activeWorld;
+        } else {
+            world = getWorld("world-" + message.getDimension().name());
+        }
+        world.setGameMode(message.getGameMode());
+        world.setDimension(message.getDimension());
+        world.setDifficulty(message.getDifficulty());
+        world.setLevelType(message.getLevelType());
+        return world;
     }
 }
