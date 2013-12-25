@@ -21,12 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.util.hashing;
+package org.spoutcraft.client.util.hashing;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import org.spoutcraft.client.util.hashing.Int21TripleHashed;
 
 public class Int21TripleHashedTest {
     public void testValue(int x, int y, int z) {
