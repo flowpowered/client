@@ -1,5 +1,5 @@
 // Default tasks
-defaultTasks 'clean', 'build', 'licenseFormatMain', 'shadow'
+defaultTasks 'clean', 'build', 'licenseFormatMain', 'licenseFormatTest', 'shadow'
 
 // Apply plugins
 apply plugin: 'application'
@@ -88,6 +88,10 @@ shadow {
 }
 
 // License header formatting
+import nl.javadude.gradle.plugins.license.License
+tasks.withType(License).each { licenseTask ->
+    licenseTask.exclude '**/*.yml'
+}
 license {
     ext.name = projectName
     ext.organization = organization
