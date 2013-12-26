@@ -90,6 +90,9 @@ shadow {
 // License header formatting
 import nl.javadude.gradle.plugins.license.License
 tasks.withType(License).each { licenseTask ->
+    licenseTask.exclude '**/*.frag'
+    licenseTask.exclude '**/*.ttf'
+    licenseTask.exclude '**/*.vert'
     licenseTask.exclude '**/*.yml'
 }
 license {
