@@ -30,7 +30,9 @@ import org.lwjgl.*;
 
 /**
  * A time class. Calling the {@link #sync()} method at the end of each tick will cause the thread to sleep for the correct time delay between the ticks. {@link #start()} must be called just before the
- * loop to start the timer. {@link #reset()} is used to reset the start time to the current time. <p/> Based on LWJGL's implementation of {@link org.lwjgl.opengl.Sync}.
+ * loop to start the timer. {@link #reset()} is used to reset the start time to the current time.
+ * <p/>
+ * Based on LWJGL's implementation of {@link org.lwjgl.opengl.Sync}.
  */
 public class Timer {
     // Time to sleep or yield before next tick

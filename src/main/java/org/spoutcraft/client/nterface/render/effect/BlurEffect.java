@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.nterface.render.render;
+package org.spoutcraft.client.nterface.render.effect;
 
 import org.spout.math.vector.Vector2f;
 import org.spout.renderer.data.Uniform.IntUniform;

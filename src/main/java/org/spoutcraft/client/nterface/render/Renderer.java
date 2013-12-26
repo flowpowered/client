@@ -84,9 +84,9 @@ import org.spout.renderer.model.StringModel;
 import org.spout.renderer.util.Rectangle;
 
 import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.nterface.render.render.BlurEffect;
-import org.spoutcraft.client.nterface.render.render.SSAOEffect;
-import org.spoutcraft.client.nterface.render.render.ShadowMappingEffect;
+import org.spoutcraft.client.nterface.render.effect.BlurEffect;
+import org.spoutcraft.client.nterface.render.effect.SSAOEffect;
+import org.spoutcraft.client.nterface.render.effect.ShadowMappingEffect;
 import org.spoutcraft.client.util.MeshGenerator;
 import org.spoutcraft.client.util.TPSMonitor;
 

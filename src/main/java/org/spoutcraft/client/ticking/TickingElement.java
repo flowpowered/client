@@ -44,6 +44,10 @@ public abstract class TickingElement {
         thread = null;
     }
 
+    public final boolean isRunning() {
+        return thread != null && thread.isRunning();
+    }
+
     public abstract void onStart();
 
     public abstract void onTick();

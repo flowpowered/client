@@ -55,9 +55,7 @@ public class Game {
         network.start();
 
         // TEST CODE
-        if (!network.connect()) {
-            System.out.println("Connect failed");
-        }
+        network.connect();
     }
 
     public void stop() {

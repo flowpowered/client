@@ -35,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.flowpowered.networking.session.PulsingSession.State;
-
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.networking.message.ChannelMessage;
 import org.spoutcraft.client.networking.message.ChannelMessage.Channel;
@@ -58,9 +57,6 @@ public class Network extends TickingElement {
 
     @Override
     public void onTick() {
-        if (client.getSession() == null) {
-            return;
-        }
         for (Map.Entry<Channel, ConcurrentLinkedQueue<ChannelMessage>> entry : messageQueue.entrySet()) {
             final Iterator<ChannelMessage> messages = entry.getValue().iterator();
             while (messages.hasNext()) {
@@ -91,18 +87,19 @@ public class Network extends TickingElement {
         client.shutdown();
     }
 
-    public boolean connect() {
-        return connect(new InetSocketAddress(25565));
+    public void connect() {
+        connect(new InetSocketAddress(25565));
     }
 
-    public boolean connect(SocketAddress address) {
+    public void connect(SocketAddress address) {
+        if (!isRunning()) {
+            throw new RuntimeException("Attempt made to issue a connection but the Network thread isn't running!");
+        }
         Future<Void> future = client.connect(address);
         try {
             future.get(10, TimeUnit.SECONDS);
-        } catch (InterruptedException | TimeoutException | ExecutionException e) {
-            return false;
+        } catch (InterruptedException | TimeoutException | ExecutionException ignored) {
         }
-        return true;
     }
 
     public Game getGame() {

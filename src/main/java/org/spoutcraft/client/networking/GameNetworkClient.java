@@ -42,14 +42,23 @@ public class GameNetworkClient extends NetworkClient {
 
     @Override
     public Session newSession(Channel channel) {
-        session = new ClientSession(game, channel, new HandshakeProtocol());
+        this.session = new ClientSession(game, channel, new HandshakeProtocol());
         return session;
     }
 
     @Override
     public void sessionInactivated(Session session) {
-        //TODO Show generic client GUI for disconnection
-        session = null;
+        System.out.println("Connection lost from Minecraft server, stopping Network thread");
+        this.session = null;
+        game.getNetwork().stop();
+    }
+
+    @Override
+    public void onConnectFailure() {
+        super.onConnectFailure();
+        System.out.println("Failed to connect to Minecraft server, stopping Network thread");
+        this.session = null;
+        game.getNetwork().stop();
     }
 
     public Game getGame() {

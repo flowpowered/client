@@ -24,7 +24,7 @@
 package org.spoutcraft.client.ticking;
 
 /**
- * Represents a thread that runs its {@link java.lang.Runnable} at a specific TPS, until terminated.
+ * Represents a thread that runs at a specific TPS until terminated.
  */
 public class TPSLimitedThread extends Thread {
     private final TickingElement element;
@@ -49,5 +49,9 @@ public class TPSLimitedThread extends Thread {
 
     public void terminate() {
         running = false;
+    }
+
+    public boolean isRunning() {
+        return running;
     }
 }

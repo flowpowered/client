@@ -37,6 +37,7 @@ import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
+import org.spoutcraft.client.networking.Network;
 import org.spoutcraft.client.networking.message.ChannelMessage;
 import org.spoutcraft.client.networking.message.ChannelMessage.Channel;
 import org.spoutcraft.client.networking.message.play.JoinGameMessage;
@@ -90,10 +91,13 @@ public class Universe extends TickingElement {
     @Override
     public void onTick() {
         //TODO Optimization needed here, process so many per tick?
-        final Iterator<ChannelMessage> messages = getGame().getNetwork().getChannel(Channel.UNIVERSE);
-        while (messages.hasNext()) {
-            final ChannelMessage message = messages.next();
-            processMessage(message);
+        final Network network = game.getNetwork();
+        if (network.isRunning()) {
+            final Iterator<ChannelMessage> messages = network.getChannel(Channel.UNIVERSE);
+            while (messages.hasNext()) {
+                final ChannelMessage message = messages.next();
+                processMessage(message);
+            }
         }
 
         // TEST CODE
@@ -138,7 +142,7 @@ public class Universe extends TickingElement {
      * @param gameMode See {@link org.spoutcraft.client.game.GameMode}
      * @param dimension See {@link org.spoutcraft.client.game.Dimension}
      * @param difficulty See {@link org.spoutcraft.client.game.Difficulty}
-     * @param levelType See {@link org.spoutcraft.client.game.Difficulty}
+     * @param levelType See {@link org.spoutcraft.client.game.LevelType}
      * @param isActive True if the created {@link org.spoutcraft.client.universe.World} should be made active (receives {@link org.spoutcraft.client.universe.Chunk}s)
      * @return The constructed {@link org.spoutcraft.client.universe.World}
      */
