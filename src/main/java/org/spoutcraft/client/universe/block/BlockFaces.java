@@ -63,6 +63,14 @@ public class BlockFaces implements Iterable<BlockFace> {
      */
     public static final BlockFaces BT = new BlockFaces(BlockFace.BOTTOM, BlockFace.TOP);
     /**
+     * The [east-west] faces
+     */
+    public static final BlockFaces EW = new BlockFaces(BlockFace.EAST, BlockFace.WEST);
+    /**
+     * The [north-south] faces
+     */
+    public static final BlockFaces NS = new BlockFaces(BlockFace.NORTH, BlockFace.SOUTH);
+    /**
      * The [north-east-south-west] faces
      */
     public static final BlockFaces NESW = new BlockFaces(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST);
@@ -182,6 +190,15 @@ public class BlockFaces implements Iterable<BlockFace> {
      */
     public int size() {
         return this.faces.length;
+    }
+
+    /**
+     * Returns true if the total amount of BlockFace objects contained in this constant is zero.
+     *
+     * @return Whether or not this constant is empty
+     */
+    public boolean isEmpty() {
+        return size() == 0;
     }
 
     /**

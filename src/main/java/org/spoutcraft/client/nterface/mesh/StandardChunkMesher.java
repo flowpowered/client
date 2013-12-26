@@ -25,13 +25,13 @@ package org.spoutcraft.client.nterface.mesh;
 
 import gnu.trove.list.TFloatList;
 import gnu.trove.list.TIntList;
+
 import org.spoutcraft.client.nterface.mesh.Mesh.MeshAttribute;
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.block.BlockFace;
+import org.spoutcraft.client.universe.block.BlockFaces;
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
-
-import org.spout.math.vector.Vector3i;
 
 /**
  *
@@ -44,54 +44,89 @@ public class StandardChunkMesher implements ChunkMesher {
         final TFloatList positions = mesh.getAttribute(MeshAttribute.POSITIONS);
         final TIntList indices = mesh.getIndices();
 
-        final int x = chunk.getX() << Chunk.BLOCKS.BITS;
-        final int y = chunk.getY() << Chunk.BLOCKS.BITS;
-        final int z = chunk.getZ() << Chunk.BLOCKS.BITS;
-
         int index = 0;
 
-        for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
-            for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
-                Material lastMaterial = null;
-                for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
-                    final Material currentMaterial = chunk.getMaterial(x + xx, y + yy, z + zz);
+        for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
+            for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
+                Material backMaterial = chunk.getMaterial(0, yy, zz);
+                for (int xx = 1; xx < Chunk.BLOCKS.SIZE; xx++) {
 
-                    if (lastMaterial == null) {
-                        lastMaterial = currentMaterial;
+                    final Material frontMaterial = chunk.getMaterial(xx, yy, zz);
+
+                    final BlockFace face = getFace(backMaterial, frontMaterial, BlockFaces.NS);
+                    if (face == BlockFace.NORTH) {
+                        add(indices, index + 3, index + 2, index + 1, index + 2, index, index + 1);
+                    } else if (face == BlockFace.SOUTH) {
+                        add(indices, index + 3, index + 1, index + 2, index + 2, index + 1, index);
+                    } else {
+                        backMaterial = frontMaterial;
                         continue;
                     }
 
-                    if (yy != -1) {
-                        if (faceNeeded(lastMaterial, currentMaterial, BlockFace.TOP)) {
-                            final Vector3i offset = BlockFace.TOP.getOffset();
-                            final float fx = xx + (offset.getX() + 1) / 2;
-                            final float fy = yy + (offset.getY() + 1) / 2;
-                            final float fz = zz + (offset.getZ() + 1) / 2;
-                            add(positions, fx, fy, fz);
-                            add(positions, fx + 1, fy, fz);
-                            add(positions, fx, fy, fz + 1);
-                            add(positions, fx + 1, fy, fz + 1);
-                            add(indices, index + 3, index + 1, index + 2, index + 2, index + 1, index);
-                            index += 4;
-                        }
+                    add(positions, xx, yy + 1, zz + 1);
+                    add(positions, xx, yy + 1, zz);
+                    add(positions, xx, yy, zz + 1);
+                    add(positions, xx, yy, zz);
+                    index += 4;
+
+                    backMaterial = frontMaterial;
+                }
+            }
+        }
+
+        for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
+            for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
+                Material backMaterial = chunk.getMaterial(xx, 0, zz);
+                for (int yy = 1; yy < Chunk.BLOCKS.SIZE; yy++) {
+
+                    final Material frontMaterial = chunk.getMaterial(xx, yy, zz);
+
+                    final BlockFace face = getFace(backMaterial, frontMaterial, BlockFaces.BT);
+                    if (face == BlockFace.BOTTOM) {
+                        add(indices, index + 3, index + 2, index + 1, index + 2, index, index + 1);
+                    } else if (face == BlockFace.TOP) {
+                        add(indices, index + 3, index + 1, index + 2, index + 2, index + 1, index);
+                    } else {
+                        backMaterial = frontMaterial;
+                        continue;
                     }
 
-                    if (yy != Chunk.BLOCKS.SIZE + 1) {
-                        if (faceNeeded(currentMaterial, lastMaterial, BlockFace.BOTTOM)) {
-                            final Vector3i offset = BlockFace.BOTTOM.getOffset();
-                            final float fx = xx + (offset.getX() + 1) / 2;
-                            final float fy = yy + (offset.getY() + 1) / 2;
-                            final float fz = zz + (offset.getZ() + 1) / 2;
-                            add(positions, fx, fy, fz);
-                            add(positions, fx + 1, fy, fz);
-                            add(positions, fx, fy, fz + 1);
-                            add(positions, fx + 1, fy, fz + 1);
-                            add(indices, index + 3, index + 2, index + 1, index + 2, index, index + 1);
-                            index += 4;
-                        }
+                    add(positions, xx, yy, zz);
+                    add(positions, xx + 1, yy, zz);
+                    add(positions, xx, yy, zz + 1);
+                    add(positions, xx + 1, yy, zz + 1);
+                    index += 4;
+
+                    backMaterial = frontMaterial;
+                }
+            }
+        }
+
+        for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
+            for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
+                Material backMaterial = chunk.getMaterial(xx, yy, 0);
+                for (int zz = 1; zz < Chunk.BLOCKS.SIZE; zz++) {
+
+                    final Material frontMaterial = chunk.getMaterial(xx, yy, zz);
+
+                    final BlockFace face = getFace(backMaterial, frontMaterial, BlockFaces.EW);
+                    if (face == BlockFace.EAST) {
+                        add(indices, index + 3, index + 2, index + 1, index + 2, index, index + 1);
+                    } else if (face == BlockFace.WEST) {
+                        add(indices, index + 3, index + 1, index + 2, index + 2, index + 1, index);
+                    } else {
+                        backMaterial = frontMaterial;
+                        continue;
                     }
 
-                    lastMaterial = currentMaterial;
+                    add(positions, xx, yy + 1, zz);
+                    add(positions, xx + 1, yy + 1, zz);
+                    add(positions, xx, yy, zz);
+                    add(positions, xx + 1, yy, zz);
+
+                    index += 4;
+
+                    backMaterial = frontMaterial;
                 }
             }
         }
@@ -99,8 +134,14 @@ public class StandardChunkMesher implements ChunkMesher {
         return mesh;
     }
 
-    private boolean faceNeeded(Material current, Material last, BlockFace face) {
-        return true;
+    private BlockFace getFace(Material back, Material front, BlockFaces axis) {
+        if (back.isVisible() && !front.occludes(back, axis.get(0))) {
+            return axis.get(1);
+        }
+        if (front.isVisible() && !back.occludes(front, axis.get(1))) {
+            return axis.get(0);
+        }
+        return null;
     }
 
     private static void add(TFloatList list, float x, float y, float z) {

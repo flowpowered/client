@@ -34,9 +34,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.flowpowered.networking.session.PulsingSession;
+import com.flowpowered.networking.session.PulsingSession.State;
+
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.networking.message.ChannelMessage;
+import org.spoutcraft.client.networking.message.ChannelMessage.Channel;
 import org.spoutcraft.client.networking.message.login.LoginSuccessMessage;
 import org.spoutcraft.client.networking.protocol.PlayProtocol;
 import org.spoutcraft.client.ticking.TickingElement;
@@ -44,14 +46,14 @@ import org.spoutcraft.client.ticking.TickingElement;
 public class Network extends TickingElement {
     private final Game game;
     private final GameNetworkClient client;
-    private final EnumMap<ChannelMessage.Channel, ConcurrentLinkedQueue<ChannelMessage>> messageQueue = new EnumMap<>(ChannelMessage.Channel.class);
+    private final EnumMap<Channel, ConcurrentLinkedQueue<ChannelMessage>> messageQueue = new EnumMap<>(Channel.class);
 
     public Network(Game game) {
         super(20);
         this.game = game;
         client = new GameNetworkClient(game);
-        messageQueue.put(ChannelMessage.Channel.UNIVERSE, new ConcurrentLinkedQueue<ChannelMessage>());
-        messageQueue.put(ChannelMessage.Channel.NETWORK, new ConcurrentLinkedQueue<ChannelMessage>());
+        messageQueue.put(Channel.UNIVERSE, new ConcurrentLinkedQueue<ChannelMessage>());
+        messageQueue.put(Channel.NETWORK, new ConcurrentLinkedQueue<ChannelMessage>());
     }
 
     @Override
@@ -59,12 +61,12 @@ public class Network extends TickingElement {
         if (client.getSession() == null) {
             return;
         }
-        for (Map.Entry<ChannelMessage.Channel, ConcurrentLinkedQueue<ChannelMessage>> entry : messageQueue.entrySet()) {
+        for (Map.Entry<Channel, ConcurrentLinkedQueue<ChannelMessage>> entry : messageQueue.entrySet()) {
             final Iterator<ChannelMessage> messages = entry.getValue().iterator();
             while (messages.hasNext()) {
                 final ChannelMessage message = messages.next();
                 //Handle all Network channel message
-                if (entry.getKey() == ChannelMessage.Channel.NETWORK && !message.isFullyRead()) {
+                if (entry.getKey() == Channel.NETWORK && !message.isFullyRead()) {
                     processMessage(message);
                 }
                 if (message.isFullyRead()) {
@@ -116,7 +118,7 @@ public class Network extends TickingElement {
      * @param c See {@link org.spoutcraft.client.networking.message.ChannelMessage.Channel}
      * @return The iterator
      */
-    public Iterator<ChannelMessage> getChannel(ChannelMessage.Channel c) {
+    public Iterator<ChannelMessage> getChannel(Channel c) {
         return messageQueue.get(c).iterator();
     }
 
@@ -125,7 +127,7 @@ public class Network extends TickingElement {
      * @param c See {@link org.spoutcraft.client.networking.message.ChannelMessage.Channel}
      * @param m See {@link org.spoutcraft.client.networking.message.ChannelMessage}
      */
-    public void offer(ChannelMessage.Channel c, ChannelMessage m) {
+    public void offer(Channel c, ChannelMessage m) {
         messageQueue.get(c).offer(m);
     }
 
@@ -142,8 +144,8 @@ public class Network extends TickingElement {
             session.setProtocol(new PlayProtocol());
             session.setUUID(loginSuccessMessage.getUUID());
             session.setUsername(loginSuccessMessage.getUsername());
-            session.setState(PulsingSession.State.OPEN);
-            message.markChannelRead(ChannelMessage.Channel.NETWORK);
+            session.setState(State.OPEN);
+            message.markChannelRead(Channel.NETWORK);
         }
     }
 }

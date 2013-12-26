@@ -21,60 +21,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
-
-import org.spoutcraft.client.networking.Network;
-import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.universe.Universe;
+package org.spoutcraft.client.util;
 
 /**
- * The game class.
+ * A basic TPS monitor.
  */
-public class Game {
-    private final Universe universe;
-    private final Interface nterface;
-    private final Network network;
+public class TPSMonitor {
+    private long lastUpdateTime;
+    private long elapsedTime = 0;
+    private int frameCount = 0;
+    private int tps;
 
-    static {
-        try {
-            Class.forName("org.spoutcraft.client.universe.block.material.Materials");
-        } catch (Exception ex) {
-            System.out.println("Couldn't load the default materials");
-        }
-    }
-
-    public Game() {
-        universe = new Universe(this);
-        nterface = new Interface(this);
-        network = new Network(this);
-    }
-
+    /**
+     * Starts the TPS monitor.
+     */
     public void start() {
-        universe.start();
-        nterface.start();
-        network.start();
+        lastUpdateTime = System.currentTimeMillis();
+    }
 
-        // TEST CODE
-        if (!network.connect()) {
-            System.out.println("Connect failed");
+    /**
+     * Updates the TPS.
+     */
+    public void update() {
+        final long time = System.currentTimeMillis();
+        elapsedTime += time - lastUpdateTime;
+        lastUpdateTime = time;
+        frameCount++;
+        if (elapsedTime >= 1000) {
+            tps = frameCount;
+            frameCount = 0;
+            elapsedTime = 0;
         }
     }
 
-    public void stop() {
-        nterface.stop();
-        universe.stop();
-        network.stop();
-    }
-
-    public Universe getUniverse() {
-        return universe;
-    }
-
-    public Interface getInterface() {
-        return nterface;
-    }
-
-    public Network getNetwork() {
-        return network;
+    /**
+     * Returns the TPS.
+     *
+     * @return The TPS
+     */
+    public int getTPS() {
+        return tps;
     }
 }

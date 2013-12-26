@@ -26,7 +26,7 @@ package org.spoutcraft.client.universe.block.material;
 /**
  *
  */
-public class SubMaterial extends Material {
+public abstract class SubMaterial extends Material {
     private final Material master;
 
     public SubMaterial(MasterMaterial master, short subID) {

@@ -21,27 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.universe.block.material;
+package org.spoutcraft.client.nterface.render.render;
 
-import gnu.trove.map.TShortObjectMap;
-import gnu.trove.map.hash.TShortObjectHashMap;
+import org.spout.math.vector.Vector2f;
+import org.spout.renderer.data.Uniform.IntUniform;
+import org.spout.renderer.data.Uniform.Vector2Uniform;
+import org.spout.renderer.data.UniformHolder;
 
-/**
- *
- */
-public abstract class MasterMaterial extends Material {
-    private final TShortObjectMap<SubMaterial> subMaterials = new TShortObjectHashMap<>();
+public class BlurEffect {
+	private final int blurSize;
+	private final Vector2f texelSize;
 
-    public MasterMaterial(short id) {
-        super(id, (short) 0);
-        register(this);
-    }
+	public BlurEffect(Vector2f resolution, int blurSize) {
+		this.blurSize = blurSize;
+		this.texelSize = Vector2f.ONE.div(resolution);
+	}
 
-    public SubMaterial getSubMaterial(short subID) {
-        return subMaterials.get(subID);
-    }
+	public void dispose() {
+	}
 
-    protected void addSubMaterial(SubMaterial subMaterial) {
-        subMaterials.put(subMaterial.getSubID(), subMaterial);
-    }
+	public void addUniforms(UniformHolder destination) {
+		destination.add(new IntUniform("blurSize", blurSize));
+		destination.add(new Vector2Uniform("texelSize", texelSize));
+	}
 }

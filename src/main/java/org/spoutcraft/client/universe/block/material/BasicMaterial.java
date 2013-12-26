@@ -21,60 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.universe.block.material;
 
-import org.spoutcraft.client.networking.Network;
-import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.universe.Universe;
+import org.spoutcraft.client.universe.block.BlockFace;
 
 /**
- * The game class.
+ *
  */
-public class Game {
-    private final Universe universe;
-    private final Interface nterface;
-    private final Network network;
+public class BasicMaterial extends MasterMaterial {
+    private final boolean visible;
 
-    static {
-        try {
-            Class.forName("org.spoutcraft.client.universe.block.material.Materials");
-        } catch (Exception ex) {
-            System.out.println("Couldn't load the default materials");
-        }
+    public BasicMaterial(short id, boolean visible) {
+        super(id);
+        this.visible = visible;
     }
 
-    public Game() {
-        universe = new Universe(this);
-        nterface = new Interface(this);
-        network = new Network(this);
+    @Override
+    public boolean isVisible() {
+        return visible;
     }
 
-    public void start() {
-        universe.start();
-        nterface.start();
-        network.start();
-
-        // TEST CODE
-        if (!network.connect()) {
-            System.out.println("Connect failed");
-        }
-    }
-
-    public void stop() {
-        nterface.stop();
-        universe.stop();
-        network.stop();
-    }
-
-    public Universe getUniverse() {
-        return universe;
-    }
-
-    public Interface getInterface() {
-        return nterface;
-    }
-
-    public Network getNetwork() {
-        return network;
+    @Override
+    public boolean occludes(Material material, BlockFace direction) {
+        return visible;
     }
 }

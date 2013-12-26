@@ -26,6 +26,8 @@ package org.spoutcraft.client.universe.block.material;
 import gnu.trove.map.TShortObjectMap;
 import gnu.trove.map.hash.TShortObjectHashMap;
 
+import org.spoutcraft.client.universe.block.BlockFace;
+
 /**
  *
  */
@@ -46,6 +48,10 @@ public abstract class Material {
     public short getSubID() {
         return subID;
     }
+
+    public abstract boolean isVisible();
+
+    public abstract boolean occludes(Material material, BlockFace direction);
 
     protected static void register(MasterMaterial material) {
         final MasterMaterial previous = MATERIALS_BY_ID.put(material.getID(), material);
