@@ -29,12 +29,9 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import com.flowpowered.networking.session.PulsingSession.State;
+
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.networking.message.ChannelMessage;
 import org.spoutcraft.client.networking.message.ChannelMessage.Channel;
@@ -57,7 +54,7 @@ public class Network extends TickingElement {
 
     @Override
     public void onTick() {
-        if (client.getSession() == null) {
+        if (!client.hasSession()) {
             return;
         }
         for (Map.Entry<Channel, ConcurrentLinkedQueue<ChannelMessage>> entry : messageQueue.entrySet()) {
@@ -75,9 +72,7 @@ public class Network extends TickingElement {
         }
 
         // Pulse session for new messages
-        if (client.hasSession()) {
-            client.getSession().pulse();
-        }
+        client.getSession().pulse();
     }
 
     @Override
