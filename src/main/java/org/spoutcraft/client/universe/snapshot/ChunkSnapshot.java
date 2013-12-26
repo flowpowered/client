@@ -23,17 +23,15 @@
  */
 package org.spoutcraft.client.universe.snapshot;
 
-import java.lang.ref.WeakReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.spout.math.vector.Vector3i;
+
 import org.spoutcraft.client.universe.Chunk;
-import org.spoutcraft.client.universe.World;
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
-
-import org.spout.math.vector.Vector3i;
 
 /**
  *
@@ -41,19 +39,20 @@ import org.spout.math.vector.Vector3i;
 public class ChunkSnapshot {
     private final short[] blockIDs;
     private final short[] blockSubIDs;
-    private final WeakReference<World> world;
+    private final WorldSnapshot world;
     private final Vector3i position;
+    private long updateNumber = 0;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-    public ChunkSnapshot(World world, Vector3i position, short[] blockIDs, short[] blockSubIDs) {
-        this.world = new WeakReference<>(world);
+    public ChunkSnapshot(WorldSnapshot world, Vector3i position, short[] blockIDs, short[] blockSubIDs) {
+        this.world = world;
         this.position = position;
         this.blockIDs = blockIDs;
         this.blockSubIDs = blockSubIDs;
     }
 
-    public World getWorld() {
-        return world.get();
+    public WorldSnapshot getWorld() {
+        return world;
     }
 
     public Vector3i getPosition() {
@@ -94,6 +93,10 @@ public class ChunkSnapshot {
         }
     }
 
+    public long getUpdateNumber() {
+        return updateNumber;
+    }
+
     // This should not be exposed in any API
     public short[] getBlockIDs() {
         return blockIDs;
@@ -102,6 +105,11 @@ public class ChunkSnapshot {
     // This should not be exposed in any API
     public short[] getBlockSubIDs() {
         return blockSubIDs;
+    }
+
+    // This should not be exposed in any API
+    public void incrementUpdateNumber() {
+        updateNumber++;
     }
 
     // This should not be exposed in any API

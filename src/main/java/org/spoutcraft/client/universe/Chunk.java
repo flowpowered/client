@@ -25,14 +25,15 @@ package org.spoutcraft.client.universe;
 
 import java.util.concurrent.locks.Lock;
 
+import org.spout.math.vector.Vector3i;
+
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
+import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.universe.store.AtomicBlockStore;
 import org.spoutcraft.client.universe.store.impl.AtomicPaletteBlockStore;
 import org.spoutcraft.client.util.BitSize;
-
-import org.spout.math.vector.Vector3i;
 
 /**
  *
@@ -107,12 +108,12 @@ public class Chunk {
         blocks.setBlock(x & BLOCKS.MASK, y & BLOCKS.MASK, z & BLOCKS.MASK, material);
     }
 
-    public ChunkSnapshot buildSnapshot() {
-        return new ChunkSnapshot(world, position, blocks.getBlockIdArray(), blocks.getDataArray());
+    public ChunkSnapshot buildSnapshot(WorldSnapshot worldSnapshot) {
+        return new ChunkSnapshot(worldSnapshot, position, blocks.getBlockIdArray(), blocks.getDataArray());
     }
 
     public void updateSnapshot(ChunkSnapshot old) {
-        if (old.getPosition() != position || old.getWorld() != world) {
+        if (!old.getPosition().equals(position) || !old.getWorld().getID().equals(world.getID())) {
             throw new IllegalArgumentException("Cannot accept a chunk snapshot from another position or world");
         }
         if (!blocks.isDirty()) {
@@ -125,8 +126,31 @@ public class Chunk {
             blocks.getBlockIdArray(old.getBlockIDs());
             blocks.getDataArray(old.getBlockSubIDs());
             blocks.resetDirtyArrays();
+            old.incrementUpdateNumber();
         } finally {
             lock.unlock();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Chunk)) {
+            return false;
+        }
+        final Chunk chunk = (Chunk) o;
+        if (!position.equals(chunk.position)) {
+            return false;
+        }
+        return world.equals(chunk.world);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = world.hashCode();
+        result = 31 * result + position.hashCode();
+        return result;
     }
 }

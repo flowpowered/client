@@ -26,10 +26,10 @@ package org.spoutcraft.client.universe.snapshot;
 import java.util.Collection;
 import java.util.UUID;
 
+import org.spout.math.vector.Vector3i;
+
 import org.spoutcraft.client.util.map.TripleIntObjectMap;
 import org.spoutcraft.client.util.map.impl.TTripleInt21ObjectHashMap;
-
-import org.spout.math.vector.Vector3i;
 
 /**
  *
@@ -37,13 +37,19 @@ import org.spout.math.vector.Vector3i;
 public class WorldSnapshot {
     private final TripleIntObjectMap<ChunkSnapshot> chunks = new TTripleInt21ObjectHashMap<>();
     private final UUID id;
+    private final String name;
 
-    public WorldSnapshot(UUID id) {
+    public WorldSnapshot(UUID id, String name) {
         this.id = id;
+        this.name = name;
     }
 
     public UUID getID() {
         return id;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public boolean hasChunk(Vector3i position) {

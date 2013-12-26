@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import org.spout.math.vector.Vector3i;
+
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
@@ -37,8 +39,6 @@ import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.util.map.TripleIntObjectMap;
 import org.spoutcraft.client.util.map.impl.TTripleInt21ObjectHashMap;
 
-import org.spout.math.vector.Vector3i;
-
 /**
  *
  */
@@ -46,7 +46,7 @@ public class World {
     private final TripleIntObjectMap<Chunk> chunks = new TTripleInt21ObjectHashMap<>();
     private final UUID id;
     private final String name;
-    //Characteristics
+    // Characteristics
     private Vector3i spawnPosition;
     private GameMode gameMode;
     private Dimension dimension;
@@ -124,9 +124,9 @@ public class World {
     }
 
     public WorldSnapshot buildSnapshot() {
-        final WorldSnapshot snapshot = new WorldSnapshot(id);
+        final WorldSnapshot snapshot = new WorldSnapshot(id, name);
         for (Chunk chunk : chunks.valueCollection()) {
-            snapshot.setChunk(chunk.buildSnapshot());
+            snapshot.setChunk(chunk.buildSnapshot(snapshot));
         }
         return snapshot;
     }
@@ -142,7 +142,7 @@ public class World {
             if (oldChunk != null) {
                 chunk.updateSnapshot(oldChunk);
             } else {
-                old.setChunk(chunk.buildSnapshot());
+                old.setChunk(chunk.buildSnapshot(old));
             }
             validChunks.add(chunkPosition);
         }
