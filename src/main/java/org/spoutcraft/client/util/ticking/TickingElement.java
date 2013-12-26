@@ -21,34 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.entity;
-
-import com.flowpowered.networking.session.Session;
-import org.spoutcraft.client.networking.ClientSession;
-import org.spoutcraft.client.universe.World;
-
-import org.spout.math.vector.Vector3f;
+package org.spoutcraft.client.util.ticking;
 
 /**
- * The local client player which has the {@link com.flowpowered.networking.session.Session} tied to it.
+ * Represents an element that ticks at a specific TPS.
  */
-public class Player extends Entity {
-    private final ClientSession session;
+public abstract class TickingElement {
+    private int tps;
+    private TPSLimitedThread thread;
 
-    public Player(int id, String displayName, World world, Vector3f position, ClientSession session) {
-        super(id, displayName, world, position);
-        this.session = session;
+    public TickingElement(int tps) {
+        this.tps = tps;
     }
 
-    public String getUUID() {
-        return session.getUUID();
+    public final void start() {
+        thread = new TPSLimitedThread(this, tps);
+        thread.start();
     }
 
-    public String getUsername() {
-        return session.getUsername();
+    public final void stop() {
+        if (thread != null) {
+            thread.terminate();
+            thread = null;
+        }
     }
 
-    public Session getSession() {
-        return session;
+    public final boolean isRunning() {
+        return thread != null && thread.isRunning();
     }
+
+    public abstract void onStart();
+
+    public abstract void onTick();
+
+    public abstract void onStop();
 }

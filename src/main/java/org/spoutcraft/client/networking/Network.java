@@ -37,7 +37,7 @@ import org.spoutcraft.client.networking.message.ChannelMessage;
 import org.spoutcraft.client.networking.message.ChannelMessage.Channel;
 import org.spoutcraft.client.networking.message.login.LoginSuccessMessage;
 import org.spoutcraft.client.networking.protocol.PlayProtocol;
-import org.spoutcraft.client.ticking.TickingElement;
+import org.spoutcraft.client.util.ticking.TickingElement;
 
 public class Network extends TickingElement {
     private final Game game;

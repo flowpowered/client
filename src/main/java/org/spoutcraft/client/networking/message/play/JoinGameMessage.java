@@ -44,7 +44,7 @@ public class JoinGameMessage extends ChannelMessage {
     /**
      * Constructs a new join game
      *
-     * @param playerId The entity id for the {@link org.spoutcraft.client.entity.Player}
+     * @param playerId The entity id for the {@link org.spoutcraft.client.physics.entity.Player}
      * @param gameMode The {@link org.spoutcraft.client.game.GameMode} the {@link org.spoutcraft.client.universe.World} should be
      * @param dimension The {@link org.spoutcraft.client.game.Dimension} the {@link org.spoutcraft.client.universe.World} should be
      * @param difficulty The {@link org.spoutcraft.client.game.Difficulty} the {@link org.spoutcraft.client.universe.World} should be

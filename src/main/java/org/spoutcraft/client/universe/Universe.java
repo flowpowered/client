@@ -42,7 +42,7 @@ import org.spoutcraft.client.networking.message.ChannelMessage;
 import org.spoutcraft.client.networking.message.ChannelMessage.Channel;
 import org.spoutcraft.client.networking.message.play.JoinGameMessage;
 import org.spoutcraft.client.networking.message.play.RespawnMessage;
-import org.spoutcraft.client.ticking.TickingElement;
+import org.spoutcraft.client.util.ticking.TickingElement;
 import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 

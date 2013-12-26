@@ -39,7 +39,7 @@ import org.spoutcraft.client.Main;
 import org.spoutcraft.client.nterface.mesh.ChunkMesher;
 import org.spoutcraft.client.nterface.mesh.StandardChunkMesher;
 import org.spoutcraft.client.nterface.render.Renderer;
-import org.spoutcraft.client.ticking.TickingElement;
+import org.spoutcraft.client.util.ticking.TickingElement;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 

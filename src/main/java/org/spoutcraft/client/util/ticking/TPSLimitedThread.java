@@ -21,46 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.entity;
-
-import org.spoutcraft.client.universe.World;
-
-import org.spout.math.vector.Vector3f;
+package org.spoutcraft.client.util.ticking;
 
 /**
- * Entities are objects which are dynamic unlike their static {@link org.spoutcraft.client.universe.block.Block} brethren.
- * <p/>
- * TODO Make other players just entities (should be easily done)?
- * TODO Component system so entities don't store logic?
+ * Represents a thread that runs at a specific TPS until terminated.
  */
-public class Entity {
-    //Unique
-    private final int id;
-    private String displayName;
-    private World world;
-    private Vector3f position;
+public class TPSLimitedThread extends Thread {
+    private final TickingElement element;
+    private final Timer timer;
+    private boolean running = true;
 
-    //TODO Transform?
-    public Entity(int id, String displayName, World world, Vector3f position) {
-        this.id = id;
-        this.displayName = displayName;
-        this.world = world;
-        this.position = position;
+    public TPSLimitedThread(TickingElement element, int tps) {
+        this.element = element;
+        timer = new Timer(tps);
     }
 
-    public int getId() {
-        return id;
+    @Override
+    public void run() {
+        element.onStart();
+        timer.start();
+        while (running) {
+            element.onTick();
+            timer.sync();
+        }
+        element.onStop();
     }
 
-    public String getDisplayName() {
-        return displayName;
+    public void terminate() {
+        running = false;
     }
 
-    public World getWorld() {
-        return world;
-    }
-
-    public Vector3f getPosition() {
-        return position;
+    public boolean isRunning() {
+        return running;
     }
 }
