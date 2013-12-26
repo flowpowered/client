@@ -25,12 +25,17 @@ package org.spoutcraft.client.network.protocol;
 
 import org.spoutcraft.client.network.codec.handshake.HandshakeCodec;
 
+/**
+ * Represents the handshake protocol for the client protocol.
+ */
 public class HandshakeProtocol extends ClientProtocol {
     private static final int HIGHEST_OP_CODE = 0;
 
+    /**
+     * Constructs a new handshake protocol.
+     */
     public HandshakeProtocol() {
         super("Handshake", HIGHEST_OP_CODE);
-
         registerMessage(HandshakeCodec.class, null);
     }
 }

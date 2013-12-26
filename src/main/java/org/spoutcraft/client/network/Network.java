@@ -39,13 +39,22 @@ import org.spoutcraft.client.network.message.login.LoginSuccessMessage;
 import org.spoutcraft.client.network.protocol.PlayProtocol;
 import org.spoutcraft.client.util.ticking.TickingElement;
 
+/**
+ * The main network component and thread. Ticks at 20 TPS.
+ */
 public class Network extends TickingElement {
+    private static final int TPS = 20;
     private final Game game;
     private final GameNetworkClient client;
     private final EnumMap<Channel, ConcurrentLinkedQueue<ChannelMessage>> messageQueue = new EnumMap<>(Channel.class);
 
+    /**
+     * Constructs a new game network from the game.
+     *
+     * @param game The game
+     */
     public Network(Game game) {
-        super(20);
+        super(TPS);
         this.game = game;
         client = new GameNetworkClient(game);
         messageQueue.put(Channel.UNIVERSE, new ConcurrentLinkedQueue<ChannelMessage>());
@@ -87,10 +96,18 @@ public class Network extends TickingElement {
         client.shutdown();
     }
 
+    /**
+     * Attempts to connect the network.
+     */
     public void connect() {
         connect(new InetSocketAddress(25565));
     }
 
+    /**
+     * Attempts to connect the network using the provided socket addresss.
+     *
+     * @param address The socket address
+     */
     public void connect(SocketAddress address) {
         if (!isRunning()) {
             throw new RuntimeException("Attempt made to issue a connection but the Network thread isn't running!");
@@ -98,16 +115,27 @@ public class Network extends TickingElement {
         client.connect(address);
     }
 
+    /**
+     * Returns the game associated to the network.
+     *
+     * @return The game
+     */
     public Game getGame() {
         return game;
     }
 
+    /**
+     * Returns the network's client session.
+     *
+     * @return The client session
+     */
     public ClientSession getSession() {
         return client.getSession();
     }
 
     /**
      * Gets the {@link java.util.Iterator} storing the messages for the {@link org.spoutcraft.client.network.message.ChannelMessage.Channel}
+     *
      * @param c See {@link org.spoutcraft.client.network.message.ChannelMessage.Channel}
      * @return The iterator
      */
@@ -117,6 +145,7 @@ public class Network extends TickingElement {
 
     /**
      * Offers a {@link org.spoutcraft.client.network.message.ChannelMessage} to a queue mapped to {@link org.spoutcraft.client.network.message.ChannelMessage.Channel}
+     *
      * @param c See {@link org.spoutcraft.client.network.message.ChannelMessage.Channel}
      * @param m See {@link org.spoutcraft.client.network.message.ChannelMessage}
      */
@@ -126,6 +155,7 @@ public class Network extends TickingElement {
 
     /**
      * Processes the next {@link org.spoutcraft.client.network.message.ChannelMessage} in the network pipeline
+     *
      * @param message See {@link org.spoutcraft.client.network.message.ChannelMessage}
      */
     public void processMessage(ChannelMessage message) {

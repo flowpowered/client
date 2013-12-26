@@ -30,7 +30,7 @@ import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 /**
- * Client-bound message that instructs the client to setup the game with the following attributes.
+ * Client-bound message that instructs the client to setup the game with various game attributes.
  */
 public class JoinGameMessage extends ChannelMessage {
     private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
@@ -61,26 +61,56 @@ public class JoinGameMessage extends ChannelMessage {
         this.levelType = levelType;
     }
 
+    /**
+     * Returns the player's ID.
+     *
+     * @return The player ID
+     */
     public int getPlayerId() {
         return playerId;
     }
 
+    /**
+     * Returns the game mode.
+     *
+     * @return The game mode
+     */
     public GameMode getGameMode() {
         return gameMode;
     }
 
+    /**
+     * Returns the dimension.
+     *
+     * @return The dimension
+     */
     public Dimension getDimension() {
         return dimension;
     }
 
+    /**
+     * Returns the game difficulty.
+     *
+     * @return The game difficulty
+     */
     public Difficulty getDifficulty() {
         return difficulty;
     }
 
+    /**
+     * Returns the maximum number of players on the server.
+     *
+     * @return The max number of players
+     */
     public short getMaxPlayers() {
         return maxPlayers;
     }
 
+    /**
+     * Returns the level type.
+     *
+     * @return The level type
+     */
     public LevelType getLevelType() {
         return levelType;
     }

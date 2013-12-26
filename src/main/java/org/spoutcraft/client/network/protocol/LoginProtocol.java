@@ -26,12 +26,17 @@ package org.spoutcraft.client.network.protocol;
 import org.spoutcraft.client.network.codec.login.LoginStartCodec;
 import org.spoutcraft.client.network.codec.login.LoginSuccessCodec;
 
+/**
+ * The login protocol for the client protocol.
+ */
 public class LoginProtocol extends ClientProtocol {
     private static final int HIGHEST_OP_CODE = 2;
 
+    /**
+     * Constructs a new login protocol.
+     */
     public LoginProtocol() {
         super("Login", HIGHEST_OP_CODE);
-
         //TODO Put handlers here
         registerMessage(LoginStartCodec.class, null);
         registerMessage(LoginSuccessCodec.class, LoginSuccessCodec.class);

@@ -30,9 +30,15 @@ import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.network.ByteBufUtils;
 import org.spoutcraft.client.network.message.login.LoginStartMessage;
 
+/**
+ * The codec for the login start message.
+ */
 public class LoginStartCodec extends Codec<LoginStartMessage> {
-    public static final int OP_CODE = 0;
+    private static final int OP_CODE = 0;
 
+    /**
+     * Constructs a new login start message codec.
+     */
     public LoginStartCodec() {
         super(LoginStartMessage.class, OP_CODE);
     }

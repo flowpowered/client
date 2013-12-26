@@ -30,12 +30,17 @@ import org.spoutcraft.client.network.codec.play.PlayerCodec;
 import org.spoutcraft.client.network.codec.play.RespawnCodec;
 import org.spoutcraft.client.network.codec.play.SpawnPositionCodec;
 
+/**
+ * The main play protocol for the client protocol.
+ */
 public class PlayProtocol extends ClientProtocol {
     private static final int HIGHEST_OP_CODE = 16;
 
+    /**
+     * Constructs a new play protocol.
+     */
     public PlayProtocol() {
         super("Play", HIGHEST_OP_CODE);
-
         //TODO Put handlers here
         registerMessage(KeepAliveCodec.class, KeepAliveCodec.class);
         registerMessage(JoinGameCodec.class, JoinGameCodec.class);

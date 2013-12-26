@@ -55,18 +55,38 @@ public class SpawnPositionMessage extends ChannelMessage {
         this.position = position;
     }
 
+    /**
+     * Returns the spawn position's x coordinate
+     *
+     * @return The x coordinate of the spawn position
+     */
     public int getX() {
         return position.getX();
     }
 
+    /**
+     * Returns the spawn position's y coordinate
+     *
+     * @return The y coordinate of the spawn position
+     */
     public int getY() {
         return position.getY();
     }
 
+    /**
+     * Returns the spawn position's z coordinate
+     *
+     * @return The z coordinate of the spawn position
+     */
     public int getZ() {
         return position.getZ();
     }
 
+    /**
+     * Returns the spawn position.
+     *
+     * @return The spawn position
+     */
     public Vector3i getPosition() {
         return position;
     }

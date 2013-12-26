@@ -29,9 +29,15 @@ import com.flowpowered.networking.Codec;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.network.message.play.PlayerMessage;
 
+/**
+ * The codec for the player message.
+ */
 public class PlayerCodec extends Codec<PlayerMessage> {
-    public static final int OP_CODE = 3;
+    private static final int OP_CODE = 3;
 
+    /**
+     * Constructs a new player message codec.
+     */
     public PlayerCodec() {
         super(PlayerMessage.class, OP_CODE);
     }

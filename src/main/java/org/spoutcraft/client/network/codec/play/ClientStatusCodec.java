@@ -29,9 +29,15 @@ import com.flowpowered.networking.Codec;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.network.message.play.ClientStatusMessage;
 
+/**
+ * The codec for the client status message.
+ */
 public class ClientStatusCodec extends Codec<ClientStatusMessage> {
     private static final int OP_CODE = 16;
 
+    /**
+     * Constructs a new client status message codec.
+     */
     public ClientStatusCodec() {
         super(ClientStatusMessage.class, OP_CODE);
     }

@@ -30,9 +30,15 @@ import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.network.ByteBufUtils;
 import org.spoutcraft.client.network.message.handshake.HandshakeMessage;
 
+/**
+ * The codec for the handshake message.
+ */
 public class HandshakeCodec extends Codec<HandshakeMessage> {
-    public static final int OP_CODE = 0;
+    private static final int OP_CODE = 0;
 
+    /**
+     * Constructs a new handshake message codec.
+     */
     public HandshakeCodec() {
         super(HandshakeMessage.class, OP_CODE);
     }

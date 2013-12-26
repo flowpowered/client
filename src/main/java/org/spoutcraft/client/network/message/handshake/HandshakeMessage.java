@@ -49,18 +49,38 @@ public class HandshakeMessage extends ChannelMessage {
         this.state = state;
     }
 
+    /**
+     * Returns the protocol version.
+     *
+     * @return The protocol version
+     */
     public int getVersion() {
         return version;
     }
 
+    /**
+     * Returns the client address.
+     *
+     * @return The client address
+     */
     public String getAddress() {
         return address;
     }
 
+    /**
+     * Returns the client port.
+     *
+     * @return The client port
+     */
     public int getPort() {
         return port;
     }
 
+    /**
+     * Returns the handshake state.
+     *
+     * @return The handshake state
+     */
     public HandshakeState getState() {
         return state;
     }
@@ -70,6 +90,9 @@ public class HandshakeMessage extends ChannelMessage {
         return true;
     }
 
+    /**
+     * An enum of the handshake states.
+     */
     public enum HandshakeState {
         /**
          * Client is asking for server status (i.e. Multiplayer menu in the Minecraft client)
@@ -85,6 +108,11 @@ public class HandshakeMessage extends ChannelMessage {
             this.state = state;
         }
 
+        /**
+         * Returns the numerical value associated to the handshake state.
+         *
+         * @return The numerical value
+         */
         public int value() {
             return state;
         }

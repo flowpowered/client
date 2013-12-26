@@ -28,19 +28,32 @@ import java.io.IOException;
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.exception.UnknownPacketException;
 import com.flowpowered.networking.protocol.Protocol;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+
 import org.spoutcraft.client.network.ByteBufUtils;
 
 /**
  * The protocol used for client communication.
  */
 public abstract class ClientProtocol extends Protocol {
+    /**
+     * The client's default port.
+     */
     public static final int DEFAULT_PORT = 25565;
+    /**
+     * The client's protocol version.
+     */
     public static final int VERSION = 4;
 
-    public ClientProtocol(String name, int highestOpcode) {
-        super(name, DEFAULT_PORT, highestOpcode + 1);
+    /**
+     * Constructs a new client protocol from the name and highest OP code.
+     * @param name The name of the client protocol
+     * @param highestOpCode The highest op code
+     */
+    public ClientProtocol(String name, int highestOpCode) {
+        super(name, DEFAULT_PORT, highestOpCode + 1);
     }
 
     @Override

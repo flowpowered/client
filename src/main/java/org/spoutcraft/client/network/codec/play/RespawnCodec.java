@@ -38,9 +38,15 @@ import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.RespawnMessage;
 
+/**
+ * The codec for the respawn message. Also handles the respawn message.
+ */
 public class RespawnCodec extends Codec<RespawnMessage> implements MessageHandler<RespawnMessage> {
-    public static final int OP_CODE = 7;
+    private static final int OP_CODE = 7;
 
+    /**
+     * Constructs a new respawn message codec and handler.
+     */
     public RespawnCodec() {
         super(RespawnMessage.class, OP_CODE);
     }

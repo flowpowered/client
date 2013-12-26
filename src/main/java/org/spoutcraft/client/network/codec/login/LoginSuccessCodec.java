@@ -34,9 +34,15 @@ import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.login.LoginSuccessMessage;
 
+/**
+ * The codec for the login success message. Also handles the login success message.
+ */
 public class LoginSuccessCodec extends Codec<LoginSuccessMessage> implements MessageHandler<LoginSuccessMessage> {
-    public static final int OP_CODE = 2;
+    private static final int OP_CODE = 2;
 
+    /**
+     * Constructs a new login success message codec and handler.
+     */
     public LoginSuccessCodec() {
         super(LoginSuccessMessage.class, OP_CODE);
     }

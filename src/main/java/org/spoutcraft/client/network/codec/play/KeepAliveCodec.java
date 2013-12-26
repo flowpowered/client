@@ -31,9 +31,15 @@ import com.flowpowered.networking.session.Session;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.network.message.play.KeepAliveMessage;
 
+/**
+ * The codec for the keep alive message. Also handles the keep alive message .
+ */
 public class KeepAliveCodec extends Codec<KeepAliveMessage> implements MessageHandler<KeepAliveMessage> {
-    public static final int OP_CODE = 0;
+    private static final int OP_CODE = 0;
 
+    /**
+     * Constructs a new keep alive message codec and handler.
+     */
     public KeepAliveCodec() {
         super(KeepAliveMessage.class, OP_CODE);
     }

@@ -31,9 +31,15 @@ import com.flowpowered.networking.session.Session;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.network.message.play.SpawnPositionMessage;
 
+/**
+ * The codec for the spawn position message. Also handles the spawn position message.
+ */
 public class SpawnPositionCodec extends Codec<SpawnPositionMessage> implements MessageHandler<SpawnPositionMessage> {
-    public static final int OP_CODE = 5;
+    private static final int OP_CODE = 5;
 
+    /**
+     * Constructs a new spawn position message codec and handler.
+     */
     public SpawnPositionCodec() {
         super(SpawnPositionMessage.class, OP_CODE);
     }

@@ -26,12 +26,8 @@ package org.spoutcraft.client.network.message.play;
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 /**
- * Two-way message used to keep alive the session:
- * </p>
- * A. The server sends a random int value
- * B. The client returns the very same message
- * </p>
- * If the server doesn't receive a response within a timeout period, it will terminate the session.
+ * Two-way message used to keep alive the session: </p> A. The server sends a random int value B. The client returns the very same message </p> If the server doesn't receive a response within a
+ * timeout period, it will terminate the session.
  */
 public class KeepAliveMessage extends ChannelMessage {
     private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
@@ -47,6 +43,11 @@ public class KeepAliveMessage extends ChannelMessage {
         this.random = random;
     }
 
+    /**
+     * Returns the random value sent by the server.
+     *
+     * @return The random value
+     */
     public int getRandom() {
         return random;
     }

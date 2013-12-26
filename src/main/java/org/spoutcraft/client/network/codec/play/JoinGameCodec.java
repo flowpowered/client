@@ -38,9 +38,15 @@ import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.JoinGameMessage;
 
+/**
+ * The codec for the join game message. Also handles the join game message.
+ */
 public class JoinGameCodec extends Codec<JoinGameMessage> implements MessageHandler<JoinGameMessage> {
-    public static final int OP_CODE = 1;
+    private static final int OP_CODE = 1;
 
+    /**
+     * Constructs a new join game message codec and handler.
+     */
     public JoinGameCodec() {
         super(JoinGameMessage.class, OP_CODE);
     }

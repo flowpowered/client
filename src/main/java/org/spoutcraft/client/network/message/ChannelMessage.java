@@ -25,18 +25,35 @@ package org.spoutcraft.client.network.message;
 
 import com.flowpowered.networking.Message;
 
+/**
+ * Represents a message found in one ore more channels. Stores a which channels have marked the message as read. When constructing a channel message, the list of channels that have to read the message
+ * is given in the constructor. This list can be empty. When all channels in the list have read the message, it will be removed from the message queue in all the channels.
+ */
 public abstract class ChannelMessage implements Message {
     private short read;
     private final short requiredMask;
 
+    /**
+     * Constructs a new channel message that required no channels to have read it.
+     */
     public ChannelMessage() {
         requiredMask = 0;
     }
 
+    /**
+     * Constructs a new message that requires a single channel to have read it.
+     *
+     * @param requiredRead The channel that needs to read the message
+     */
     public ChannelMessage(Channel requiredRead) {
         requiredMask = requiredRead.getMask();
     }
 
+    /**
+     * Constructs a new message that requires multiple channels to have read it.
+     *
+     * @param requiredRead The channels that need to have read the message
+     */
     public ChannelMessage(Channel... requiredRead) {
         short required = 0;
         for (Channel channel : requiredRead) {
@@ -45,28 +62,52 @@ public abstract class ChannelMessage implements Message {
         requiredMask = required;
     }
 
+    /**
+     * Marks a channel as having read the message.
+     *
+     * @param channel The channel that has read the message
+     */
     public void markChannelRead(Channel channel) {
         read |= channel.getMask();
     }
 
+    /**
+     * Returns true if the channel has read the message, false if otherwise.
+     *
+     * @param channel The channel to check
+     * @return Whether or not the channel has read the message
+     */
     public boolean isChannelRead(Channel channel) {
         return (read & channel.getMask()) == channel.getMask();
     }
 
+    /**
+     * Returns true if all channels that had to read the message have done so, false if otherwise.
+     *
+     * @return Whether or not all channels that have to read the message have done so
+     */
     public boolean isFullyRead() {
         return (read & requiredMask) == requiredMask;
     }
 
+    /**
+     * An enum of all the message channels.
+     */
     public static enum Channel {
-        UNIVERSE((short) 1),
-        INTERFACE((short) 2),
-        NETWORK((short) 4);
+        UNIVERSE((short) 0x1),
+        INTERFACE((short) 0x2),
+        NETWORK((short) 0x4);
         private final short mask;
 
         private Channel(short mask) {
             this.mask = mask;
         }
 
+        /**
+         * Returns the mask of the channel, used internally to mark the channel as having read a channel message using bit flags.
+         *
+         * @return The channel's mask
+         */
         public short getMask() {
             return mask;
         }

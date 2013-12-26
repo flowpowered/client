@@ -25,6 +25,9 @@ package org.spoutcraft.client.network.message.play;
 
 import org.spoutcraft.client.network.message.ChannelMessage;
 
+/**
+ * A server-bound message to inform the server of various client states.
+ */
 public class ClientStatusMessage extends ChannelMessage {
     private final ClientState state;
 
@@ -37,6 +40,11 @@ public class ClientStatusMessage extends ChannelMessage {
         this.state = state;
     }
 
+    /**
+     * Returns the client's state.
+     *
+     * @return The client's state
+     */
     public ClientState getState() {
         return state;
     }
@@ -46,6 +54,9 @@ public class ClientStatusMessage extends ChannelMessage {
         return true;
     }
 
+    /**
+     * An enum of the client states.
+     */
     public enum ClientState {
         /**
          * This informs the server that the client is ready to login/respawn from death
@@ -56,6 +67,7 @@ public class ClientStatusMessage extends ChannelMessage {
          */
         REQUEST_STATS(1),
         /**
+         * TODO: check this and rephrase
          * This informs the server that the client is opening an inventory achievement
          */
         OPEN_INVENTORY_ACHIEVEMENT(2);
@@ -65,6 +77,11 @@ public class ClientStatusMessage extends ChannelMessage {
             this.value = value;
         }
 
+        /**
+         * Returns the numerical value associated to the client state.
+         *
+         * @return The numerical value
+         */
         public int value() {
             return value;
         }

@@ -38,6 +38,11 @@ public class GameNetworkClient extends NetworkClient {
     private final Game game;
     private ClientSession session;
 
+    /**
+     * Constructs a new game network client from the game.
+     *
+     * @param game The game
+     */
     public GameNetworkClient(Game game) {
         this.game = game;
     }
@@ -63,14 +68,29 @@ public class GameNetworkClient extends NetworkClient {
         game.getNetwork().stop();
     }
 
+    /**
+     * Returns the game.
+     *
+     * @return The game
+     */
     public Game getGame() {
         return game;
     }
 
+    /**
+     * Returns true if the game's network client has a session.
+     *
+     * @return Whether or not the network client has a session.
+     */
     public boolean hasSession() {
         return getSession() != null;
     }
 
+    /**
+     * Returns the network client's session, or null if it doesn't have one
+     *
+     * @return The network client's session
+     */
     public ClientSession getSession() {
         return session;
     }

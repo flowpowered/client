@@ -30,8 +30,7 @@ import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 /**
- * Client-bound {@link com.flowpowered.networking.Message} that instructs the client to respawn, updating the active
- * {@link org.spoutcraft.client.universe.World}'s characteristics.
+ * Client-bound {@link com.flowpowered.networking.Message} that instructs the client to respawn, updating the active {@link org.spoutcraft.client.universe.World}'s characteristics.
  */
 public class RespawnMessage extends ChannelMessage {
     private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
@@ -56,18 +55,38 @@ public class RespawnMessage extends ChannelMessage {
         this.levelType = levelType;
     }
 
+    /**
+     * Returns the dimension type.
+     *
+     * @return The dimension type
+     */
     public Dimension getDimension() {
         return dimension;
     }
 
+    /**
+     * Returns the difficulty.
+     *
+     * @return The difficulty
+     */
     public Difficulty getDifficulty() {
         return difficulty;
     }
 
+    /**
+     * Returns the game mode.
+     *
+     * @return The game mode
+     */
     public GameMode getGameMode() {
         return gameMode;
     }
 
+    /**
+     * Returns the level type.
+     *
+     * @return The level type
+     */
     public LevelType getLevelType() {
         return levelType;
     }

@@ -46,6 +46,10 @@ public class PlayerMessage extends ChannelMessage {
         this.onGround = onGround;
     }
 
+    /**
+     * Return true if the client's player is on the ground, false otherwise.
+     * @return Whether or not the client's player is on the ground
+     */
     public boolean isOnGround() {
         return onGround;
     }

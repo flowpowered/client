@@ -40,6 +40,11 @@ public class LoginStartMessage extends ChannelMessage {
         this.username = username;
     }
 
+    /**
+     * Returns the player's username.
+     *
+     * @return The player's username
+     */
     public String getUsername() {
         return username;
     }

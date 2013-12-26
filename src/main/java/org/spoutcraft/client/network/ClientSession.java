@@ -25,7 +25,9 @@ package org.spoutcraft.client.network;
 
 import com.flowpowered.networking.protocol.Protocol;
 import com.flowpowered.networking.session.PulsingSession;
+
 import io.netty.channel.Channel;
+
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.network.message.handshake.HandshakeMessage;
 import org.spoutcraft.client.network.message.login.LoginStartMessage;
@@ -33,30 +35,57 @@ import org.spoutcraft.client.network.protocol.ClientProtocol;
 import org.spoutcraft.client.network.protocol.LoginProtocol;
 
 /**
- * Represents an open connection to the server. All {@link com.flowpowered.networking.Message}s are sent through the session
+ * Represents an open connection to the server. All {@link com.flowpowered.networking.Message}s are sent through the session.
  */
 public class ClientSession extends PulsingSession {
     private final Game game;
     private String uuid;
     private String username;
 
+    /**
+     * Constructs a new client session from the game, channel and protocol.
+     *
+     * @param game The game
+     * @param channel The network channel
+     * @param protocol The client protocol
+     */
     public ClientSession(Game game, Channel channel, Protocol protocol) {
         super(channel, protocol);
         this.game = game;
     }
 
+    /**
+     * Returns the ID of the session.
+     *
+     * @return The session's ID
+     */
     public String getUUID() {
         return uuid;
     }
 
+    /**
+     * Sets the session's ID
+     *
+     * @param uuid The session ID
+     */
     public void setUUID(String uuid) {
         this.uuid = uuid;
     }
 
+    /**
+     * Returns the username of the player for the session.
+     *
+     * @return The player's username
+     */
     public String getUsername() {
         return username;
     }
 
+    /**
+     * Sets the player's username
+     *
+     * @param username The player's username
+     */
     public void setUsername(String username) {
         this.username = username;
     }
@@ -73,6 +102,10 @@ public class ClientSession extends PulsingSession {
         send(SendType.FORCE, new LoginStartMessage("Spoutcrafty"));
     }
 
+    /**
+     * Returns the game for the session.
+     * @return The game
+     */
     public Game getGame() {
         return game;
     }

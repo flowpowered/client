@@ -26,9 +26,8 @@ package org.spoutcraft.client.network.message.login;
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 /**
- * Client bound message that instructs the client that login was successful to the server.
- * </p>
- * If the server is in online mode, this occurs after encryption. Otherwise, this occurs after {@link LoginStartMessage} is sent.
+ * Client bound message that instructs the client that login was successful to the server. </p> If the server is in online mode, this occurs after encryption. Otherwise, this occurs after {@link
+ * LoginStartMessage} is sent.
  */
 public class LoginSuccessMessage extends ChannelMessage {
     private static final Channel REQUIRED_CHANNEL = Channel.NETWORK;
@@ -47,10 +46,20 @@ public class LoginSuccessMessage extends ChannelMessage {
         this.username = username;
     }
 
+    /**
+     * Returns the session ID.
+     *
+     * @return The session ID
+     */
     public String getUUID() {
         return uuid;
     }
 
+    /**
+     * Returns the session username for the player.
+     *
+     * @return The session username
+     */
     public String getUsername() {
         return username;
     }
