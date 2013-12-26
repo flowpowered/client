@@ -38,40 +38,82 @@ import org.spout.renderer.data.VertexData;
 import org.spout.renderer.util.CausticUtil;
 
 /**
+ * Represents a standard mesh, with various attributes (positions, normals, texture coordinates and/or tangents). This mesh can be converted into {@link org.spout.renderer.data.VertexData for
+ * rendering}.
  *
+ * @see org.spoutcraft.client.nterface.mesh.Mesh.MeshAttribute
  */
 public class Mesh {
     private final Map<MeshAttribute, TFloatList> attributes = new EnumMap<>(MeshAttribute.class);
     private final TIntList indices = new TIntArrayList();
 
+    /**
+     * Constructs a new mesh with the desired attributes.
+     *
+     * @param attributes The attributes
+     */
     public Mesh(MeshAttribute... attributes) {
         for (MeshAttribute attribute : attributes) {
             this.attributes.put(attribute, new TFloatArrayList());
         }
     }
 
+    /**
+     * Returns true if the mesh has the attribute, false if not.
+     *
+     * @param attribute Whether or not the mesh has the attribute
+     * @return The attribute to check for
+     */
     public boolean hasAttribute(MeshAttribute attribute) {
         return attributes.containsKey(attribute);
     }
 
+    /**
+     * Adds an attribute to the mesh, if not already present.
+     *
+     * @param attribute The attribute to add
+     */
     public void addAttribute(MeshAttribute attribute) {
         if (!hasAttribute(attribute)) {
             attributes.put(attribute, new TFloatArrayList());
         }
     }
 
+    /**
+     * Returns the float list associated to the attribute in which to store the data. The components for each individual attribute point should be stored in their natural order inside the list, and
+     * each point after the other. Actual order of the points for rendering is decided by the indices list.
+     *
+     * @param attribute The attribute to get the float list for
+     * @return The float list for the attribute
+     */
     public TFloatList getAttribute(MeshAttribute attribute) {
         return attributes.get(attribute);
     }
 
+    /**
+     * Removes the attributes from the mesh, deleting its data.
+     *
+     * @param attribute The attribute to remove
+     */
     public void removeAttribute(MeshAttribute attribute) {
         attributes.remove(attribute);
     }
 
+    /**
+     * Returns the index list for the mesh, in which to store the indices that declares the triangle faces by winding order.
+     *
+     * @return The index list
+     */
     public TIntList getIndices() {
         return indices;
     }
 
+    /**
+     * Builds the mesh into a {@link org.spout.renderer.data.VertexData} to be ready for rendering. If an attribute has no data, but can be automatically generated (see {@link
+     * org.spoutcraft.client.nterface.mesh.Mesh.MeshAttribute#generateDataIfMissing()}, it will be generated for the build. The generated data will be stored in the attribute float list.
+     *
+     * @return The vertex data for the built mesh
+     */
     public VertexData build() {
         final VertexData vertexData = new VertexData();
         int i = 0;
@@ -95,11 +137,26 @@ public class Mesh {
         return vertexData;
     }
 
+    /**
+     * An enum of the various mesh attributes.
+     */
     public static enum MeshAttribute {
         // Enum ordering is important here, don't change
+        /**
+         * The positions attribute, has 3 components and cannot be automatically generated.
+         */
         POSITIONS("positions", 3, false),
+        /**
+         * The normals attribute, has 3 components and can be automatically generated if the position data exists.
+         */
         NORMALS("normals", 3, true),
+        /**
+         * The texture coordinates attribute, has 2 components and cannot be automatically generated.
+         */
         TEXTURE_COORDS("textureCoords", 2, false),
+        /**
+         * The tangents attribute, has 4 components and can be automatically generated if the positions, normals and texture coordinates exist.
+         */
         TANGENTS("tangents", 4, true);
         private final String name;
         private final int componentCount;
@@ -111,14 +168,29 @@ public class Mesh {
             this.generateIfDataMissing = generateIfDataMissing;
         }
 
+        /**
+         * Returns the name of the attribute.
+         *
+         * @return The attribute name
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * Returns the component count of the attribute.
+         *
+         * @return The component count
+         */
         public int getComponentCount() {
             return componentCount;
         }
 
+        /**
+         * Returns true if the attribute data can be automatically generated when the required attributes are present.
+         *
+         * @return Whether or not the attribute data can be automatically generated
+         */
         public boolean generateDataIfMissing() {
             return generateIfDataMissing;
         }

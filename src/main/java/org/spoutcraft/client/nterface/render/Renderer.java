@@ -90,6 +90,10 @@ import org.spoutcraft.client.nterface.render.effect.ShadowMappingEffect;
 import org.spoutcraft.client.util.MeshGenerator;
 import org.spoutcraft.client.util.TPSMonitor;
 
+/**
+ * The default renderer. Support OpenGL 2.1 and 3.2. Can render fully textured models with normal and specular mapping, ambient occlusion (SSAO), shadow mapping, Phong shading, motion blur and edge
+ * detection anti-aliasing. The default OpenGL version is 3.2.
+ */
 public class Renderer {
     // CONSTANTS
     private static final String WINDOW_TITLE = "Spoutcraft";
@@ -120,8 +124,8 @@ public class Renderer {
     private static final Camera lightCamera = Camera.createPerspective((float) TrigMath.RAD_TO_DEG * Interface.SPOT_CUTOFF * 2, 1, 1, 0.1f, (float) GenericMath.length(50d, 100d));
     private static final Camera guiCamera = Camera.createOrthographic(1, 0, 1 / ASPECT_RATIO, 0, NEAR_PLANE, FAR_PLANE);
     // OPENGL VERSION AND FACTORY
-    private static GLVersion glVersion;
-    private static GLFactory glFactory;
+    private static GLVersion glVersion = GLVersion.GL30;
+    private static GLFactory glFactory = GLImplementation.get(glVersion);
     // CONTEXT
     private static Context context;
     // RENDER LISTS
@@ -172,7 +176,11 @@ public class Renderer {
     // FPS MONITOR
     private static final TPSMonitor fpsMonitor = new TPSMonitor();
     private static StringModel fpsMonitorModel;
+    private static boolean fpsMonitorStarted = false;
 
+    /**
+     * Creates the OpenGL context and initializes the internal resources for the renderer
+     */
     public static void init() {
         initContext();
         initEffects();
@@ -182,6 +190,7 @@ public class Renderer {
         initFrameBuffers();
         initVertexArrays();
         initPipeline();
+        addDefaultObjects();
     }
 
     private static void initContext() {
@@ -495,6 +504,14 @@ public class Renderer {
         deferredStageScreenVertexArray.create();
     }
 
+    private static void addDefaultObjects() {
+        addScreen();
+        addFPSMonitor();
+    }
+
+    /**
+     * Destroys the renderer internal resources and the OpenGL context.
+     */
     public static void dispose() {
         disposeEffects();
         disposePrograms();
@@ -502,6 +519,7 @@ public class Renderer {
         disposeFrameBuffers();
         disposeVertexArrays();
         disposeContext();
+        fpsMonitorStarted = false;
     }
 
     private static void disposeContext() {
@@ -578,42 +596,90 @@ public class Renderer {
         deferredStageScreenVertexArray.destroy();
     }
 
+    /**
+     * Sets the OpenGL version. Must be done before initializing the renderer.
+     *
+     * @param version The OpenGL version to use
+     */
     public static void setGLVersion(GLVersion version) {
         glVersion = version;
         glFactory = GLImplementation.get(version);
     }
 
+    /**
+     * Sets whether or not to cull the back faces of the geometry.
+     *
+     * @param cull Whether or not to cull the back faces
+     */
     public static void setCullBackFaces(boolean cull) {
         cullBackFaces = cull;
     }
 
+    /**
+     * Sets to color with which to clear the image (background color) before the next frame.
+     *
+     * @param color The clearing (background) color
+     */
     public static void setBackgroundColor(Color color) {
         backgroundColor = color;
     }
 
+    /**
+     * Sets the light distance attenuation factor.
+     *
+     * @param attenuation The light attenuation factor
+     */
     public static void setLightAttenuation(float attenuation) {
         lightAttenuationUniform.set(attenuation);
     }
 
+    /**
+     * Sets the color of solid untextured objects.
+     *
+     * @param color The solid color
+     */
     public static void setSolidColor(Color color) {
         solidModelColor = color;
     }
 
+    /**
+     * Returns the renderer camera
+     *
+     * @return The camera
+     */
     public static Camera getCamera() {
         return modelCamera;
     }
 
+    /**
+     * Sets the light position.
+     *
+     * @param position The light position
+     */
     public static void setLightPosition(Vector3f position) {
         lightPositionUniform.set(position);
         lightCamera.setPosition(position);
     }
 
+    /**
+     * Sets the light direction.
+     *
+     * @param direction The light direction
+     */
     public static void setLightDirection(Vector3f direction) {
         direction = direction.normalize();
         spotDirectionUniform.set(direction);
         lightCamera.setRotation(Quaternionf.fromRotationTo(Vector3f.FORWARD.negate(), direction));
     }
 
+    /**
+     * Adds a model to rendeer as a solid.
+     *
+     * @param vertexData The vertex data of the model
+     * @param position The position of the model
+     * @param orientation The orientation of the model
+     * @return The added model
+     */
     public static Model addSolid(VertexData vertexData, Vector3f position, Quaternionf orientation) {
         final VertexArray vertexArray = glFactory.createVertexArray();
         vertexArray.setData(vertexData);
@@ -626,18 +692,23 @@ public class Renderer {
         return model;
     }
 
+    /**
+     * Adds a model to the renderer.
+     *
+     * @param model The model to add
+     */
     public static void addModel(Model model) {
         model.getUniforms().add(new Matrix4Uniform("previousModelMatrix", model.getMatrix()));
         modelRenderList.add(model);
     }
 
+    /**
+     * Removes a model from the renderer.
+     *
+     * @param model The model to remove
+     */
     public static void removeModel(Model model) {
         modelRenderList.remove(model);
-    }
-
-    public static void addDefaultObjects() {
-        addScreen();
-        addFPSMonitor();
     }
 
     private static void addScreen() {
@@ -664,11 +735,14 @@ public class Renderer {
         fpsMonitorModel = fpsModel;
     }
 
-    public static void startFPSMonitor() {
-        fpsMonitor.start();
-    }
-
+    /**
+     * Renders the models to the window.
+     */
     public static void render() {
+        if (!fpsMonitorStarted) {
+            fpsMonitor.start();
+            fpsMonitorStarted = true;
+        }
         // UPDATE PER-FRAME UNIFORMS
         inverseViewMatrixUniform.set(modelCamera.getViewMatrix().invert());
         lightViewMatrixUniform.set(lightCamera.getViewMatrix());
@@ -695,6 +769,9 @@ public class Renderer {
         fpsMonitorModel.setString("FPS: " + fpsMonitor.getTPS());
     }
 
+    /**
+     * Saves a screenshot (PNG) to the directory where the program is currently running, with the current date as the file name.
+     */
     public static void saveScreenshot() {
         final ByteBuffer buffer = context.readCurrentFrame(new Rectangle(Vector2f.ZERO, WINDOW_SIZE), Format.RGB);
         final int width = context.getWindowWidth();

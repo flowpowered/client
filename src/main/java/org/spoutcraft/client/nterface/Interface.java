@@ -45,7 +45,7 @@ import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.util.ticking.TickingElement;
 
 /**
- * Contains and manages the renderer and GUI.
+ * Contains and manages the renderer, GUI and it's input and camera input. Meshes and renders chunks and entities.
  */
 public class Interface extends TickingElement {
     public static final int TPS = 60;
@@ -53,6 +53,11 @@ public class Interface extends TickingElement {
     private final Game game;
     private final ChunkMesher mesher = new StandardChunkMesher();
 
+    /**
+     * Constructs a new interface from the game.
+     *
+     * @param game The game
+     */
     public Interface(Game game) {
         super(TPS);
         this.game = game;
@@ -65,12 +70,10 @@ public class Interface extends TickingElement {
         // TEST CODE
         Renderer.setGLVersion(GLVersion.GL30);
         Renderer.init();
-        Renderer.addDefaultObjects();
         Renderer.getCamera().setPosition(new org.spout.math.vector.Vector3f(0, 5, 10));
         Renderer.setLightPosition(new org.spout.math.vector.Vector3f(0, 50, 50));
         Renderer.setLightDirection(new org.spout.math.vector.Vector3f(0, -TrigMath.cos(SPOT_CUTOFF), -TrigMath.sin(SPOT_CUTOFF)));
         Renderer.setSolidColor(Color.BLUE);
-        Renderer.startFPSMonitor();
         Mouse.setGrabbed(true);
     }
 
@@ -104,6 +107,11 @@ public class Interface extends TickingElement {
         Renderer.dispose();
     }
 
+    /**
+     * Returns the game.
+     *
+     * @return The game
+     */
     public Game getGame() {
         return game;
     }

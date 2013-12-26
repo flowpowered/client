@@ -33,7 +33,8 @@ import org.spoutcraft.client.universe.block.BlockFaces;
 import org.spoutcraft.client.universe.block.material.Material;
 
 /**
- *
+ * The standard chunk mesher. Voxels are meshed as blocks. Occludes any block not visible, including the edge blocks. Can mesh a chunk with 3n^2(n+2) block access operations, n being the size of the
+ * chunk.
  */
 public class StandardChunkMesher implements ChunkMesher {
     @Override
@@ -42,16 +43,13 @@ public class StandardChunkMesher implements ChunkMesher {
         final Mesh mesh = new Mesh(MeshAttribute.POSITIONS, MeshAttribute.NORMALS);
         final TFloatList positions = mesh.getAttribute(MeshAttribute.POSITIONS);
         final TIntList indices = mesh.getIndices();
-
         int index = 0;
-
+        // Mesh the faces on the x axis
         for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
             for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
                 Material backMaterial = chunk.getMaterial(-1, yy, zz);
                 for (int xx = 0; xx < Chunk.BLOCKS.SIZE + 1; xx++) {
-
                     final Material frontMaterial = chunk.getMaterial(xx, yy, zz);
-
                     final BlockFace face = getFace(backMaterial, frontMaterial, BlockFaces.NS);
                     if (face == BlockFace.NORTH) {
                         add(indices, index + 3, index + 2, index + 1, index + 2, index, index + 1);
@@ -61,25 +59,21 @@ public class StandardChunkMesher implements ChunkMesher {
                         backMaterial = frontMaterial;
                         continue;
                     }
-
                     add(positions, xx, yy + 1, zz + 1);
                     add(positions, xx, yy + 1, zz);
                     add(positions, xx, yy, zz + 1);
                     add(positions, xx, yy, zz);
                     index += 4;
-
                     backMaterial = frontMaterial;
                 }
             }
         }
-
+        // Mesh the faces on the y axis
         for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
             for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
                 Material backMaterial = chunk.getMaterial(xx, -1, zz);
                 for (int yy = 0; yy < Chunk.BLOCKS.SIZE + 1; yy++) {
-
                     final Material frontMaterial = chunk.getMaterial(xx, yy, zz);
-
                     final BlockFace face = getFace(backMaterial, frontMaterial, BlockFaces.BT);
                     if (face == BlockFace.BOTTOM) {
                         add(indices, index + 3, index + 2, index + 1, index + 2, index, index + 1);
@@ -89,25 +83,21 @@ public class StandardChunkMesher implements ChunkMesher {
                         backMaterial = frontMaterial;
                         continue;
                     }
-
                     add(positions, xx, yy, zz);
                     add(positions, xx + 1, yy, zz);
                     add(positions, xx, yy, zz + 1);
                     add(positions, xx + 1, yy, zz + 1);
                     index += 4;
-
                     backMaterial = frontMaterial;
                 }
             }
         }
-
+        // Mesh the faces on the z axis
         for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
             for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
                 Material backMaterial = chunk.getMaterial(xx, yy, -1);
                 for (int zz = 0; zz < Chunk.BLOCKS.SIZE + 1; zz++) {
-
                     final Material frontMaterial = chunk.getMaterial(xx, yy, zz);
-
                     final BlockFace face = getFace(backMaterial, frontMaterial, BlockFaces.EW);
                     if (face == BlockFace.EAST) {
                         add(indices, index + 3, index + 2, index + 1, index + 2, index, index + 1);
@@ -117,19 +107,15 @@ public class StandardChunkMesher implements ChunkMesher {
                         backMaterial = frontMaterial;
                         continue;
                     }
-
                     add(positions, xx, yy + 1, zz);
                     add(positions, xx + 1, yy + 1, zz);
                     add(positions, xx, yy, zz);
                     add(positions, xx + 1, yy, zz);
-
                     index += 4;
-
                     backMaterial = frontMaterial;
                 }
             }
         }
-
         return mesh;
     }
 

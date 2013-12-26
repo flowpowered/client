@@ -24,8 +24,14 @@
 package org.spoutcraft.client.nterface.mesh;
 
 /**
- *
+ * Converts chunk snapshot groups to meshes for rendering.
  */
 public interface ChunkMesher {
+    /**
+     * Converts the chunk snapshot group to a mesh.
+     *
+     * @param chunk The chunk snapshot group
+     * @return The mesh
+     */
     public Mesh mesh(ChunkSnapshotGroup chunk);
 }
