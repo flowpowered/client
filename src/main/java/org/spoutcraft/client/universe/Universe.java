@@ -24,6 +24,7 @@
 package org.spoutcraft.client.universe;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -33,6 +34,7 @@ import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
+import org.spoutcraft.client.networking.message.ChannelMessage;
 import org.spoutcraft.client.networking.message.play.JoinGameMessage;
 import org.spoutcraft.client.networking.message.play.RespawnMessage;
 import org.spoutcraft.client.ticking.TickingElement;
@@ -83,6 +85,12 @@ public class Universe extends TickingElement {
 
     @Override
     public void onTick() {
+        //TODO Optimization needed here, process so many per tick?
+        final Iterator<ChannelMessage> messages = getGame().getNetwork().getChannel(ChannelMessage.Channel.UNIVERSE);
+        while (messages.hasNext()) {
+            final ChannelMessage message = messages.next();
+            processMessage(message);
+        }
 
         // TEST CODE
         for (Entry<UUID, World> entry : worlds.entrySet()) {
@@ -164,5 +172,16 @@ public class Universe extends TickingElement {
         world.setDifficulty(message.getDifficulty());
         world.setLevelType(message.getLevelType());
         return world;
+    }
+
+    /**
+     * Processes the next {@link org.spoutcraft.client.networking.message.ChannelMessage} in the network pipeline
+     * @param message See {@link org.spoutcraft.client.networking.message.ChannelMessage}
+     */
+    public void processMessage(ChannelMessage message) {
+        if (message.getClass() == JoinGameMessage.class) {
+            createWorld((JoinGameMessage) message);
+            message.markChannelRead(ChannelMessage.Channel.UNIVERSE);
+        }
     }
 }

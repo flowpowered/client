@@ -31,6 +31,7 @@ import org.spoutcraft.client.networking.message.ChannelMessage;
  * If the server is in online mode, this occurs after encryption. Otherwise, this occurs after {@link LoginStartMessage} is sent.
  */
 public class LoginSuccessMessage extends ChannelMessage {
+    public static final Channel[] REQUIRED_CHANNELS = new Channel[] {Channel.NETWORK};
     private final String uuid;
     private final String username;
 
@@ -56,5 +57,10 @@ public class LoginSuccessMessage extends ChannelMessage {
     @Override
     public boolean isAsync() {
         return true;
+    }
+
+    @Override
+    public Channel[] getRequiredChannels() {
+        return REQUIRED_CHANNELS;
     }
 }

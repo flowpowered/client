@@ -25,14 +25,13 @@ package org.spoutcraft.client.nterface.mesh;
 
 import gnu.trove.list.TFloatList;
 import gnu.trove.list.TIntList;
-
-import org.spout.math.vector.Vector3i;
-
 import org.spoutcraft.client.nterface.mesh.Mesh.MeshAttribute;
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.block.BlockFace;
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  *

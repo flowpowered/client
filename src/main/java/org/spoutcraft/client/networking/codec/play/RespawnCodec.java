@@ -35,6 +35,7 @@ import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.networking.ByteBufUtils;
 import org.spoutcraft.client.networking.ClientSession;
+import org.spoutcraft.client.networking.message.ChannelMessage;
 import org.spoutcraft.client.networking.message.play.RespawnMessage;
 
 public class RespawnCodec extends Codec<RespawnMessage> implements MessageHandler<RespawnMessage> {
@@ -60,6 +61,6 @@ public class RespawnCodec extends Codec<RespawnMessage> implements MessageHandle
 
     @Override
     public void handle(Session session, RespawnMessage message) {
-        ((ClientSession) session).getGame().getUniverse().updateWorld(message);
+        ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
     }
 }

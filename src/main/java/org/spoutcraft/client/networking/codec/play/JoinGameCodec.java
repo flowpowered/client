@@ -35,6 +35,7 @@ import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.networking.ByteBufUtils;
 import org.spoutcraft.client.networking.ClientSession;
+import org.spoutcraft.client.networking.message.ChannelMessage;
 import org.spoutcraft.client.networking.message.play.JoinGameMessage;
 
 public class JoinGameCodec extends Codec<JoinGameMessage> implements MessageHandler<JoinGameMessage> {
@@ -62,6 +63,6 @@ public class JoinGameCodec extends Codec<JoinGameMessage> implements MessageHand
 
     @Override
     public void handle(Session session, JoinGameMessage message) {
-        ((ClientSession) session).getGame().getUniverse().createWorld(message);
+        ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
     }
 }

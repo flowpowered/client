@@ -27,13 +27,12 @@ import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
-import com.flowpowered.networking.session.PulsingSession;
 import com.flowpowered.networking.session.Session;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.networking.ByteBufUtils;
 import org.spoutcraft.client.networking.ClientSession;
+import org.spoutcraft.client.networking.message.ChannelMessage;
 import org.spoutcraft.client.networking.message.login.LoginSuccessMessage;
-import org.spoutcraft.client.networking.protocol.PlayProtocol;
 
 public class LoginSuccessCodec extends Codec<LoginSuccessMessage> implements MessageHandler<LoginSuccessMessage> {
     public static final int OP_CODE = 2;
@@ -56,12 +55,6 @@ public class LoginSuccessCodec extends Codec<LoginSuccessMessage> implements Mes
 
     @Override
     public void handle(Session session, LoginSuccessMessage message) {
-        System.out.println("Server says login is successful...Woo!!");
-
-        final ClientSession clientSession = (ClientSession) session;
-        clientSession.setProtocol(new PlayProtocol());
-        clientSession.setUUID(message.getUUID());
-        clientSession.setUsername(message.getUsername());
-        clientSession.setState(PulsingSession.State.OPEN);
+        ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.NETWORK, message);
     }
 }

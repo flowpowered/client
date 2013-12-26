@@ -48,4 +48,9 @@ public class LoginStartMessage extends ChannelMessage {
     public boolean isAsync() {
         return true;
     }
+
+    @Override
+    public Channel[] getRequiredChannels() {
+        return new Channel[0];
+    }
 }

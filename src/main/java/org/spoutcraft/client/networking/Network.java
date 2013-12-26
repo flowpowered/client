@@ -25,29 +25,56 @@ package org.spoutcraft.client.networking;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.EnumMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.flowpowered.networking.session.PulsingSession;
 import org.spoutcraft.client.Game;
+import org.spoutcraft.client.networking.message.ChannelMessage;
+import org.spoutcraft.client.networking.message.login.LoginSuccessMessage;
+import org.spoutcraft.client.networking.protocol.PlayProtocol;
 import org.spoutcraft.client.ticking.TickingElement;
 
 public class Network extends TickingElement {
     private final Game game;
     private final GameNetworkClient client;
+    private final EnumMap<ChannelMessage.Channel, ConcurrentLinkedQueue<ChannelMessage>> messageQueue = new EnumMap<>(ChannelMessage.Channel.class);
 
     public Network(Game game) {
         super(20);
         this.game = game;
         client = new GameNetworkClient(game);
+        messageQueue.put(ChannelMessage.Channel.UNIVERSE, new ConcurrentLinkedQueue<ChannelMessage>());
+        messageQueue.put(ChannelMessage.Channel.NETWORK, new ConcurrentLinkedQueue<ChannelMessage>());
     }
 
     @Override
     public void onTick() {
-        if (client.getSession() != null) {
-            client.getSession().pulse();
+        if (client.getSession() == null) {
+            return;
         }
+        for (Map.Entry<ChannelMessage.Channel, ConcurrentLinkedQueue<ChannelMessage>> entry : messageQueue.entrySet()) {
+            final Iterator<ChannelMessage> messages = entry.getValue().iterator();
+            while (messages.hasNext()) {
+                final ChannelMessage message = messages.next();
+                //Handle all Network channel message
+                if (entry.getKey() == ChannelMessage.Channel.NETWORK && !message.isFullyRead()) {
+                    processMessage(message);
+                }
+                if (message.isFullyRead()) {
+                    messages.remove();
+                }
+            }
+        }
+
+        //Pulse session for new messages
+        client.getSession().pulse();
     }
 
     @Override
@@ -82,5 +109,41 @@ public class Network extends TickingElement {
 
     public ClientSession getSession() {
         return client.getSession();
+    }
+
+    /**
+     * Gets the {@link java.util.Iterator} storing the messages for the {@link org.spoutcraft.client.networking.message.ChannelMessage.Channel}
+     * @param c See {@link org.spoutcraft.client.networking.message.ChannelMessage.Channel}
+     * @return The iterator
+     */
+    public Iterator<ChannelMessage> getChannel(ChannelMessage.Channel c) {
+        return messageQueue.get(c).iterator();
+    }
+
+    /**
+     * Offers a {@link org.spoutcraft.client.networking.message.ChannelMessage} to a queue mapped to {@link org.spoutcraft.client.networking.message.ChannelMessage.Channel}
+     * @param c See {@link org.spoutcraft.client.networking.message.ChannelMessage.Channel}
+     * @param m See {@link org.spoutcraft.client.networking.message.ChannelMessage}
+     */
+    public void offer(ChannelMessage.Channel c, ChannelMessage m) {
+        messageQueue.get(c).offer(m);
+    }
+
+    /**
+     * Processes the next {@link org.spoutcraft.client.networking.message.ChannelMessage} in the network pipeline
+     * @param message See {@link org.spoutcraft.client.networking.message.ChannelMessage}
+     */
+    public void processMessage(ChannelMessage message) {
+        if (message.getClass() == LoginSuccessMessage.class) {
+            final LoginSuccessMessage loginSuccessMessage = (LoginSuccessMessage) message;
+            System.out.println("Server says login is successful...Woo!!");
+
+            ClientSession session = getSession();
+            session.setProtocol(new PlayProtocol());
+            session.setUUID(loginSuccessMessage.getUUID());
+            session.setUsername(loginSuccessMessage.getUsername());
+            session.setState(PulsingSession.State.OPEN);
+            message.markChannelRead(ChannelMessage.Channel.NETWORK);
+        }
     }
 }

@@ -39,11 +39,11 @@ public class BlockFaces implements Iterable<BlockFace> {
     private static final TByteObjectHashMap<BlockFaces> offsetHash = new TByteObjectHashMap<>();
 
     static {
-        for (BlockFace face1 : new BlockFace[]{BlockFace.THIS, BlockFace.TOP,
+        for (BlockFace face1 : new BlockFace[] {BlockFace.THIS, BlockFace.TOP,
                 BlockFace.BOTTOM}) {
-            for (BlockFace face2 : new BlockFace[]{BlockFace.THIS,
+            for (BlockFace face2 : new BlockFace[] {BlockFace.THIS,
                     BlockFace.WEST, BlockFace.EAST}) {
-                for (BlockFace face3 : new BlockFace[]{BlockFace.THIS,
+                for (BlockFace face3 : new BlockFace[] {BlockFace.THIS,
                         BlockFace.NORTH, BlockFace.SOUTH}) {
                     BlockFaces faces = new BlockFaces(face1, face2, face3);
                     Vector3i offset = faces.getOffset();
