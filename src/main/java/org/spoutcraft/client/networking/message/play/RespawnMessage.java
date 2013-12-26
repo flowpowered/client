@@ -34,7 +34,7 @@ import org.spoutcraft.client.networking.message.ChannelMessage;
  * {@link org.spoutcraft.client.universe.World}'s characteristics.
  */
 public class RespawnMessage extends ChannelMessage {
-    public static final Channel[] REQUIRED_CHANNELS = new Channel[] {Channel.UNIVERSE};
+    private static final Channel[] REQUIRED_CHANNELS = new Channel[] {Channel.UNIVERSE};
     private final Dimension dimension;
     private final Difficulty difficulty;
     private final GameMode gameMode;

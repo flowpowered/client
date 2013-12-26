@@ -27,7 +27,7 @@ import org.spoutcraft.client.networking.codec.login.LoginStartCodec;
 import org.spoutcraft.client.networking.codec.login.LoginSuccessCodec;
 
 public class LoginProtocol extends ClientProtocol {
-    public static final int HIGHEST_OP_CODE = 2;
+    private static final int HIGHEST_OP_CODE = 2;
 
     public LoginProtocol() {
         super("Login", HIGHEST_OP_CODE);

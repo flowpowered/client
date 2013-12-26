@@ -26,7 +26,7 @@ package org.spoutcraft.client.networking.protocol;
 import org.spoutcraft.client.networking.codec.handshake.HandshakeCodec;
 
 public class HandshakeProtocol extends ClientProtocol {
-    public static final int HIGHEST_OP_CODE = 0;
+    private static final int HIGHEST_OP_CODE = 0;
 
     public HandshakeProtocol() {
         super("Handshake", HIGHEST_OP_CODE);

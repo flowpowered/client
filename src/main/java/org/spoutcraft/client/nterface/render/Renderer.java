@@ -92,7 +92,7 @@ import org.spoutcraft.client.util.TPSMonitor;
 
 public class Renderer {
     // CONSTANTS
-    private static final String WINDOW_TITLE = "Sandbox";
+    private static final String WINDOW_TITLE = "Spoutcraft";
     private static final Vector2f WINDOW_SIZE = new Vector2f(1200, 800);
     private static final Vector2f SHADOW_SIZE = new Vector2f(2048, 2048);
     private static final float ASPECT_RATIO = WINDOW_SIZE.getX() / WINDOW_SIZE.getY();

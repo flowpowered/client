@@ -31,7 +31,7 @@ import org.spoutcraft.client.networking.codec.play.RespawnCodec;
 import org.spoutcraft.client.networking.codec.play.SpawnPositionCodec;
 
 public class PlayProtocol extends ClientProtocol {
-    public static final int HIGHEST_OP_CODE = 16;
+    private static final int HIGHEST_OP_CODE = 16;
 
     public PlayProtocol() {
         super("Play", HIGHEST_OP_CODE);

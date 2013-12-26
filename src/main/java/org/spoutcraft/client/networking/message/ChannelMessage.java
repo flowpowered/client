@@ -50,7 +50,7 @@ public abstract class ChannelMessage implements Message {
     public static enum Channel {
         UNIVERSE((short) 1),
         INTERFACE((short) 2),
-        NETWORK((short) 3);
+        NETWORK((short) 4);
         private final short mask;
 
         private Channel(short mask) {

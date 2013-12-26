@@ -31,7 +31,7 @@ import org.spout.math.vector.Vector3i;
  * Client bound message that instructs the client to update the compass position to the new spawn position.
  */
 public class SpawnPositionMessage extends ChannelMessage {
-    public static final Channel[] REQUIRED_CHANNELS = new Channel[] {Channel.UNIVERSE};
+    private static final Channel[] REQUIRED_CHANNELS = new Channel[] {Channel.UNIVERSE};
     private final Vector3i position;
 
     /**
