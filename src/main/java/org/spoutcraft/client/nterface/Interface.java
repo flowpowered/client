@@ -37,6 +37,7 @@ import org.spout.renderer.data.Color;
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.Main;
 import org.spoutcraft.client.nterface.mesh.ChunkMesher;
+import org.spoutcraft.client.nterface.mesh.ChunkSnapshotGroup;
 import org.spoutcraft.client.nterface.mesh.StandardChunkMesher;
 import org.spoutcraft.client.nterface.render.Renderer;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
@@ -82,7 +83,7 @@ public class Interface extends TickingElement {
                 return;
             }
             for (ChunkSnapshot chunk : world.getChunks()) {
-                Renderer.addSolid(mesher.mesh(chunk).build(), chunk.getPosition().mul(16).toFloat(), Quaternionf.IDENTITY);
+                Renderer.addSolid(mesher.mesh(new ChunkSnapshotGroup(chunk, world)).build(), chunk.getPosition().mul(16).toFloat(), Quaternionf.IDENTITY);
             }
             once = true;
         }
@@ -100,7 +101,6 @@ public class Interface extends TickingElement {
     public void onStop() {
         System.out.println("Interface stop");
 
-        // TEST CODE
         Renderer.dispose();
     }
 

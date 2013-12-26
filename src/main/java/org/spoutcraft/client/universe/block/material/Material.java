@@ -70,10 +70,17 @@ public abstract class Material {
 
     public static Material get(short id, short subID) {
         final MasterMaterial master = MATERIALS_BY_ID.get(id);
-        if (master == null || subID == 0) {
+        if (master == null) {
+            return Materials.AIR;
+        }
+        if (subID == 0) {
             return master;
         }
-        return master.getSubMaterial(subID);
+        final SubMaterial sub = master.getSubMaterial(subID);
+        if (sub == null) {
+            return master;
+        }
+        return sub;
     }
 
     @Override

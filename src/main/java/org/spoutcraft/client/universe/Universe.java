@@ -71,7 +71,7 @@ public class Universe extends TickingElement {
         final short[] halfChunkSubIDs = new short[Chunk.BLOCKS.VOLUME];
         final Random random = new Random();
         for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
-            for (int yy = 1; yy < Chunk.BLOCKS.SIZE - 1; yy++) {
+            for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
                 for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
                     halfChunkIDs[yy << Chunk.BLOCKS.DOUBLE_BITS | zz << Chunk.BLOCKS.BITS | xx] = random.nextInt(10) == 0 ? 0 : Materials.SOLID.getID();
                 }

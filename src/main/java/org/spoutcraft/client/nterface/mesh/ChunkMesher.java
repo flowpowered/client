@@ -23,11 +23,9 @@
  */
 package org.spoutcraft.client.nterface.mesh;
 
-import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
-
 /**
  *
  */
 public interface ChunkMesher {
-    public Mesh mesh(ChunkSnapshot chunk);
+    public Mesh mesh(ChunkSnapshotGroup chunk);
 }

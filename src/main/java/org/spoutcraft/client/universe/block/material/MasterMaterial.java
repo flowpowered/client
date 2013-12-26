@@ -42,6 +42,9 @@ public abstract class MasterMaterial extends Material {
     }
 
     protected void addSubMaterial(SubMaterial subMaterial) {
-        subMaterials.put(subMaterial.getSubID(), subMaterial);
+        final SubMaterial previous = subMaterials.put(subMaterial.getSubID(), subMaterial);
+        if (previous != null) {
+            System.out.println("New sub-material has conflicting ID, previous sub-material was overwritten: " + previous + " => " + subMaterial);
+        }
     }
 }

@@ -31,14 +31,13 @@ import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.block.BlockFace;
 import org.spoutcraft.client.universe.block.BlockFaces;
 import org.spoutcraft.client.universe.block.material.Material;
-import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 
 /**
  *
  */
 public class StandardChunkMesher implements ChunkMesher {
     @Override
-    public Mesh mesh(ChunkSnapshot chunk) {
+    public Mesh mesh(ChunkSnapshotGroup chunk) {
         // TODO: add textures
         final Mesh mesh = new Mesh(MeshAttribute.POSITIONS, MeshAttribute.NORMALS);
         final TFloatList positions = mesh.getAttribute(MeshAttribute.POSITIONS);
@@ -48,8 +47,8 @@ public class StandardChunkMesher implements ChunkMesher {
 
         for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
             for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
-                Material backMaterial = chunk.getMaterial(0, yy, zz);
-                for (int xx = 1; xx < Chunk.BLOCKS.SIZE; xx++) {
+                Material backMaterial = chunk.getMaterial(-1, yy, zz);
+                for (int xx = 0; xx < Chunk.BLOCKS.SIZE + 1; xx++) {
 
                     final Material frontMaterial = chunk.getMaterial(xx, yy, zz);
 
@@ -76,8 +75,8 @@ public class StandardChunkMesher implements ChunkMesher {
 
         for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
             for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
-                Material backMaterial = chunk.getMaterial(xx, 0, zz);
-                for (int yy = 1; yy < Chunk.BLOCKS.SIZE; yy++) {
+                Material backMaterial = chunk.getMaterial(xx, -1, zz);
+                for (int yy = 0; yy < Chunk.BLOCKS.SIZE + 1; yy++) {
 
                     final Material frontMaterial = chunk.getMaterial(xx, yy, zz);
 
@@ -104,8 +103,8 @@ public class StandardChunkMesher implements ChunkMesher {
 
         for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
             for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
-                Material backMaterial = chunk.getMaterial(xx, yy, 0);
-                for (int zz = 1; zz < Chunk.BLOCKS.SIZE; zz++) {
+                Material backMaterial = chunk.getMaterial(xx, yy, -1);
+                for (int zz = 0; zz < Chunk.BLOCKS.SIZE + 1; zz++) {
 
                     final Material frontMaterial = chunk.getMaterial(xx, yy, zz);
 
