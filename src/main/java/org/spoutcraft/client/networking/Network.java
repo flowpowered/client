@@ -57,6 +57,9 @@ public class Network extends TickingElement {
 
     @Override
     public void onTick() {
+        if (client.getSession() == null) {
+            return;
+        }
         for (Map.Entry<Channel, ConcurrentLinkedQueue<ChannelMessage>> entry : messageQueue.entrySet()) {
             final Iterator<ChannelMessage> messages = entry.getValue().iterator();
             while (messages.hasNext()) {
@@ -95,11 +98,7 @@ public class Network extends TickingElement {
         if (!isRunning()) {
             throw new RuntimeException("Attempt made to issue a connection but the Network thread isn't running!");
         }
-        Future<Void> future = client.connect(address);
-        try {
-            future.get(10, TimeUnit.SECONDS);
-        } catch (InterruptedException | TimeoutException | ExecutionException ignored) {
-        }
+        client.connect(address);
     }
 
     public Game getGame() {
