@@ -83,9 +83,7 @@ public class Universe extends TickingElement {
                 world.setChunk(new Chunk(world, new Vector3i(xx, 0, zz), halfChunkIDs, halfChunkSubIDs));
             }
         }
-        worlds.put(world.getID(), world);
-        worldSnapshots.put(world.getID(), world.buildSnapshot());
-        worldIDsByName.put(world.getName(), world.getID());
+        addWorld(world, true);
     }
 
     @Override
@@ -100,7 +98,6 @@ public class Universe extends TickingElement {
             }
         }
 
-        // TEST CODE
         for (Entry<UUID, World> entry : worlds.entrySet()) {
             final UUID id = entry.getKey();
             worlds.get(id).updateSnapshot(worldSnapshots.get(id));
@@ -111,7 +108,6 @@ public class Universe extends TickingElement {
     public void onStop() {
         System.out.println("Universe stop");
 
-        // TEST CODE
         worlds.clear();
         worldSnapshots.clear();
     }
@@ -120,20 +116,29 @@ public class Universe extends TickingElement {
         return game;
     }
 
-    public World getWorld(UUID id) {
-        return worlds.get(id);
-    }
-
-    public World getWorld(String name) {
-        return worlds.get(worldIDsByName.get(name));
-    }
-
     public WorldSnapshot getWorldSnapshot(UUID id) {
         return worldSnapshots.get(id);
     }
 
     public WorldSnapshot getWorldSnapshot(String name) {
         return worldSnapshots.get(worldIDsByName.get(name));
+    }
+
+    public WorldSnapshot getActiveWorldSnapshot() {
+        return activeWorld != null ? worldSnapshots.get(activeWorld.getID()) : null;
+    }
+
+    private World getWorld(String name) {
+        return worlds.get(worldIDsByName.get(name));
+    }
+
+    private void addWorld(World world, boolean setActive) {
+        worlds.put(world.getID(), world);
+        worldSnapshots.put(world.getID(), world.buildSnapshot());
+        worldIDsByName.put(world.getName(), world.getID());
+        if (setActive) {
+            activeWorld = world;
+        }
     }
 
     /**
@@ -148,10 +153,7 @@ public class Universe extends TickingElement {
      */
     private World createWorld(GameMode gameMode, Dimension dimension, Difficulty difficulty, LevelType levelType, boolean isActive) {
         final World world = new World("world-" + dimension.name(), gameMode, dimension, difficulty, levelType);
-        worlds.put(world.getID(), world);
-        if (isActive) {
-            activeWorld = world;
-        }
+        addWorld(world, isActive);
         return world;
     }
 
@@ -178,10 +180,12 @@ public class Universe extends TickingElement {
         } else {
             world = getWorld("world-" + message.getDimension().name());
         }
-        world.setGameMode(message.getGameMode());
-        world.setDimension(message.getDimension());
-        world.setDifficulty(message.getDifficulty());
-        world.setLevelType(message.getLevelType());
+        if (world != null) {
+            world.setGameMode(message.getGameMode());
+            world.setDimension(message.getDimension());
+            world.setDifficulty(message.getDifficulty());
+            world.setLevelType(message.getLevelType());
+        }
         return world;
     }
 

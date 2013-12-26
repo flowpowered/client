@@ -39,9 +39,9 @@ import org.spoutcraft.client.Main;
 import org.spoutcraft.client.nterface.mesh.ChunkMesher;
 import org.spoutcraft.client.nterface.mesh.StandardChunkMesher;
 import org.spoutcraft.client.nterface.render.Renderer;
-import org.spoutcraft.client.util.ticking.TickingElement;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
+import org.spoutcraft.client.util.ticking.TickingElement;
 
 /**
  * Contains and manages the renderer and GUI.
@@ -77,7 +77,7 @@ public class Interface extends TickingElement {
     public void onTick() {
         // TEST CODE
         if (!once) {
-            final WorldSnapshot world = game.getUniverse().getWorldSnapshot("test");
+            final WorldSnapshot world = game.getUniverse().getActiveWorldSnapshot();
             if (world == null) {
                 return;
             }
