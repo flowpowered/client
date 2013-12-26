@@ -21,58 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.network.message.login;
 
-import org.spoutcraft.client.network.Network;
-import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.universe.Universe;
+import org.spoutcraft.client.network.message.ChannelMessage;
 
 /**
- * The game class.
+ * Server-bound message that informs the server that the client is ready to start the login process.
  */
-public class Game {
-    private final Universe universe;
-    private final Interface nterface;
-    private final Network network;
+public class LoginStartMessage extends ChannelMessage {
+    private final String username;
 
-    static {
-        try {
-            Class.forName("org.spoutcraft.client.universe.block.material.Materials");
-        } catch (Exception ex) {
-            System.out.println("Couldn't load the default materials");
-        }
+    /**
+     * Constructs a new login start
+     *
+     * @param username The username provided by the user (i.e. the login name used in the Minecraft launcher)
+     */
+    public LoginStartMessage(String username) {
+        this.username = username;
     }
 
-    public Game() {
-        universe = new Universe(this);
-        nterface = new Interface(this);
-        network = new Network(this);
+    public String getUsername() {
+        return username;
     }
 
-    public void start() {
-        universe.start();
-        nterface.start();
-        network.start();
-
-        // TEST CODE
-        network.connect();
-    }
-
-    public void stop() {
-        nterface.stop();
-        universe.stop();
-        network.stop();
-    }
-
-    public Universe getUniverse() {
-        return universe;
-    }
-
-    public Interface getInterface() {
-        return nterface;
-    }
-
-    public Network getNetwork() {
-        return network;
+    @Override
+    public boolean isAsync() {
+        return true;
     }
 }

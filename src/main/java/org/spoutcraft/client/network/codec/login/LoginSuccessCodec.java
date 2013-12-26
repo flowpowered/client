@@ -21,34 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.physics.entity;
+package org.spoutcraft.client.network.codec.login;
 
+import java.io.IOException;
+
+import com.flowpowered.networking.Codec;
+import com.flowpowered.networking.MessageHandler;
 import com.flowpowered.networking.session.Session;
+import io.netty.buffer.ByteBuf;
+import org.spoutcraft.client.network.ByteBufUtils;
 import org.spoutcraft.client.network.ClientSession;
-import org.spoutcraft.client.universe.World;
+import org.spoutcraft.client.network.message.ChannelMessage;
+import org.spoutcraft.client.network.message.login.LoginSuccessMessage;
 
-import org.spout.math.vector.Vector3f;
+public class LoginSuccessCodec extends Codec<LoginSuccessMessage> implements MessageHandler<LoginSuccessMessage> {
+    public static final int OP_CODE = 2;
 
-/**
- * The local client player which has the {@link com.flowpowered.networking.session.Session} tied to it.
- */
-public class Player extends Entity {
-    private final ClientSession session;
-
-    public Player(int id, String displayName, World world, Vector3f position, ClientSession session) {
-        super(id, displayName, world, position);
-        this.session = session;
+    public LoginSuccessCodec() {
+        super(LoginSuccessMessage.class, OP_CODE);
     }
 
-    public String getUUID() {
-        return session.getUUID();
+    @Override
+    public LoginSuccessMessage decode(ByteBuf buf) throws IOException {
+        final String uuid = ByteBufUtils.readUTF8(buf);
+        final String username = ByteBufUtils.readUTF8(buf);
+        return new LoginSuccessMessage(uuid, username);
     }
 
-    public String getUsername() {
-        return session.getUsername();
+    @Override
+    public ByteBuf encode(ByteBuf buf, LoginSuccessMessage message) throws IOException {
+        throw new IOException("The client should not send a login success to the Minecraft server!");
     }
 
-    public Session getSession() {
-        return session;
+    @Override
+    public void handle(Session session, LoginSuccessMessage message) {
+        ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.NETWORK, message);
     }
 }

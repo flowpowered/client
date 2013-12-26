@@ -21,58 +21,55 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.network.message;
 
-import org.spoutcraft.client.network.Network;
-import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.universe.Universe;
+import com.flowpowered.networking.Message;
 
-/**
- * The game class.
- */
-public class Game {
-    private final Universe universe;
-    private final Interface nterface;
-    private final Network network;
+public abstract class ChannelMessage implements Message {
+    private short read;
+    private final short requiredMask;
 
-    static {
-        try {
-            Class.forName("org.spoutcraft.client.universe.block.material.Materials");
-        } catch (Exception ex) {
-            System.out.println("Couldn't load the default materials");
+    public ChannelMessage() {
+        requiredMask = 0;
+    }
+
+    public ChannelMessage(Channel requiredRead) {
+        requiredMask = requiredRead.getMask();
+    }
+
+    public ChannelMessage(Channel... requiredRead) {
+        short required = 0;
+        for (Channel channel : requiredRead) {
+            required |= channel.getMask();
+        }
+        requiredMask = required;
+    }
+
+    public void markChannelRead(Channel channel) {
+        read |= channel.getMask();
+    }
+
+    public boolean isChannelRead(Channel channel) {
+        return (read & channel.getMask()) == channel.getMask();
+    }
+
+    public boolean isFullyRead() {
+        return (read & requiredMask) == requiredMask;
+    }
+
+    public static enum Channel {
+        UNIVERSE((short) 1),
+        INTERFACE((short) 2),
+        NETWORK((short) 4);
+        private final short mask;
+
+        private Channel(short mask) {
+            this.mask = mask;
+        }
+
+        public short getMask() {
+            return mask;
         }
     }
-
-    public Game() {
-        universe = new Universe(this);
-        nterface = new Interface(this);
-        network = new Network(this);
-    }
-
-    public void start() {
-        universe.start();
-        nterface.start();
-        network.start();
-
-        // TEST CODE
-        network.connect();
-    }
-
-    public void stop() {
-        nterface.stop();
-        universe.stop();
-        network.stop();
-    }
-
-    public Universe getUniverse() {
-        return universe;
-    }
-
-    public Interface getInterface() {
-        return nterface;
-    }
-
-    public Network getNetwork() {
-        return network;
-    }
 }
+

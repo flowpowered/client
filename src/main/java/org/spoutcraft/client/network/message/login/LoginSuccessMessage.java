@@ -21,58 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.network.message.login;
 
-import org.spoutcraft.client.network.Network;
-import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.universe.Universe;
+import org.spoutcraft.client.network.message.ChannelMessage;
 
 /**
- * The game class.
+ * Client bound message that instructs the client that login was successful to the server.
+ * </p>
+ * If the server is in online mode, this occurs after encryption. Otherwise, this occurs after {@link LoginStartMessage} is sent.
  */
-public class Game {
-    private final Universe universe;
-    private final Interface nterface;
-    private final Network network;
+public class LoginSuccessMessage extends ChannelMessage {
+    private static final Channel REQUIRED_CHANNEL = Channel.NETWORK;
+    private final String uuid;
+    private final String username;
 
-    static {
-        try {
-            Class.forName("org.spoutcraft.client.universe.block.material.Materials");
-        } catch (Exception ex) {
-            System.out.println("Couldn't load the default materials");
-        }
+    /**
+     * Constructs a new login success
+     *
+     * @param uuid The unique identifier of this session
+     * @param username The username of this session
+     */
+    public LoginSuccessMessage(String uuid, String username) {
+        super(REQUIRED_CHANNEL);
+        this.uuid = uuid;
+        this.username = username;
     }
 
-    public Game() {
-        universe = new Universe(this);
-        nterface = new Interface(this);
-        network = new Network(this);
+    public String getUUID() {
+        return uuid;
     }
 
-    public void start() {
-        universe.start();
-        nterface.start();
-        network.start();
-
-        // TEST CODE
-        network.connect();
+    public String getUsername() {
+        return username;
     }
 
-    public void stop() {
-        nterface.stop();
-        universe.stop();
-        network.stop();
-    }
-
-    public Universe getUniverse() {
-        return universe;
-    }
-
-    public Interface getInterface() {
-        return nterface;
-    }
-
-    public Network getNetwork() {
-        return network;
+    @Override
+    public boolean isAsync() {
+        return true;
     }
 }

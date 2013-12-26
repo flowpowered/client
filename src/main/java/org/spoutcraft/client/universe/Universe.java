@@ -37,11 +37,11 @@ import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
-import org.spoutcraft.client.networking.Network;
-import org.spoutcraft.client.networking.message.ChannelMessage;
-import org.spoutcraft.client.networking.message.ChannelMessage.Channel;
-import org.spoutcraft.client.networking.message.play.JoinGameMessage;
-import org.spoutcraft.client.networking.message.play.RespawnMessage;
+import org.spoutcraft.client.network.Network;
+import org.spoutcraft.client.network.message.ChannelMessage;
+import org.spoutcraft.client.network.message.ChannelMessage.Channel;
+import org.spoutcraft.client.network.message.play.JoinGameMessage;
+import org.spoutcraft.client.network.message.play.RespawnMessage;
 import org.spoutcraft.client.util.ticking.TickingElement;
 import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
@@ -156,9 +156,9 @@ public class Universe extends TickingElement {
     }
 
     /**
-     * Creates a {@link org.spoutcraft.client.universe.World} from a {@link org.spoutcraft.client.networking.message.play.JoinGameMessage}
+     * Creates a {@link org.spoutcraft.client.universe.World} from a {@link org.spoutcraft.client.network.message.play.JoinGameMessage}
      *
-     * @param message See {@link org.spoutcraft.client.networking.message.play.JoinGameMessage}
+     * @param message See {@link org.spoutcraft.client.network.message.play.JoinGameMessage}
      * @return The constructed {@link org.spoutcraft.client.universe.World}
      */
     private World createWorld(JoinGameMessage message) {
@@ -166,9 +166,9 @@ public class Universe extends TickingElement {
     }
 
     /**
-     * Updates a {@link org.spoutcraft.client.universe.World} from a {@link org.spoutcraft.client.networking.message.play.RespawnMessage}
+     * Updates a {@link org.spoutcraft.client.universe.World} from a {@link org.spoutcraft.client.network.message.play.RespawnMessage}
      *
-     * @param message See {@link org.spoutcraft.client.networking.message.play.RespawnMessage}
+     * @param message See {@link org.spoutcraft.client.network.message.play.RespawnMessage}
      * @return The constructed {@link org.spoutcraft.client.universe.World}
      */
     private World updateWorld(RespawnMessage message) {
@@ -186,8 +186,8 @@ public class Universe extends TickingElement {
     }
 
     /**
-     * Processes the next {@link org.spoutcraft.client.networking.message.ChannelMessage} in the network pipeline
-     * @param message See {@link org.spoutcraft.client.networking.message.ChannelMessage}
+     * Processes the next {@link org.spoutcraft.client.network.message.ChannelMessage} in the network pipeline
+     * @param message See {@link org.spoutcraft.client.network.message.ChannelMessage}
      */
     private void processMessage(ChannelMessage message) {
         if (message.getClass() == JoinGameMessage.class) {

@@ -21,58 +21,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.network.message.play;
 
-import org.spoutcraft.client.network.Network;
-import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.universe.Universe;
+import org.spoutcraft.client.network.message.ChannelMessage;
 
-/**
- * The game class.
- */
-public class Game {
-    private final Universe universe;
-    private final Interface nterface;
-    private final Network network;
+public class ClientStatusMessage extends ChannelMessage {
+    private final ClientState state;
 
-    static {
-        try {
-            Class.forName("org.spoutcraft.client.universe.block.material.Materials");
-        } catch (Exception ex) {
-            System.out.println("Couldn't load the default materials");
+    /**
+     * Constructs a new client status
+     *
+     * @param state See {@link org.spoutcraft.client.network.message.play.ClientStatusMessage.ClientState}
+     */
+    public ClientStatusMessage(ClientState state) {
+        this.state = state;
+    }
+
+    public ClientState getState() {
+        return state;
+    }
+
+    @Override
+    public boolean isAsync() {
+        return true;
+    }
+
+    public enum ClientState {
+        /**
+         * This informs the server that the client is ready to login/respawn from death
+         */
+        RESPAWN(0),
+        /**
+         * This informs the server that the client is ready to receive stats (snooping)
+         */
+        REQUEST_STATS(1),
+        /**
+         * This informs the server that the client is opening an inventory achievement
+         */
+        OPEN_INVENTORY_ACHIEVEMENT(2);
+        private final int value;
+
+        private ClientState(int value) {
+            this.value = value;
         }
-    }
 
-    public Game() {
-        universe = new Universe(this);
-        nterface = new Interface(this);
-        network = new Network(this);
-    }
-
-    public void start() {
-        universe.start();
-        nterface.start();
-        network.start();
-
-        // TEST CODE
-        network.connect();
-    }
-
-    public void stop() {
-        nterface.stop();
-        universe.stop();
-        network.stop();
-    }
-
-    public Universe getUniverse() {
-        return universe;
-    }
-
-    public Interface getInterface() {
-        return nterface;
-    }
-
-    public Network getNetwork() {
-        return network;
+        public int value() {
+            return value;
+        }
     }
 }

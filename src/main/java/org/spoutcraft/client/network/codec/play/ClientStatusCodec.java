@@ -21,58 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.network.codec.play;
 
-import org.spoutcraft.client.network.Network;
-import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.universe.Universe;
+import java.io.IOException;
 
-/**
- * The game class.
- */
-public class Game {
-    private final Universe universe;
-    private final Interface nterface;
-    private final Network network;
+import com.flowpowered.networking.Codec;
+import io.netty.buffer.ByteBuf;
+import org.spoutcraft.client.network.message.play.ClientStatusMessage;
 
-    static {
-        try {
-            Class.forName("org.spoutcraft.client.universe.block.material.Materials");
-        } catch (Exception ex) {
-            System.out.println("Couldn't load the default materials");
-        }
+public class ClientStatusCodec extends Codec<ClientStatusMessage> {
+    private static final int OP_CODE = 16;
+
+    public ClientStatusCodec() {
+        super(ClientStatusMessage.class, OP_CODE);
     }
 
-    public Game() {
-        universe = new Universe(this);
-        nterface = new Interface(this);
-        network = new Network(this);
+    @Override
+    public ClientStatusMessage decode(ByteBuf buf) throws IOException {
+        throw new IOException("The client should not receive a client status from the Minecraft server!");
     }
 
-    public void start() {
-        universe.start();
-        nterface.start();
-        network.start();
-
-        // TEST CODE
-        network.connect();
-    }
-
-    public void stop() {
-        nterface.stop();
-        universe.stop();
-        network.stop();
-    }
-
-    public Universe getUniverse() {
-        return universe;
-    }
-
-    public Interface getInterface() {
-        return nterface;
-    }
-
-    public Network getNetwork() {
-        return network;
+    @Override
+    public ByteBuf encode(ByteBuf buf, ClientStatusMessage message) throws IOException {
+        buf.writeByte(message.getState().value());
+        return buf;
     }
 }

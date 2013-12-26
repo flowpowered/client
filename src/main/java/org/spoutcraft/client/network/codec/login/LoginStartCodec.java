@@ -21,58 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.network.codec.login;
 
-import org.spoutcraft.client.network.Network;
-import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.universe.Universe;
+import java.io.IOException;
 
-/**
- * The game class.
- */
-public class Game {
-    private final Universe universe;
-    private final Interface nterface;
-    private final Network network;
+import com.flowpowered.networking.Codec;
+import io.netty.buffer.ByteBuf;
+import org.spoutcraft.client.network.ByteBufUtils;
+import org.spoutcraft.client.network.message.login.LoginStartMessage;
 
-    static {
-        try {
-            Class.forName("org.spoutcraft.client.universe.block.material.Materials");
-        } catch (Exception ex) {
-            System.out.println("Couldn't load the default materials");
-        }
+public class LoginStartCodec extends Codec<LoginStartMessage> {
+    public static final int OP_CODE = 0;
+
+    public LoginStartCodec() {
+        super(LoginStartMessage.class, OP_CODE);
     }
 
-    public Game() {
-        universe = new Universe(this);
-        nterface = new Interface(this);
-        network = new Network(this);
+    @Override
+    public LoginStartMessage decode(ByteBuf byteBuf) throws IOException {
+        throw new IOException("The client should not receive a login start from the Minecraft server!");
     }
 
-    public void start() {
-        universe.start();
-        nterface.start();
-        network.start();
-
-        // TEST CODE
-        network.connect();
-    }
-
-    public void stop() {
-        nterface.stop();
-        universe.stop();
-        network.stop();
-    }
-
-    public Universe getUniverse() {
-        return universe;
-    }
-
-    public Interface getInterface() {
-        return nterface;
-    }
-
-    public Network getNetwork() {
-        return network;
+    @Override
+    public ByteBuf encode(ByteBuf buf, LoginStartMessage message) throws IOException {
+        ByteBufUtils.writeUTF8(buf, message.getUsername());
+        return buf;
     }
 }

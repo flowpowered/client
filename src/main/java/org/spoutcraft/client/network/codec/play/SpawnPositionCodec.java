@@ -21,58 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client;
+package org.spoutcraft.client.network.codec.play;
 
-import org.spoutcraft.client.network.Network;
-import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.universe.Universe;
+import java.io.IOException;
 
-/**
- * The game class.
- */
-public class Game {
-    private final Universe universe;
-    private final Interface nterface;
-    private final Network network;
+import com.flowpowered.networking.Codec;
+import com.flowpowered.networking.MessageHandler;
+import com.flowpowered.networking.session.Session;
+import io.netty.buffer.ByteBuf;
+import org.spoutcraft.client.network.message.play.SpawnPositionMessage;
 
-    static {
-        try {
-            Class.forName("org.spoutcraft.client.universe.block.material.Materials");
-        } catch (Exception ex) {
-            System.out.println("Couldn't load the default materials");
-        }
+public class SpawnPositionCodec extends Codec<SpawnPositionMessage> implements MessageHandler<SpawnPositionMessage> {
+    public static final int OP_CODE = 5;
+
+    public SpawnPositionCodec() {
+        super(SpawnPositionMessage.class, OP_CODE);
     }
 
-    public Game() {
-        universe = new Universe(this);
-        nterface = new Interface(this);
-        network = new Network(this);
+    @Override
+    public SpawnPositionMessage decode(ByteBuf buf) throws IOException {
+        final int x = buf.readInt();
+        final int y = buf.readInt();
+        final int z = buf.readInt();
+        return new SpawnPositionMessage(x, y, z);
     }
 
-    public void start() {
-        universe.start();
-        nterface.start();
-        network.start();
-
-        // TEST CODE
-        network.connect();
+    @Override
+    public ByteBuf encode(ByteBuf buf, SpawnPositionMessage message) throws IOException {
+        throw new IOException("The client should not send a spawn position to the Minecraft server!");
     }
 
-    public void stop() {
-        nterface.stop();
-        universe.stop();
-        network.stop();
-    }
-
-    public Universe getUniverse() {
-        return universe;
-    }
-
-    public Interface getInterface() {
-        return nterface;
-    }
-
-    public Network getNetwork() {
-        return network;
+    @Override
+    public void handle(Session session, SpawnPositionMessage message) {
+        System.out.println("Server sent new coordinates for spawn!");
     }
 }
