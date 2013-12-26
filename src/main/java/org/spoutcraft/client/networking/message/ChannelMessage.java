@@ -27,6 +27,23 @@ import com.flowpowered.networking.Message;
 
 public abstract class ChannelMessage implements Message {
     private short read;
+    private final short requiredMask;
+
+    public ChannelMessage() {
+        requiredMask = 0;
+    }
+
+    public ChannelMessage(Channel requiredRead) {
+        requiredMask = requiredRead.getMask();
+    }
+
+    public ChannelMessage(Channel... requiredRead) {
+        short required = 0;
+        for (Channel channel : requiredRead) {
+            required |= channel.getMask();
+        }
+        requiredMask = required;
+    }
 
     public void markChannelRead(Channel channel) {
         read |= channel.getMask();
@@ -37,15 +54,8 @@ public abstract class ChannelMessage implements Message {
     }
 
     public boolean isFullyRead() {
-        for (Channel channel : getRequiredChannels()) {
-            if (!isChannelRead(channel)) {
-                return false;
-            }
-        }
-        return true;
+        return (read & requiredMask) == requiredMask;
     }
-
-    public abstract Channel[] getRequiredChannels();
 
     public static enum Channel {
         UNIVERSE((short) 1),

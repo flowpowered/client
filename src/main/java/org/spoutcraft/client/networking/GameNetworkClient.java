@@ -25,7 +25,9 @@ package org.spoutcraft.client.networking;
 
 import com.flowpowered.networking.NetworkClient;
 import com.flowpowered.networking.session.Session;
+
 import io.netty.channel.Channel;
+
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.networking.protocol.HandshakeProtocol;
 
@@ -63,6 +65,10 @@ public class GameNetworkClient extends NetworkClient {
 
     public Game getGame() {
         return game;
+    }
+
+    public boolean hasSession() {
+        return getSession() != null;
     }
 
     public ClientSession getSession() {

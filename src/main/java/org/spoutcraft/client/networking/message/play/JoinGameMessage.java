@@ -33,7 +33,7 @@ import org.spoutcraft.client.networking.message.ChannelMessage;
  * Client-bound message that instructs the client to setup the game with the following attributes.
  */
 public class JoinGameMessage extends ChannelMessage {
-    private static final Channel[] REQUIRED_CHANNELS = new Channel[] {Channel.UNIVERSE};
+    private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
     private final int playerId;
     private final GameMode gameMode;
     private final Dimension dimension;
@@ -52,6 +52,7 @@ public class JoinGameMessage extends ChannelMessage {
      * @param levelType The {@link org.spoutcraft.client.game.LevelType} the {@link org.spoutcraft.client.universe.World} should be
      */
     public JoinGameMessage(int playerId, GameMode gameMode, Dimension dimension, Difficulty difficulty, short maxPlayers, LevelType levelType) {
+        super(REQUIRED_CHANNEL);
         this.playerId = playerId;
         this.gameMode = gameMode;
         this.dimension = dimension;
@@ -87,10 +88,5 @@ public class JoinGameMessage extends ChannelMessage {
     @Override
     public boolean isAsync() {
         return true;
-    }
-
-    @Override
-    public Channel[] getRequiredChannels() {
-        return REQUIRED_CHANNELS;
     }
 }

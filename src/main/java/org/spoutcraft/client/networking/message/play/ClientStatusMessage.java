@@ -46,11 +46,6 @@ public class ClientStatusMessage extends ChannelMessage {
         return true;
     }
 
-    @Override
-    public Channel[] getRequiredChannels() {
-        return new Channel[0];
-    }
-
     public enum ClientState {
         /**
          * This informs the server that the client is ready to login/respawn from death

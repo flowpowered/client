@@ -34,7 +34,7 @@ import org.spoutcraft.client.networking.message.ChannelMessage;
  * If the server doesn't receive a response within a timeout period, it will terminate the session.
  */
 public class KeepAliveMessage extends ChannelMessage {
-    private static final Channel[] REQUIRED_CHANNELS = new Channel[] {Channel.UNIVERSE};
+    private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
     private final int random;
 
     /**
@@ -43,6 +43,7 @@ public class KeepAliveMessage extends ChannelMessage {
      * @param random Random value
      */
     public KeepAliveMessage(int random) {
+        super(REQUIRED_CHANNEL);
         this.random = random;
     }
 
@@ -53,10 +54,5 @@ public class KeepAliveMessage extends ChannelMessage {
     @Override
     public boolean isAsync() {
         return true;
-    }
-
-    @Override
-    public Channel[] getRequiredChannels() {
-        return REQUIRED_CHANNELS;
     }
 }

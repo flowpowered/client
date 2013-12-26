@@ -70,11 +70,6 @@ public class HandshakeMessage extends ChannelMessage {
         return true;
     }
 
-    @Override
-    public Channel[] getRequiredChannels() {
-        return new Channel[0];
-    }
-
     public enum HandshakeState {
         /**
          * Client is asking for server status (i.e. Multiplayer menu in the Minecraft client)

@@ -54,9 +54,4 @@ public class PlayerMessage extends ChannelMessage {
     public boolean isAsync() {
         return true;
     }
-
-    @Override
-    public Channel[] getRequiredChannels() {
-        return new Channel[0];
-    }
 }

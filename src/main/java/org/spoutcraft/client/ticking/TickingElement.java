@@ -40,8 +40,10 @@ public abstract class TickingElement {
     }
 
     public final void stop() {
-        thread.terminate();
-        thread = null;
+        if (thread != null) {
+            thread.terminate();
+            thread = null;
+        }
     }
 
     public final boolean isRunning() {

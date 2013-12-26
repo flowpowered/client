@@ -74,8 +74,10 @@ public class Network extends TickingElement {
             }
         }
 
-        //Pulse session for new messages
-        client.getSession().pulse();
+        // Pulse session for new messages
+        if (client.hasSession()) {
+            client.getSession().pulse();
+        }
     }
 
     @Override

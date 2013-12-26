@@ -34,7 +34,7 @@ import org.spoutcraft.client.networking.message.ChannelMessage;
  * {@link org.spoutcraft.client.universe.World}'s characteristics.
  */
 public class RespawnMessage extends ChannelMessage {
-    private static final Channel[] REQUIRED_CHANNELS = new Channel[] {Channel.UNIVERSE};
+    private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
     private final Dimension dimension;
     private final Difficulty difficulty;
     private final GameMode gameMode;
@@ -49,6 +49,7 @@ public class RespawnMessage extends ChannelMessage {
      * @param levelType The {@link org.spoutcraft.client.game.LevelType} the active {@link org.spoutcraft.client.universe.World} should be
      */
     public RespawnMessage(Dimension dimension, Difficulty difficulty, GameMode gameMode, LevelType levelType) {
+        super(REQUIRED_CHANNEL);
         this.dimension = dimension;
         this.difficulty = difficulty;
         this.gameMode = gameMode;
@@ -74,10 +75,5 @@ public class RespawnMessage extends ChannelMessage {
     @Override
     public boolean isAsync() {
         return true;
-    }
-
-    @Override
-    public Channel[] getRequiredChannels() {
-        return REQUIRED_CHANNELS;
     }
 }

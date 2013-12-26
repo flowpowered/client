@@ -90,7 +90,7 @@ public class Universe extends TickingElement {
 
     @Override
     public void onTick() {
-        //TODO Optimization needed here, process so many per tick?
+        // TODO: Optimization needed here, process so many per tick?
         final Network network = game.getNetwork();
         if (network.isRunning()) {
             final Iterator<ChannelMessage> messages = network.getChannel(Channel.UNIVERSE);
@@ -192,7 +192,7 @@ public class Universe extends TickingElement {
     private void processMessage(ChannelMessage message) {
         if (message.getClass() == JoinGameMessage.class) {
             createWorld((JoinGameMessage) message);
-            message.markChannelRead(ChannelMessage.Channel.UNIVERSE);
+            message.markChannelRead(Channel.UNIVERSE);
         }
     }
 }
