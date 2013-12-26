@@ -25,6 +25,9 @@ package org.spoutcraft.client.game;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 
+/**
+ * An enum of the game modes.
+ */
 public enum GameMode {
     ADVENTURE(2),
     CREATIVE(1),
@@ -43,14 +46,31 @@ public enum GameMode {
         this.value = value;
     }
 
+    /**
+     * Returns the numerical value associated to the game mode.
+     *
+     * @return The numerical value
+     */
     public int value() {
         return value;
     }
 
+    /**
+     * Returns the game mode associated to the numerical value (ID).
+     *
+     * @param id The ID to lookup
+     * @return The associated game mode
+     */
     public static GameMode get(int id) {
         return map.get(id);
     }
 
+    /**
+     * Returns the game mode of the given name.
+     *
+     * @param name The name to lookup
+     * @return The associated game mode
+     */
     public static GameMode get(String name) {
         return valueOf(name.toUpperCase());
     }

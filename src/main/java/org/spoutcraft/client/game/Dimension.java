@@ -25,6 +25,9 @@ package org.spoutcraft.client.game;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 
+/**
+ * An enum of the game dimension types.
+ */
 public enum Dimension {
     NORMAL(0),
     NETHER(-1),
@@ -42,14 +45,31 @@ public enum Dimension {
         this.value = value;
     }
 
+    /**
+     * Returns the numerical value associated to the dimension.
+     *
+     * @return The numerical value
+     */
     public int value() {
         return value;
     }
 
+    /**
+     * Returns the dimension associated to the numerical value (ID).
+     *
+     * @param id The ID to lookup
+     * @return The associated dimension
+     */
     public static Dimension get(int id) {
         return map.get(id);
     }
 
+    /**
+     * Returns the dimension of the given name.
+     *
+     * @param name The name to lookup
+     * @return The associated dimension
+     */
     public static Dimension get(String name) {
         return valueOf(name.toUpperCase());
     }

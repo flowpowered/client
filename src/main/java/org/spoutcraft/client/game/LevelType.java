@@ -23,6 +23,9 @@
  */
 package org.spoutcraft.client.game;
 
+/**
+ * An enum of the level types.
+ */
 public enum LevelType {
     DEFAULT,
     FLAT,
@@ -30,6 +33,12 @@ public enum LevelType {
     AMPLIFIED,
     DEFAULT_1_1;
 
+    /**
+     * Returns the level type of the given name.
+     *
+     * @param name The name to lookup
+     * @return The associated level type
+     */
     public static LevelType get(String name) {
         return valueOf(name.toUpperCase());
     }

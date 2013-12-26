@@ -25,6 +25,9 @@ package org.spoutcraft.client.game;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 
+/**
+ * An enum of the game difficulties.
+ */
 public enum Difficulty {
     EASY(0),
     HARD(3),
@@ -43,14 +46,31 @@ public enum Difficulty {
         this.value = value;
     }
 
+    /**
+     * Returns the numerical value associated to the difficulty.
+     *
+     * @return The numerical value
+     */
     public int value() {
         return value;
     }
 
+    /**
+     * Returns the difficulty associated to the numerical value (ID).
+     *
+     * @param id The ID to lookup
+     * @return The associated difficulty
+     */
     public static Difficulty get(int id) {
         return map.get(id);
     }
 
+    /**
+     * Returns the difficulty of the given name.
+     *
+     * @param name The name to lookup
+     * @return The associated difficulty
+     */
     public static Difficulty get(String name) {
         return valueOf(name.toUpperCase());
     }
