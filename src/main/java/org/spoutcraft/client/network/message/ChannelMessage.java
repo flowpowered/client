@@ -23,6 +23,8 @@
  */
 package org.spoutcraft.client.network.message;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.flowpowered.networking.Message;
 
 /**
@@ -30,7 +32,7 @@ import com.flowpowered.networking.Message;
  * is given in the constructor. This list can be empty. When all channels in the list have read the message, it will be removed from the message queue in all the channels.
  */
 public abstract class ChannelMessage implements Message {
-    private short read;
+    private AtomicInteger read = new AtomicInteger(0);
     private final short requiredMask;
 
     /**
@@ -68,7 +70,12 @@ public abstract class ChannelMessage implements Message {
      * @param channel The channel that has read the message
      */
     public void markChannelRead(Channel channel) {
-        read |= channel.getMask();
+        boolean done = false;
+        while(!done) {
+            int readOld = read.get();
+            int readNew = readOld | channel.getMask();
+            done = read.compareAndSet(readOld, readNew);
+        }
     }
 
     /**
@@ -78,7 +85,7 @@ public abstract class ChannelMessage implements Message {
      * @return Whether or not the channel has read the message
      */
     public boolean isChannelRead(Channel channel) {
-        return (read & channel.getMask()) == channel.getMask();
+        return (read.get() & channel.getMask()) == channel.getMask();
     }
 
     /**
@@ -87,7 +94,7 @@ public abstract class ChannelMessage implements Message {
      * @return Whether or not all channels that have to read the message have done so
      */
     public boolean isFullyRead() {
-        return (read & requiredMask) == requiredMask;
+        return (read.get() & requiredMask) == requiredMask;
     }
 
     /**
