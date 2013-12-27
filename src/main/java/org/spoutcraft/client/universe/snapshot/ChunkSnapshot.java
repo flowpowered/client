@@ -32,6 +32,7 @@ import org.spout.math.vector.Vector3i;
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
+import org.spoutcraft.client.universe.store.AtomicBlockStore;
 
 /**
  *
@@ -44,11 +45,12 @@ public class ChunkSnapshot {
     private long updateNumber = 0;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-    public ChunkSnapshot(WorldSnapshot world, Vector3i position, short[] blockIDs, short[] blockSubIDs) {
+    public ChunkSnapshot(WorldSnapshot world, Chunk chunk) {
         this.world = world;
-        this.position = position;
-        this.blockIDs = blockIDs;
-        this.blockSubIDs = blockSubIDs;
+        this.position = chunk.getPosition();
+        final AtomicBlockStore blocks = chunk.getBlocks();
+        this.blockIDs = blocks.getBlockIdArray();
+        this.blockSubIDs = blocks.getDataArray();
     }
 
     public WorldSnapshot getWorld() {
@@ -97,24 +99,25 @@ public class ChunkSnapshot {
         return updateNumber;
     }
 
-    // This should not be exposed in any API
-    public short[] getBlockIDs() {
-        return blockIDs;
-    }
-
-    // This should not be exposed in any API
-    public short[] getBlockSubIDs() {
-        return blockSubIDs;
-    }
-
-    // This should not be exposed in any API
-    public void incrementUpdateNumber() {
-        updateNumber++;
-    }
-
-    // This should not be exposed in any API
-    public ReadWriteLock getLock() {
-        return lock;
+    public void update(Chunk current) {
+        if (!current.getPosition().equals(position) || !current.getWorld().getID().equals(world.getID())) {
+            throw new IllegalArgumentException("Cannot accept a chunk from another position or world");
+        }
+        final AtomicBlockStore blocks = current.getBlocks();
+        if (!blocks.isDirty()) {
+            return;
+        }
+        final Lock lock = this.lock.writeLock();
+        lock.lock();
+        try {
+            // TODO: update only the dirty blocks, unless the dirty arrays are overflown
+            blocks.getBlockIdArray(blockIDs);
+            blocks.getDataArray(blockSubIDs);
+            blocks.resetDirtyArrays();
+            updateNumber++;
+        } finally {
+            lock.unlock();
+        }
     }
 
     private static int getBlockIndex(int x, int y, int z) {

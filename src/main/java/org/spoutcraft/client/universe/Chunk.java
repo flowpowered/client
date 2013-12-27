@@ -23,14 +23,10 @@
  */
 package org.spoutcraft.client.universe;
 
-import java.util.concurrent.locks.Lock;
-
 import org.spout.math.vector.Vector3i;
 
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
-import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
-import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.universe.store.AtomicBlockStore;
 import org.spoutcraft.client.universe.store.impl.AtomicPaletteBlockStore;
 import org.spoutcraft.client.util.BitSize;
@@ -108,28 +104,8 @@ public class Chunk {
         blocks.setBlock(x & BLOCKS.MASK, y & BLOCKS.MASK, z & BLOCKS.MASK, material);
     }
 
-    public ChunkSnapshot buildSnapshot(WorldSnapshot worldSnapshot) {
-        return new ChunkSnapshot(worldSnapshot, position, blocks.getBlockIdArray(), blocks.getDataArray());
-    }
-
-    public void updateSnapshot(ChunkSnapshot old) {
-        if (!old.getPosition().equals(position) || !old.getWorld().getID().equals(world.getID())) {
-            throw new IllegalArgumentException("Cannot accept a chunk snapshot from another position or world");
-        }
-        if (!blocks.isDirty()) {
-            return;
-        }
-        final Lock lock = old.getLock().writeLock();
-        lock.lock();
-        try {
-            // TODO: update only the dirty blocks, unless the dirty arrays are overflown
-            blocks.getBlockIdArray(old.getBlockIDs());
-            blocks.getDataArray(old.getBlockSubIDs());
-            blocks.resetDirtyArrays();
-            old.incrementUpdateNumber();
-        } finally {
-            lock.unlock();
-        }
+    public AtomicBlockStore getBlocks() {
+        return blocks;
     }
 
     @Override

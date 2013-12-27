@@ -24,8 +24,6 @@
 package org.spoutcraft.client.universe;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import org.spout.math.vector.Vector3i;
@@ -34,8 +32,6 @@ import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
-import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
-import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.util.map.TripleIntObjectMap;
 import org.spoutcraft.client.util.map.impl.TTripleInt21ObjectHashMap;
 
@@ -121,37 +117,6 @@ public class World {
 
     public Collection<Chunk> getChunks() {
         return chunks.valueCollection();
-    }
-
-    public WorldSnapshot buildSnapshot() {
-        final WorldSnapshot snapshot = new WorldSnapshot(id, name);
-        for (Chunk chunk : chunks.valueCollection()) {
-            snapshot.setChunk(chunk.buildSnapshot(snapshot));
-        }
-        return snapshot;
-    }
-
-    public void updateSnapshot(WorldSnapshot old) {
-        if (old.getID() != id) {
-            throw new IllegalArgumentException("Cannot update a world with another ID");
-        }
-        final Set<Vector3i> validChunks = new HashSet<>();
-        for (Chunk chunk : chunks.valueCollection()) {
-            final Vector3i chunkPosition = chunk.getPosition();
-            final ChunkSnapshot oldChunk = old.getChunk(chunkPosition);
-            if (oldChunk != null) {
-                chunk.updateSnapshot(oldChunk);
-            } else {
-                old.setChunk(chunk.buildSnapshot(old));
-            }
-            validChunks.add(chunkPosition);
-        }
-        for (ChunkSnapshot chunkSnapshot : old.getChunks()) {
-            final Vector3i chunkSnapshotPosition = chunkSnapshot.getPosition();
-            if (!validChunks.contains(chunkSnapshotPosition)) {
-                old.removeChunk(chunkSnapshotPosition);
-            }
-        }
     }
 
     public GameMode getGameMode() {

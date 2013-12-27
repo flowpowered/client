@@ -98,7 +98,7 @@ public class Universe extends TickingElement {
 
         for (Entry<UUID, World> entry : worlds.entrySet()) {
             final UUID id = entry.getKey();
-            worlds.get(id).updateSnapshot(worldSnapshots.get(id));
+            worldSnapshots.get(id).update(worlds.get(id));
         }
     }
 
@@ -132,7 +132,7 @@ public class Universe extends TickingElement {
 
     private void addWorld(World world, boolean setActive) {
         worlds.put(world.getID(), world);
-        worldSnapshots.put(world.getID(), world.buildSnapshot());
+        worldSnapshots.put(world.getID(), new WorldSnapshot(world));
         worldIDsByName.put(world.getName(), world.getID());
         if (setActive) {
             activeWorld = world;
@@ -189,6 +189,7 @@ public class Universe extends TickingElement {
 
     /**
      * Processes the next {@link org.spoutcraft.client.network.message.ChannelMessage} in the network pipeline
+     *
      * @param message See {@link org.spoutcraft.client.network.message.ChannelMessage}
      */
     private void processMessage(ChannelMessage message) {
