@@ -26,7 +26,6 @@ package org.spoutcraft.client.universe;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,9 +41,9 @@ import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.ChannelMessage.Channel;
 import org.spoutcraft.client.network.message.play.JoinGameMessage;
 import org.spoutcraft.client.network.message.play.RespawnMessage;
-import org.spoutcraft.client.util.ticking.TickingElement;
 import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
+import org.spoutcraft.client.util.ticking.TickingElement;
 
 /**
  * Contains and manages all the voxel worlds.
@@ -69,11 +68,10 @@ public class Universe extends TickingElement {
         // TEST CODE
         final short[] halfChunkIDs = new short[Chunk.BLOCKS.VOLUME];
         final short[] halfChunkSubIDs = new short[Chunk.BLOCKS.VOLUME];
-        final Random random = new Random();
         for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
             for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
                 for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
-                    halfChunkIDs[yy << Chunk.BLOCKS.DOUBLE_BITS | zz << Chunk.BLOCKS.BITS | xx] = random.nextInt(10) == 0 ? 0 : Materials.SOLID.getID();
+                    halfChunkIDs[yy << Chunk.BLOCKS.DOUBLE_BITS | zz << Chunk.BLOCKS.BITS | xx] = Materials.SOLID.getID();
                 }
             }
         }
