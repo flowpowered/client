@@ -20,6 +20,9 @@ __Note:__ If you do not have [Gradle] installed you can use the gradlew files in
 
 In order to build Client you simply need to run the `gradle` command. You can find the compiled JAR files in `~/build/libs`.
 
+## Running
+After building Client, you can simply double-click `client-x.x.x-SNAPSHOT.jar` in `~/build/libs`.
+
 [Gradle]: http://www.gradle.org/
 [Eclipse]: http://www.eclipse.org/
 [IntelliJ]: http://www.jetbrains.com/idea/
