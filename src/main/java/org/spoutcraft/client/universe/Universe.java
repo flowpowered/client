@@ -247,6 +247,20 @@ public class Universe extends TickingElement {
 
     }
 
+    /**
+     * Decompresses the raw compressed data from the server into a 3D array that comprises:
+     *
+     * Section - The section of the column, ground up
+     * ChunkDataIndex - See {@link org.spoutcraft.client.universe.ChunkDataIndex}
+     * data - decompressed data as a byte
+     *
+     * @param groundUpContinuous True if this is the entire column, false if not. Used to determine if biome data is included
+     * @param primaryBitMap Bit map containing each section of the column, used to determine which sections are air and can be slipped
+     * @param compressedData Compressed data from the server
+     * @param hasSkyLight True if the compressed data has sky light, only {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}s can not provide this
+     * @return 3D decompressed byte array mapped to [SECTION][CHUNK_DATA_INDEX][DATA]
+     * @throws IOException If the chunk's data is corrupted during inflate or if all bytes are not decompressed
+     */
     private byte[][][] decompressChunkData(boolean groundUpContinuous, short primaryBitMap, byte[] compressedData, boolean hasSkyLight) throws IOException {
         final byte[][][] data = new byte[MAX_CHUNK_COLUMN_SECTIONS][][];
 
@@ -282,7 +296,7 @@ public class Universe extends TickingElement {
                 throw new IOException("Chunk data should be entirely decompressed but some bytes are still compressed!");
             }
         } catch (DataFormatException e) {
-            throw new IOException(e);
+            throw new IOException("Chunk data is corrupted!" , e);
         } finally {
             INFLATER.end();
         }
@@ -318,7 +332,7 @@ public class Universe extends TickingElement {
             index += Chunk.BLOCKS.HALF_VOLUME;
 
             // Step 4d. - Fill Block additional data
-            //TODO Official Minecraft doesn't use this as it simply lets mods go past 256 block ids.
+            //TODO Official Minecraft doesn't use this as it simply lets mods go past 256 block ids, should we support it?
             section[ChunkDataIndex.BLOCK_ADDITIONAL_DATA.value()] = new byte[Chunk.BLOCKS.VOLUME];
             Arrays.fill(section[ChunkDataIndex.BLOCK_ADDITIONAL_DATA.value()], (byte) 0);
 
@@ -339,6 +353,16 @@ public class Universe extends TickingElement {
         return data;
     }
 
+    /**
+     * Takes a byte array and splits each byte into two values
+     *
+     * This is used in ChunkData to pull out the data provided for metadata, light, and skylight
+     * @param sectionData The byte 2D array of the section of the column
+     * @param index See {@link org.spoutcraft.client.universe.ChunkDataIndex}
+     * @param decompressedData The byte array of decompressed data
+     * @param startIndex Where to start reading data in the decompressed data array
+     * @param length How much to read
+     */
     private void fillHalfByteDataArray(byte[][] sectionData, ChunkDataIndex index, byte[] decompressedData, int startIndex, int length) {
         int position = 0;
         for (int i = startIndex; i < startIndex + length; i++) {
@@ -350,6 +374,14 @@ public class Universe extends TickingElement {
         }
     }
 
+    /**
+     * Populates all non-air {@link Chunk}s in the column
+     *
+     * Any chunks that exist in the {@link org.spoutcraft.client.universe.World} will be replaced.
+     * @param columnX The column's x coordinate
+     * @param columnZ The column's z coordinate
+     * @param data The byte 3D array containing section, {@link org.spoutcraft.client.universe.ChunkDataIndex}, and byte (data)
+     */
     private void populateChunks(int columnX, int columnZ, byte[][][] data) {
         final int baseX = columnX >> Chunk.BLOCKS.BITS;
         final int baseZ = columnZ >> Chunk.BLOCKS.BITS;
