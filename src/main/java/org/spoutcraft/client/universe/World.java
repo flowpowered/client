@@ -25,21 +25,20 @@ package org.spoutcraft.client.universe;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
-import gnu.trove.iterator.TLongObjectIterator;
+import org.spout.math.vector.Vector3i;
+
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.network.message.play.ChunkDataBulkMessage;
 import org.spoutcraft.client.network.message.play.ChunkDataMessage;
-import org.spoutcraft.client.util.map.TripleIntObjectMap;
-import org.spoutcraft.client.util.map.impl.TTripleInt21ObjectHashMap;
-
-import org.spout.math.vector.Vector3i;
 
 /**
  *
@@ -51,7 +50,7 @@ public class World {
     private static final byte[] UNLOAD_CHUNKS_IN_COLUMN = {0x78, (byte) 0x9C, 0x63, 0x64, 0x1C, (byte) 0xD9, 0x00, 0x00, (byte) 0x81, (byte) 0x80, 0x01, 0x01};
     private static final Inflater INFLATER = new Inflater();
     //Storage
-    private final TripleIntObjectMap<Chunk> chunks = new TTripleInt21ObjectHashMap<>();
+    private final Map<Vector3i, Chunk> chunks = new ConcurrentHashMap<>();
     private final UUID id;
     private final String name;
     // Characteristics
@@ -98,37 +97,36 @@ public class World {
         this.spawnPosition = spawnPosition;
     }
 
-    public boolean hasChunk(Vector3i position) {
-        return hasChunk(position.getX(), position.getY(), position.getZ());
-    }
-
     public boolean hasChunk(int x, int y, int z) {
-        return chunks.containsKey(x, y, z);
+        return hasChunk(new Vector3i(x, y, z));
     }
 
-    public Chunk getChunk(Vector3i position) {
-        return getChunk(position.getX(), position.getY(), position.getZ());
+    public boolean hasChunk(Vector3i position) {
+        return chunks.containsKey(position);
     }
 
     public Chunk getChunk(int x, int y, int z) {
-        return chunks.get(x, y, z);
+        return getChunk(new Vector3i(x, y, z));
+    }
+
+    public Chunk getChunk(Vector3i position) {
+        return chunks.get(position);
     }
 
     public Chunk setChunk(Chunk chunk) {
-        final Vector3i position = chunk.getPosition();
-        return chunks.put(position.getX(), position.getY(), position.getZ(), chunk);
-    }
-
-    public Chunk removeChunk(Vector3i position) {
-        return removeChunk(position.getX(), position.getY(), position.getZ());
+        return chunks.put(chunk.getPosition(), chunk);
     }
 
     public Chunk removeChunk(int x, int y, int z) {
-        return chunks.remove(x, y, z);
+        return removeChunk(new Vector3i(x, y, z));
+    }
+
+    public Chunk removeChunk(Vector3i position) {
+        return chunks.remove(position);
     }
 
     public Collection<Chunk> getChunks() {
-        return chunks.valueCollection();
+        return chunks.values();
     }
 
     public GameMode getGameMode() {
@@ -180,14 +178,17 @@ public class World {
         return id.hashCode();
     }
 
+    // TODO: move all of this to Universe! No networking related stuff in world, chunk or block classes.
+
     /**
      * Handles a {@link org.spoutcraft.client.network.message.play.ChunkDataMessage}
+     *
      * @param message See {@link org.spoutcraft.client.network.message.play.ChunkDataMessage}
      */
     public void handleChunkData(ChunkDataMessage message) {
-        //Check if we should remove a column of chunks
+        // Check if we should remove a column of chunks
         if (Arrays.equals(UNLOAD_CHUNKS_IN_COLUMN, message.getCompressedData())) {
-            removeChunkColumn(message.getX(), message.getZ());
+            removeChunkColumn(message.getX(), message.getZ(), 0, MAX_CHUNK_COLUMN_SECTIONS);
         } else {
             addOrUpdateChunks(message.getX(), message.getZ(), message.getPrimaryBitMap(), message.getAddBitMap(), message.getCompressedSize(), message.getCompressedData());
         }
@@ -195,6 +196,7 @@ public class World {
 
     /**
      * Handles a {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}
+     *
      * @param message See {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}
      */
     public void handleChunkDataBulk(ChunkDataBulkMessage message) {
@@ -203,6 +205,7 @@ public class World {
 
     /**
      * Updates or adds a new {@link org.spoutcraft.client.universe.Chunk} using data provided by the server
+     *
      * @param columnX
      * @param columnZ
      * @param primaryBitMap
@@ -211,23 +214,17 @@ public class World {
      * @param compressedData
      */
     private void addOrUpdateChunks(int columnX, int columnZ, short primaryBitMap, short addBitMap, int compressedSize, byte[] compressedData) {
-
     }
 
     /**
-     * Removes an entire column of {@link org.spoutcraft.client.universe.Chunk} from the client.
+     * Removes an entire column of {@link org.spoutcraft.client.universe.Chunk} from the world, between the the chunk Y coordinates, (start inclusive, end exclusive).
      *
      * @param columnX The x-axis chunk coordinate of the column
      * @param columnZ The z-axis chunk coodinate of the column
      */
-    private void removeChunkColumn(int columnX, int columnZ) {
-        //TODO DDoS, verify this is safe to do
-        final TLongObjectIterator<Chunk> iterator = chunks.iterator();
-        while (iterator.hasNext()) {
-            final Chunk chunk = iterator.value();
-            if (chunk.getX() == columnX && chunk.getZ() == columnZ) {
-                iterator.remove();
-            }
+    private void removeChunkColumn(int columnX, int columnZ, int startY, int endY) {
+        for (; startY < endY; startY++) {
+            removeChunk(columnX, startY, columnZ);
         }
     }
 }

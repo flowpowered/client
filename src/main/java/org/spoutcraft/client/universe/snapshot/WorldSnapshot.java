@@ -25,21 +25,21 @@ package org.spoutcraft.client.universe.snapshot;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.spout.math.vector.Vector3i;
 
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.World;
-import org.spoutcraft.client.util.map.TripleIntObjectMap;
-import org.spoutcraft.client.util.map.impl.TTripleInt21ObjectHashMap;
 
 /**
  *
  */
 public class WorldSnapshot {
-    private final TripleIntObjectMap<ChunkSnapshot> chunks = new TTripleInt21ObjectHashMap<>();
+    private final Map<Vector3i, ChunkSnapshot> chunks = new ConcurrentHashMap<>();
     private final UUID id;
     private final String name;
 
@@ -47,8 +47,7 @@ public class WorldSnapshot {
         this.id = world.getID();
         this.name = world.getName();
         for (Chunk chunk : world.getChunks()) {
-            final Vector3i position = chunk.getPosition();
-            chunks.put(position.getX(), position.getY(), position.getZ(), new ChunkSnapshot(this, chunk));
+            chunks.put(chunk.getPosition(), new ChunkSnapshot(this, chunk));
         }
     }
 
@@ -60,24 +59,24 @@ public class WorldSnapshot {
         return name;
     }
 
-    public boolean hasChunk(Vector3i position) {
-        return hasChunk(position.getX(), position.getY(), position.getZ());
-    }
-
     public boolean hasChunk(int x, int y, int z) {
-        return chunks.containsKey(x, y, z);
+        return hasChunk(new Vector3i(x, y, z));
     }
 
-    public ChunkSnapshot getChunk(Vector3i position) {
-        return getChunk(position.getX(), position.getY(), position.getZ());
+    public boolean hasChunk(Vector3i position) {
+        return chunks.containsKey(position);
     }
 
     public ChunkSnapshot getChunk(int x, int y, int z) {
-        return chunks.get(x, y, z);
+        return getChunk(new Vector3i(x, y, z));
+    }
+
+    public ChunkSnapshot getChunk(Vector3i position) {
+        return chunks.get(position);
     }
 
     public Collection<ChunkSnapshot> getChunks() {
-        return chunks.valueCollection();
+        return chunks.values();
     }
 
     public void update(World current) {
@@ -87,18 +86,18 @@ public class WorldSnapshot {
         final Set<Vector3i> validChunks = new HashSet<>();
         for (Chunk chunk : current.getChunks()) {
             final Vector3i position = chunk.getPosition();
-            final ChunkSnapshot chunkSnapshot = chunks.get(position.getX(), position.getY(), position.getZ());
+            final ChunkSnapshot chunkSnapshot = chunks.get(position);
             if (chunkSnapshot != null) {
                 chunkSnapshot.update(chunk);
             } else {
-                chunks.put(position.getX(), position.getY(), position.getZ(), new ChunkSnapshot(this, chunk));
+                chunks.put(position, new ChunkSnapshot(this, chunk));
             }
             validChunks.add(position);
         }
-        for (ChunkSnapshot chunkSnapshot : chunks.valueCollection()) {
+        for (ChunkSnapshot chunkSnapshot : chunks.values()) {
             final Vector3i position = chunkSnapshot.getPosition();
             if (!validChunks.contains(position)) {
-                chunks.remove(position.getX(), position.getY(), position.getZ());
+                chunks.remove(position);
             }
         }
     }
