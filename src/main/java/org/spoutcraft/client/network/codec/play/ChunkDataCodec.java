@@ -23,11 +23,11 @@ public class ChunkDataCodec extends Codec<ChunkDataMessage> implements MessageHa
         final int z = buf.readInt();
         final boolean groundUpContinuous = buf.readBoolean();
         final int primaryBitMap = buf.readUnsignedShort();
-        final int addBitMap = buf.readUnsignedShort();
+        final int additionalDataBitMap = buf.readUnsignedShort();
         final int compressedSize = buf.readInt();
         final byte[] compressedData = new byte[compressedSize];
         buf.readBytes(compressedData);
-        return new ChunkDataMessage(x, z, groundUpContinuous, (short) primaryBitMap, (short) addBitMap, compressedSize, compressedData);
+        return new ChunkDataMessage(x, z, groundUpContinuous, (short) primaryBitMap, (short) additionalDataBitMap, compressedSize, compressedData);
     }
 
     @Override

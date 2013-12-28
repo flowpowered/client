@@ -3,30 +3,30 @@ package org.spoutcraft.client.network.message.play;
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 public class ChunkDataMessage extends ChannelMessage {
-    private final int x;
-    private final int z;
+    private final int columnX;
+    private final int columnZ;
     private final boolean groundUpContinuous;
     private final short primaryBitMap;
-    private final short addBitMap;
+    private final short additionalDataBitMap;
     private final int compressedSize;
     private final byte[] compressedData;
 
-    public ChunkDataMessage(int x, int z, boolean groundUpContinuous, short primaryBitMap, short addBitMap, int compressedSize, byte[] compressedData) {
-        this.x = x;
-        this.z = z;
+    public ChunkDataMessage(int columnX, int columnZ, boolean groundUpContinuous, short primaryBitMap, short additionalDataBitMap, int compressedSize, byte[] compressedData) {
+        this.columnX = columnX;
+        this.columnZ = columnZ;
         this.groundUpContinuous = groundUpContinuous;
         this.primaryBitMap = primaryBitMap;
-        this.addBitMap = addBitMap;
+        this.additionalDataBitMap = additionalDataBitMap;
         this.compressedSize = compressedSize;
         this.compressedData = compressedData;
     }
 
-    public int getX() {
-        return x;
+    public int getColumnX() {
+        return columnX;
     }
 
-    public int getZ() {
-        return z;
+    public int getColumnZ() {
+        return columnZ;
     }
 
     public boolean isGroundUpContinuous() {
@@ -37,8 +37,8 @@ public class ChunkDataMessage extends ChannelMessage {
         return primaryBitMap;
     }
 
-    public short getAddBitMap() {
-        return addBitMap;
+    public short getAdditionalDataBitMap() {
+        return additionalDataBitMap;
     }
 
     public int getCompressedSize() {

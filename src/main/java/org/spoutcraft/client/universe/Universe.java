@@ -23,14 +23,19 @@
  */
 package org.spoutcraft.client.universe;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.spout.math.vector.Vector3i;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.game.Difficulty;
@@ -40,18 +45,26 @@ import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.network.Network;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.ChannelMessage.Channel;
+import org.spoutcraft.client.network.message.play.ChunkDataBulkMessage;
 import org.spoutcraft.client.network.message.play.ChunkDataMessage;
 import org.spoutcraft.client.network.message.play.JoinGameMessage;
 import org.spoutcraft.client.network.message.play.RespawnMessage;
 import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
+import org.spoutcraft.client.util.BitSize;
 import org.spoutcraft.client.util.ticking.TickingElement;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  * Contains and manages all the voxel worlds.
  */
 public class Universe extends TickingElement {
     private static final int TPS = 20;
+    //Chunk data handling
+    private static final int MAX_CHUNK_COLUMN_SECTIONS = 16;
+    private static final byte[] UNLOAD_CHUNKS_IN_COLUMN = {0x78, (byte) 0x9C, 0x63, 0x64, 0x1C, (byte) 0xD9, 0x00, 0x00, (byte) 0x81, (byte) 0x80, 0x01, 0x01};
+    private static final Inflater INFLATER = new Inflater();
     private final Game game;
     private final Map<UUID, World> worlds = new ConcurrentHashMap<>();
     private final Map<UUID, WorldSnapshot> worldSnapshots = new ConcurrentHashMap<>();
@@ -159,6 +172,22 @@ public class Universe extends TickingElement {
     }
 
     /**
+     * Processes the next {@link org.spoutcraft.client.network.message.ChannelMessage} in the network pipeline
+     *
+     * @param message See {@link org.spoutcraft.client.network.message.ChannelMessage}
+     */
+    private void handleMessage(ChannelMessage message) {
+        if (message.getClass() == JoinGameMessage.class) {
+            handleJoinGame((JoinGameMessage) message);
+        } else if (message.getClass() == RespawnMessage.class) {
+            handleRespawn((RespawnMessage) message);
+        } else if (message.getClass() == ChunkDataMessage.class) {
+            handleChunkData((ChunkDataMessage) message);
+        }
+        message.markChannelRead(Channel.UNIVERSE);
+    }
+
+    /**
      * Handles a {@link org.spoutcraft.client.network.message.play.JoinGameMessage}
      *
      * @param message See {@link org.spoutcraft.client.network.message.play.JoinGameMessage}
@@ -188,18 +217,197 @@ public class Universe extends TickingElement {
     }
 
     /**
-     * Processes the next {@link org.spoutcraft.client.network.message.ChannelMessage} in the network pipeline
+     * Handles a {@link org.spoutcraft.client.network.message.play.ChunkDataMessage}
      *
-     * @param message See {@link org.spoutcraft.client.network.message.ChannelMessage}
+     * @param message See {@link org.spoutcraft.client.network.message.play.ChunkDataMessage}
      */
-    private void handleMessage(ChannelMessage message) {
-        if (message.getClass() == JoinGameMessage.class) {
-            handleJoinGame((JoinGameMessage) message);
-        } else if (message.getClass() == RespawnMessage.class) {
-            handleRespawn((RespawnMessage) message);
-        } else if (message.getClass() == ChunkDataMessage.class) {
-            activeWorld.get().handleChunkData((ChunkDataMessage) message);
+    public void handleChunkData(ChunkDataMessage message) {
+        // Check if we should remove a column of chunks
+        if (Arrays.equals(UNLOAD_CHUNKS_IN_COLUMN, message.getCompressedData())) {
+            activeWorld.get().removeChunkColumn(message.getColumnX(), message.getColumnZ(), 0, MAX_CHUNK_COLUMN_SECTIONS);
+       } else {
+            byte[][][] chunkData = null;
+            try {
+                chunkData = decompressChunkData(message.isGroundUpContinuous(), message.getPrimaryBitMap(), message.getCompressedData(), true);
+            } catch (IOException e) {
+                System.out.println(e);
+            }
+            if (chunkData != null) {
+                populateChunks(message.getColumnX(), message.getColumnZ(), chunkData);
+            }
         }
-        message.markChannelRead(Channel.UNIVERSE);
+    }
+
+    /**
+     * Handles a {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}
+     *
+     * @param message See {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}
+     */
+    public void handleChunkDataBulk(ChunkDataBulkMessage message) {
+
+    }
+
+    private byte[][][] decompressChunkData(boolean groundUpContinuous, short primaryBitMap, byte[] compressedData, boolean hasSkyLight) throws IOException {
+        final byte[][][] data = new byte[MAX_CHUNK_COLUMN_SECTIONS][][];
+
+        //Step 1 - Find out how many non-air chunks we have in the column
+        int dataSize = 0;
+        for (int i = 0; i < MAX_CHUNK_COLUMN_SECTIONS; i++) {
+            if ((primaryBitMap & 1 << i) != 0) {
+                data[i] = new byte[ChunkDataIndex.values().length][];
+                dataSize += Chunk.BLOCKS.HALF_VOLUME * 5;
+            }
+        }
+
+        //Step 2 - If ground up continuous, biome data is sent per column. We need to add on to the data size for this
+        if (groundUpContinuous) {
+            dataSize += Chunk.BLOCKS.AREA;
+        }
+
+        //Step 3 - Decompress the data
+        final byte[] decompressedData = new byte[dataSize];
+        INFLATER.setInput(compressedData);
+        INFLATER.getRemaining();
+        int decompressIndex = 0;
+
+        try {
+            while(decompressIndex < decompressedData.length) {
+                int decompressedAmount = INFLATER.inflate(decompressedData, decompressIndex, decompressedData.length - decompressIndex);
+                decompressIndex += decompressedAmount;
+                if (decompressedAmount == 0) {
+                    break;
+                }
+            }
+            if (!INFLATER.needsInput()) {
+                throw new IOException("Chunk data should be entirely decompressed but some bytes are still compressed!");
+            }
+        } catch (DataFormatException e) {
+            throw new IOException(e);
+        } finally {
+            INFLATER.end();
+        }
+
+        /*
+         * Step 4 - Build data array
+         *
+         * Data is ordered by [SECTION][CHUNK_DATA_INDEX][DATA]
+         */
+        for (final byte[][] section : data) {
+            if (section == null) {
+                continue;
+            }
+
+            int index = 0;
+
+            // Step 4a. - Fill Block ids
+            section[ChunkDataIndex.BLOCK_ID.value()] = new byte[Chunk.BLOCKS.VOLUME];
+            System.arraycopy(decompressedData, 0, section[ChunkDataIndex.BLOCK_ID.value()], 0, Chunk.BLOCKS.VOLUME);
+
+            index += Chunk.BLOCKS.VOLUME;
+
+            // Step 4b. - Fill Block metadata
+            section[ChunkDataIndex.BLOCK_METADATA.value()] = new byte[Chunk.BLOCKS.VOLUME];
+            fillHalfByteDataArray(section, ChunkDataIndex.BLOCK_METADATA, decompressedData, index, Chunk.BLOCKS.HALF_VOLUME);
+
+            index += Chunk.BLOCKS.HALF_VOLUME;
+
+            // Step 4c. - Fill Block light
+            section[ChunkDataIndex.BLOCK_LIGHT.value()] = new byte[Chunk.BLOCKS.VOLUME];
+            fillHalfByteDataArray(section, ChunkDataIndex.BLOCK_LIGHT, decompressedData, index, Chunk.BLOCKS.HALF_VOLUME);
+
+            index += Chunk.BLOCKS.HALF_VOLUME;
+
+            // Step 4d. - Fill Block additional data
+            //TODO Official Minecraft doesn't use this as it simply lets mods go past 256 block ids.
+            section[ChunkDataIndex.BLOCK_ADDITIONAL_DATA.value()] = new byte[Chunk.BLOCKS.VOLUME];
+            Arrays.fill(section[ChunkDataIndex.BLOCK_ADDITIONAL_DATA.value()], (byte) 0);
+
+            index += Chunk.BLOCKS.HALF_VOLUME;
+
+            // Step 4e. - Fill Block sky light
+            section[ChunkDataIndex.BLOCK_SKY_LIGHT.value()] = new byte[Chunk.BLOCKS.VOLUME];
+
+            if (!hasSkyLight) {
+                Arrays.fill(section[ChunkDataIndex.BLOCK_SKY_LIGHT.value()], (byte) 0);
+            } else {
+                fillHalfByteDataArray(section, ChunkDataIndex.BLOCK_SKY_LIGHT, decompressedData, index, Chunk.BLOCKS.HALF_VOLUME);
+            }
+
+            //TODO Handle Biomes later as they are unique
+        }
+
+        return data;
+    }
+
+    private void fillHalfByteDataArray(byte[][] sectionData, ChunkDataIndex index, byte[] decompressedData, int startIndex, int length) {
+        int position = 0;
+        for (int i = startIndex; i < startIndex + length; i++) {
+            final byte left = (byte) ((decompressedData[i] >> 4) & 0xF);
+            final byte right = (byte) (decompressedData[i] & 0xF);
+
+            sectionData[index.value()][position++] = left;
+            sectionData[index.value()][position++] = right;
+        }
+    }
+
+    private void populateChunks(int columnX, int columnZ, byte[][][] data) {
+        final int baseX = columnX >> Chunk.BLOCKS.BITS;
+        final int baseZ = columnZ >> Chunk.BLOCKS.BITS;
+
+        for (int i = 0; i < MAX_CHUNK_COLUMN_SECTIONS; i++) {
+            if (data[i] == null) {
+                continue;
+            }
+            int baseY = i << Chunk.BLOCKS.BITS;
+            for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
+                for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
+                    for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
+                        int x = xx + baseX;
+                        int y = yy + baseY;
+                        int z = zz + baseZ;
+
+                        final short[] blockIds = ByteBuffer.wrap(data[i][ChunkDataIndex.BLOCK_ID.value()]).asShortBuffer().array();
+                        final short[] blockData = new short[Chunk.BLOCKS.VOLUME];
+                        for (int d = 0; i < blockData.length; i++) {
+                            blockData[i] = (short) (((data[i][ChunkDataIndex.BLOCK_METADATA.value()][d] & 0xF) << 8) | ((data[i][ChunkDataIndex.BLOCK_LIGHT.value()][d] & 0xF) << 4) | ((data[i][ChunkDataIndex.BLOCK_SKY_LIGHT.value()][d] & 0xF)));
+                        }
+                        activeWorld.get().setChunk(new Chunk(activeWorld.get(), new Vector3i(x, y, z), blockIds, new short[Chunk.BLOCKS.VOLUME]));
+                    }
+                }
+            }
+        }
+    }
+}
+
+enum ChunkDataIndex {
+    /**
+     * First index is {@link org.spoutcraft.client.universe.block.material.Material} type, whole byte
+     */
+    BLOCK_ID(0),
+    /**
+     * Second index is {@link org.spoutcraft.client.universe.block.Block} metadata, half byte
+     */
+    BLOCK_METADATA(1),
+    /**
+     * Third index is {@link org.spoutcraft.client.universe.block.Block} light values, half byte
+     */
+    BLOCK_LIGHT(2),
+    /**
+     * Fourth index is {@link org.spoutcraft.client.universe.block.Block} additional data, half byte and should always be 0
+     */
+    BLOCK_ADDITIONAL_DATA(3),
+    /**
+     * Fifth index is {@link org.spoutcraft.client.universe.block.Block} sky light, half byte
+     */
+    BLOCK_SKY_LIGHT(4);
+
+    private final int value;
+
+    ChunkDataIndex(int value) {
+        this.value = value;
+    }
+
+    public int value() {
+        return value;
     }
 }

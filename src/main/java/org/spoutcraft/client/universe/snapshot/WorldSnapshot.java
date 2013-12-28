@@ -30,10 +30,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.spout.math.vector.Vector3i;
-
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.World;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  *

@@ -23,32 +23,22 @@
  */
 package org.spoutcraft.client.universe;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.zip.Deflater;
-import java.util.zip.Inflater;
-
-import org.spout.math.vector.Vector3i;
 
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
-import org.spoutcraft.client.network.message.play.ChunkDataBulkMessage;
-import org.spoutcraft.client.network.message.play.ChunkDataMessage;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  *
  */
 public class World {
-    //Chunk data handling
-    private static final int MAX_CHUNK_COLUMN_SECTIONS = 16;
-    private static final int CHUNK_DECOMPRESSION_LEVEL = Deflater.BEST_SPEED;
-    private static final byte[] UNLOAD_CHUNKS_IN_COLUMN = {0x78, (byte) 0x9C, 0x63, 0x64, 0x1C, (byte) 0xD9, 0x00, 0x00, (byte) 0x81, (byte) 0x80, 0x01, 0x01};
-    private static final Inflater INFLATER = new Inflater();
     //Storage
     private final Map<Vector3i, Chunk> chunks = new ConcurrentHashMap<>();
     private final UUID id;
@@ -125,6 +115,18 @@ public class World {
         return chunks.remove(position);
     }
 
+    /**
+     * Removes an entire column of {@link org.spoutcraft.client.universe.Chunk} from the world, between the the chunk Y coordinates, (start inclusive, end exclusive).
+     *
+     * @param columnX The x-axis chunk coordinate of the column
+     * @param columnZ The z-axis chunk coordinate of the column
+     */
+    public void removeChunkColumn(int columnX, int columnZ, int startY, int endY) {
+        for (; startY < endY; startY++) {
+            removeChunk(columnX, startY, columnZ);
+        }
+    }
+
     public Collection<Chunk> getChunks() {
         return chunks.values();
     }
@@ -176,55 +178,5 @@ public class World {
     @Override
     public int hashCode() {
         return id.hashCode();
-    }
-
-    // TODO: move all of this to Universe! No networking related stuff in world, chunk or block classes.
-
-    /**
-     * Handles a {@link org.spoutcraft.client.network.message.play.ChunkDataMessage}
-     *
-     * @param message See {@link org.spoutcraft.client.network.message.play.ChunkDataMessage}
-     */
-    public void handleChunkData(ChunkDataMessage message) {
-        // Check if we should remove a column of chunks
-        if (Arrays.equals(UNLOAD_CHUNKS_IN_COLUMN, message.getCompressedData())) {
-            removeChunkColumn(message.getX(), message.getZ(), 0, MAX_CHUNK_COLUMN_SECTIONS);
-        } else {
-            addOrUpdateChunks(message.getX(), message.getZ(), message.getPrimaryBitMap(), message.getAddBitMap(), message.getCompressedSize(), message.getCompressedData());
-        }
-    }
-
-    /**
-     * Handles a {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}
-     *
-     * @param message See {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}
-     */
-    public void handleChunkDataBulk(ChunkDataBulkMessage message) {
-
-    }
-
-    /**
-     * Updates or adds a new {@link org.spoutcraft.client.universe.Chunk} using data provided by the server
-     *
-     * @param columnX
-     * @param columnZ
-     * @param primaryBitMap
-     * @param addBitMap
-     * @param compressedSize
-     * @param compressedData
-     */
-    private void addOrUpdateChunks(int columnX, int columnZ, short primaryBitMap, short addBitMap, int compressedSize, byte[] compressedData) {
-    }
-
-    /**
-     * Removes an entire column of {@link org.spoutcraft.client.universe.Chunk} from the world, between the the chunk Y coordinates, (start inclusive, end exclusive).
-     *
-     * @param columnX The x-axis chunk coordinate of the column
-     * @param columnZ The z-axis chunk coodinate of the column
-     */
-    private void removeChunkColumn(int columnX, int columnZ, int startY, int endY) {
-        for (; startY < endY; startY++) {
-            removeChunk(columnX, startY, columnZ);
-        }
     }
 }
