@@ -39,6 +39,7 @@ import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.network.Network;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.ChannelMessage.Channel;
+import org.spoutcraft.client.network.message.play.ChunkDataMessage;
 import org.spoutcraft.client.network.message.play.JoinGameMessage;
 import org.spoutcraft.client.network.message.play.RespawnMessage;
 import org.spoutcraft.client.universe.block.material.Materials;
@@ -81,6 +82,7 @@ public class Universe extends TickingElement {
                 world.setChunk(new Chunk(world, new Vector3i(xx, 0, zz), halfChunkIDs, halfChunkSubIDs));
             }
         }
+
         addWorld(world, true);
     }
 
@@ -92,7 +94,7 @@ public class Universe extends TickingElement {
             final Iterator<ChannelMessage> messages = network.getChannel(Channel.UNIVERSE);
             while (messages.hasNext()) {
                 final ChannelMessage message = messages.next();
-                processMessage(message);
+                handleMessage(message);
             }
         }
 
@@ -156,22 +158,20 @@ public class Universe extends TickingElement {
     }
 
     /**
-     * Creates a {@link org.spoutcraft.client.universe.World} from a {@link org.spoutcraft.client.network.message.play.JoinGameMessage}
+     * Handles a {@link org.spoutcraft.client.network.message.play.JoinGameMessage}
      *
      * @param message See {@link org.spoutcraft.client.network.message.play.JoinGameMessage}
-     * @return The constructed {@link org.spoutcraft.client.universe.World}
      */
-    private World createWorld(JoinGameMessage message) {
-        return createWorld(message.getGameMode(), message.getDimension(), message.getDifficulty(), message.getLevelType(), true);
+    private void handleJoinGame(JoinGameMessage message) {
+        createWorld(message.getGameMode(), message.getDimension(), message.getDifficulty(), message.getLevelType(), true);
     }
 
     /**
-     * Updates a {@link org.spoutcraft.client.universe.World} from a {@link org.spoutcraft.client.network.message.play.RespawnMessage}
+     * Handles a {@link org.spoutcraft.client.network.message.play.RespawnMessage}
      *
      * @param message See {@link org.spoutcraft.client.network.message.play.RespawnMessage}
-     * @return The constructed {@link org.spoutcraft.client.universe.World}
      */
-    private World updateWorld(RespawnMessage message) {
+    private void handleRespawn(RespawnMessage message) {
         final World world;
         if (message.getDimension() == activeWorld.getDimension()) {
             world = activeWorld;
@@ -184,7 +184,6 @@ public class Universe extends TickingElement {
             world.setDifficulty(message.getDifficulty());
             world.setLevelType(message.getLevelType());
         }
-        return world;
     }
 
     /**
@@ -192,10 +191,14 @@ public class Universe extends TickingElement {
      *
      * @param message See {@link org.spoutcraft.client.network.message.ChannelMessage}
      */
-    private void processMessage(ChannelMessage message) {
+    private void handleMessage(ChannelMessage message) {
         if (message.getClass() == JoinGameMessage.class) {
-            createWorld((JoinGameMessage) message);
-            message.markChannelRead(Channel.UNIVERSE);
+            handleJoinGame((JoinGameMessage) message);
+        } else if (message.getClass() == RespawnMessage.class) {
+            handleRespawn((RespawnMessage) message);
+        } else if (message.getClass() == ChunkDataMessage.class) {
+            activeWorld.handleChunkData((ChunkDataMessage) message);
         }
+        message.markChannelRead(Channel.UNIVERSE);
     }
 }

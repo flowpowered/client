@@ -71,7 +71,7 @@ public abstract class ChannelMessage implements Message {
      */
     public void markChannelRead(Channel channel) {
         boolean done = false;
-        while(!done) {
+        while (!done) {
             int readOld = read.get();
             int readNew = readOld | channel.getMask();
             done = read.compareAndSet(readOld, readNew);

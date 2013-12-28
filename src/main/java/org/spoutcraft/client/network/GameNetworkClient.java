@@ -25,9 +25,7 @@ package org.spoutcraft.client.network;
 
 import com.flowpowered.networking.NetworkClient;
 import com.flowpowered.networking.session.Session;
-
 import io.netty.channel.Channel;
-
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.network.protocol.HandshakeProtocol;
 

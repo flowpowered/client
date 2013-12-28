@@ -28,10 +28,8 @@ import java.io.IOException;
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.exception.UnknownPacketException;
 import com.flowpowered.networking.protocol.Protocol;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-
 import org.spoutcraft.client.network.ByteBufUtils;
 
 /**
