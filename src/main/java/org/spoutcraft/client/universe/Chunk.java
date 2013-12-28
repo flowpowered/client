@@ -37,6 +37,8 @@ import org.spoutcraft.client.util.BitSize;
 public class Chunk {
     // Stores the size of the amount of blocks in this Chunk
     public static final BitSize BLOCKS = new BitSize(4);
+    // Default size of the arrays in the block store that store the dirty blocks since the last reset
+    private static final int DIRTY_ARRAY_SIZE = 10;
     // Stores all the blocks in the chunk
     private final AtomicBlockStore blocks;
     // A reference to the chunk's world
@@ -47,13 +49,13 @@ public class Chunk {
     public Chunk(World world, Vector3i position) {
         this.world = world;
         this.position = position;
-        blocks = new AtomicPaletteBlockStore(BLOCKS.BITS, true, 10);
+        blocks = new AtomicPaletteBlockStore(BLOCKS.BITS, true, DIRTY_ARRAY_SIZE);
     }
 
     public Chunk(World world, Vector3i position, short[] blocks, short[] data) {
         this.world = world;
         this.position = position;
-        this.blocks = new AtomicPaletteBlockStore(BLOCKS.BITS, true, false, 10, blocks, data);
+        this.blocks = new AtomicPaletteBlockStore(BLOCKS.BITS, true, false, DIRTY_ARRAY_SIZE, blocks, data);
     }
 
     public World getWorld() {

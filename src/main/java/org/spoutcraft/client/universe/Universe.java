@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.spout.math.vector.Vector3i;
 
@@ -55,7 +56,7 @@ public class Universe extends TickingElement {
     private final Map<UUID, World> worlds = new ConcurrentHashMap<>();
     private final Map<UUID, WorldSnapshot> worldSnapshots = new ConcurrentHashMap<>();
     private final Map<String, UUID> worldIDsByName = new ConcurrentHashMap<>();
-    private World activeWorld;
+    private AtomicReference<World> activeWorld;
 
     public Universe(Game game) {
         super(TPS);
@@ -125,7 +126,7 @@ public class Universe extends TickingElement {
     }
 
     public WorldSnapshot getActiveWorldSnapshot() {
-        return activeWorld != null ? worldSnapshots.get(activeWorld.getID()) : null;
+        return activeWorld != null ? worldSnapshots.get(activeWorld.get().getID()) : null;
     }
 
     private World getWorld(String name) {
@@ -137,7 +138,7 @@ public class Universe extends TickingElement {
         worldSnapshots.put(world.getID(), new WorldSnapshot(world));
         worldIDsByName.put(world.getName(), world.getID());
         if (setActive) {
-            activeWorld = world;
+            activeWorld = new AtomicReference<>(world);
         }
     }
 
@@ -173,8 +174,8 @@ public class Universe extends TickingElement {
      */
     private void handleRespawn(RespawnMessage message) {
         final World world;
-        if (message.getDimension() == activeWorld.getDimension()) {
-            world = activeWorld;
+        if (message.getDimension() == activeWorld.get().getDimension()) {
+            world = activeWorld.get();
         } else {
             world = getWorld("world-" + message.getDimension().name());
         }
@@ -197,7 +198,7 @@ public class Universe extends TickingElement {
         } else if (message.getClass() == RespawnMessage.class) {
             handleRespawn((RespawnMessage) message);
         } else if (message.getClass() == ChunkDataMessage.class) {
-            activeWorld.handleChunkData((ChunkDataMessage) message);
+            activeWorld.get().handleChunkData((ChunkDataMessage) message);
         }
         message.markChannelRead(Channel.UNIVERSE);
     }
