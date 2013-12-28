@@ -371,7 +371,7 @@ public class Universe extends TickingElement {
                         for (int d = 0; i < blockData.length; i++) {
                             blockData[i] = (short) (((data[i][ChunkDataIndex.BLOCK_METADATA.value()][d] & 0xF) << 8) | ((data[i][ChunkDataIndex.BLOCK_LIGHT.value()][d] & 0xF) << 4) | ((data[i][ChunkDataIndex.BLOCK_SKY_LIGHT.value()][d] & 0xF)));
                         }
-                        activeWorld.get().setChunk(new Chunk(activeWorld.get(), new Vector3i(x, y, z), blockIds, new short[Chunk.BLOCKS.VOLUME]));
+                        activeWorld.get().setChunk(new Chunk(activeWorld.get(), new Vector3i(x, y, z), blockIds, blockData));
                     }
                 }
             }
