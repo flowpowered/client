@@ -29,22 +29,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 public class Main {
-    private static final Object WAIT = new Object();
-
     public static void main(String[] args) throws Exception {
         deploy();
         final Game game = new Game();
         game.start();
-        synchronized (WAIT) {
-            WAIT.wait();
-        }
-        game.stop();
-    }
-
-    public static void exit() {
-        synchronized (WAIT) {
-            WAIT.notifyAll();
-        }
+        game.waitForExit();
     }
 
     private static void deploy() throws Exception {

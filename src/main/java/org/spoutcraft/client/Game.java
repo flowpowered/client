@@ -31,6 +31,7 @@ import org.spoutcraft.client.universe.Universe;
  * The game class.
  */
 public class Game {
+    private final Object wait = new Object();
     private final Universe universe;
     private final Interface nterface;
     private final Network network;
@@ -53,12 +54,9 @@ public class Game {
         universe.start();
         nterface.start();
         network.start();
-
-        // TEST CODE
-        network.connect();
     }
 
-    public void stop() {
+    private void stop() {
         nterface.stop();
         universe.stop();
         network.stop();
@@ -74,5 +72,26 @@ public class Game {
 
     public Network getNetwork() {
         return network;
+    }
+
+    /**
+     * Stops the game and allows any thread waiting on exit (by having called {@link #waitForExit()}) to resume it's activity.
+     */
+    public void exit() {
+        stop();
+        synchronized (wait) {
+            wait.notifyAll();
+        }
+    }
+
+    /**
+     * Causes the current thread to wait until the {@link #exit()} method is called.
+     *
+     * @throws InterruptedException If the thread is interrupted while waiting
+     */
+    public void waitForExit() throws InterruptedException {
+        synchronized (wait) {
+            wait.wait();
+        }
     }
 }

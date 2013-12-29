@@ -47,7 +47,6 @@ import org.spout.renderer.data.Color;
 import org.spout.renderer.model.Model;
 
 import org.spoutcraft.client.Game;
-import org.spoutcraft.client.Main;
 import org.spoutcraft.client.nterface.mesh.ChunkMesher;
 import org.spoutcraft.client.nterface.mesh.ChunkSnapshotGroup;
 import org.spoutcraft.client.nterface.mesh.StandardChunkMesher;
@@ -95,8 +94,7 @@ public class Interface extends TickingElement {
     @Override
     public void onTick() {
         if (Display.isCloseRequested()) {
-            // TODO: untie Main from the game code
-            Main.exit();
+            game.exit();
         }
 
         // TEST CODE

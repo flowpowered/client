@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.flowpowered.networking.session.PulsingSession.State;
+
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.ChannelMessage.Channel;
@@ -45,7 +46,7 @@ public class Network extends TickingElement {
     private static final int TPS = 20;
     private final Game game;
     private final GameNetworkClient client;
-    private final EnumMap<Channel, ConcurrentLinkedQueue<ChannelMessage>> messageQueue = new EnumMap<>(Channel.class);
+    private final Map<Channel, ConcurrentLinkedQueue<ChannelMessage>> messageQueue = new EnumMap<>(Channel.class);
 
     /**
      * Constructs a new game network from the game.
@@ -58,6 +59,13 @@ public class Network extends TickingElement {
         client = new GameNetworkClient(game);
         messageQueue.put(Channel.UNIVERSE, new ConcurrentLinkedQueue<ChannelMessage>());
         messageQueue.put(Channel.NETWORK, new ConcurrentLinkedQueue<ChannelMessage>());
+    }
+
+    @Override
+    public void onStart() {
+        System.out.println("Network start");
+
+        connect();
     }
 
     @Override
@@ -84,11 +92,6 @@ public class Network extends TickingElement {
     }
 
     @Override
-    public void onStart() {
-        System.out.println("Network start");
-    }
-
-    @Override
     public void onStop() {
         System.out.println("Network stop");
 
@@ -98,16 +101,16 @@ public class Network extends TickingElement {
     /**
      * Attempts to connect the network.
      */
-    public void connect() {
+    private void connect() {
         connect(new InetSocketAddress(25565));
     }
 
     /**
-     * Attempts to connect the network using the provided socket addresss.
+     * Attempts to connect the network using the provided socket address.
      *
      * @param address The socket address
      */
-    public void connect(SocketAddress address) {
+    private void connect(SocketAddress address) {
         if (!isRunning()) {
             throw new RuntimeException("Attempt made to issue a connection but the Network thread isn't running!");
         }
@@ -157,7 +160,7 @@ public class Network extends TickingElement {
      *
      * @param message See {@link org.spoutcraft.client.network.message.ChannelMessage}
      */
-    public void processMessage(ChannelMessage message) {
+    private void processMessage(ChannelMessage message) {
         if (message.getClass() == LoginSuccessMessage.class) {
             final LoginSuccessMessage loginSuccessMessage = (LoginSuccessMessage) message;
             System.out.println("Server says login is successful...Woo!!");

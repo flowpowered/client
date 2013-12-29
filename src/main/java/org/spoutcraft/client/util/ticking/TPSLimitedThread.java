@@ -29,7 +29,7 @@ package org.spoutcraft.client.util.ticking;
 public class TPSLimitedThread extends Thread {
     private final TickingElement element;
     private final Timer timer;
-    private boolean running = true;
+    private volatile boolean running = true;
 
     public TPSLimitedThread(TickingElement element, int tps) {
         this.element = element;
