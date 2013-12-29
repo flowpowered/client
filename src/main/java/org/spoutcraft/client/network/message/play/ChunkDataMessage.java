@@ -31,16 +31,17 @@ public class ChunkDataMessage extends ChannelMessage {
     private final boolean groundUpContinuous;
     private final short primaryBitMap;
     private final short additionalDataBitMap;
-    private final int compressedSize;
+    private final int compressedDataLength;
     private final byte[] compressedData;
 
-    public ChunkDataMessage(int columnX, int columnZ, boolean groundUpContinuous, short primaryBitMap, short additionalDataBitMap, int compressedSize, byte[] compressedData) {
+    public ChunkDataMessage(int columnX, int columnZ, boolean groundUpContinuous, short primaryBitMap, short additionalDataBitMap, int compressedDataLength, byte[] compressedData) {
+        super(Channel.UNIVERSE);
         this.columnX = columnX;
         this.columnZ = columnZ;
         this.groundUpContinuous = groundUpContinuous;
         this.primaryBitMap = primaryBitMap;
         this.additionalDataBitMap = additionalDataBitMap;
-        this.compressedSize = compressedSize;
+        this.compressedDataLength = compressedDataLength;
         this.compressedData = compressedData;
     }
 
@@ -64,8 +65,8 @@ public class ChunkDataMessage extends ChannelMessage {
         return additionalDataBitMap;
     }
 
-    public int getCompressedSize() {
-        return compressedSize;
+    public int getCompressedDataLength() {
+        return compressedDataLength;
     }
 
     public byte[] getCompressedData() {

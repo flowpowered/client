@@ -23,18 +23,21 @@
  */
 package org.spoutcraft.client.network.protocol;
 
+import org.spoutcraft.client.network.codec.play.ChunkDataBulkCodec;
+import org.spoutcraft.client.network.codec.play.ChunkDataCodec;
 import org.spoutcraft.client.network.codec.play.ClientStatusCodec;
 import org.spoutcraft.client.network.codec.play.JoinGameCodec;
 import org.spoutcraft.client.network.codec.play.KeepAliveCodec;
 import org.spoutcraft.client.network.codec.play.PlayerCodec;
 import org.spoutcraft.client.network.codec.play.RespawnCodec;
 import org.spoutcraft.client.network.codec.play.SpawnPositionCodec;
+import org.spoutcraft.client.network.message.play.ChunkDataBulkMessage;
 
 /**
  * The main play protocol for the client protocol.
  */
 public class PlayProtocol extends ClientProtocol {
-    private static final int HIGHEST_OP_CODE = 16;
+    private static final int HIGHEST_OP_CODE = 26;
 
     /**
      * Constructs a new play protocol.
@@ -48,5 +51,7 @@ public class PlayProtocol extends ClientProtocol {
         registerMessage(ClientStatusCodec.class, null);
         registerMessage(SpawnPositionCodec.class, SpawnPositionCodec.class);
         registerMessage(RespawnCodec.class, RespawnCodec.class);
+        registerMessage(ChunkDataCodec.class, ChunkDataCodec.class);
+        registerMessage(ChunkDataBulkCodec.class, ChunkDataBulkCodec.class);
     }
 }

@@ -26,6 +26,60 @@ package org.spoutcraft.client.network.message.play;
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 public class ChunkDataBulkMessage extends ChannelMessage {
+    private final short columnCount;
+    private final int compressedDataLength;
+    private final boolean hasSkyLightData;
+    private final byte[] compressedData;
+    private final int[] columnXs;
+    private final int[] columnZs;
+    private final short[] primaryBitMaps;
+    private final short[] additionalDataBitMaps;
+
+    public ChunkDataBulkMessage(short columnCount, int compressedDataLength, boolean hasSkyLightData, byte[] compressedData, int[] columnXs, int[] columnZs, short[] primaryBitMaps, short[] additionalDataBitMaps) {
+        super(Channel.UNIVERSE);
+
+        this.columnCount = columnCount;
+        this.compressedDataLength = compressedDataLength;
+        this.hasSkyLightData = hasSkyLightData;
+        this.compressedData = compressedData;
+        this.columnXs = columnXs;
+        this.columnZs = columnZs;
+        this.primaryBitMaps = primaryBitMaps;
+        this.additionalDataBitMaps = additionalDataBitMaps;
+    }
+
+    public short getColumnCount() {
+        return columnCount;
+    }
+
+    public int getCompressedDataLength() {
+        return compressedDataLength;
+    }
+
+    public boolean isHasSkyLightData() {
+        return hasSkyLightData;
+    }
+
+    public byte[] getCompressedData() {
+        return compressedData;
+    }
+
+    public int[] getColumnXs() {
+        return columnXs;
+    }
+
+    public int[] getColumnZs() {
+        return columnZs;
+    }
+
+    public short[] getPrimaryBitMaps() {
+        return primaryBitMaps;
+    }
+
+    public short[] getAdditionalDataBitMaps() {
+        return additionalDataBitMaps;
+    }
+
     @Override
     public boolean isAsync() {
         return true;

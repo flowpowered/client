@@ -44,6 +44,7 @@ import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.network.Network;
+import org.spoutcraft.client.network.codec.play.ChunkDataBulkCodec;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.ChannelMessage.Channel;
 import org.spoutcraft.client.network.message.play.ChunkDataBulkMessage;
@@ -52,6 +53,7 @@ import org.spoutcraft.client.network.message.play.JoinGameMessage;
 import org.spoutcraft.client.network.message.play.RespawnMessage;
 import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
+import org.spoutcraft.client.universe.store.impl.PaletteFullException;
 import org.spoutcraft.client.util.ticking.TickingElement;
 
 /**
@@ -103,24 +105,24 @@ public class Universe extends TickingElement {
             }
         }
 
-        // TEST CODE
-        final Random random = new Random();
-        final World world = activeWorld.get();
-        final Map<Vector3i, Chunk> chunks = world.getChunks();
-        if (chunks.isEmpty()) {
-            final short[] chunkIDs = new short[Chunk.BLOCKS.VOLUME];
-            Arrays.fill(chunkIDs, Materials.SOLID.getID());
-            final short[] chunkSubIDs = new short[Chunk.BLOCKS.VOLUME];
-            world.setChunk(new Chunk(world, new Vector3i(random.nextInt(5), 0, random.nextInt(5)), chunkIDs, chunkSubIDs));
-        } else {
-            for (Iterator<Entry<Vector3i, Chunk>> iterator = chunks.entrySet().iterator(); iterator.hasNext(); ) {
-                iterator.next();
-                if (random.nextInt(70) == 0) {
-                    iterator.remove();
-                    break;
-                }
-            }
-        }
+//        // TEST CODE
+//        final Random random = new Random();
+//        final World world = activeWorld.get();
+//        final Map<Vector3i, Chunk> chunks = world.getChunks();
+//        if (chunks.isEmpty()) {
+//            final short[] chunkIDs = new short[Chunk.BLOCKS.VOLUME];
+//            Arrays.fill(chunkIDs, Materials.SOLID.getID());
+//            final short[] chunkSubIDs = new short[Chunk.BLOCKS.VOLUME];
+//            world.setChunk(new Chunk(world, new Vector3i(random.nextInt(5), 0, random.nextInt(5)), chunkIDs, chunkSubIDs));
+//        } else {
+//            for (Iterator<Entry<Vector3i, Chunk>> iterator = chunks.entrySet().iterator(); iterator.hasNext(); ) {
+//                iterator.next();
+//                if (random.nextInt(70) == 0) {
+//                    iterator.remove();
+//                    break;
+//                }
+//            }
+//        }
 
         for (Entry<UUID, World> entry : worlds.entrySet()) {
             final UUID id = entry.getKey();
@@ -193,6 +195,8 @@ public class Universe extends TickingElement {
             handleRespawn((RespawnMessage) message);
         } else if (message.getClass() == ChunkDataMessage.class) {
             handleChunkData((ChunkDataMessage) message);
+        } else if (message.getClass() == ChunkDataBulkMessage.class) {
+            handleChunkDataBulk((ChunkDataBulkMessage) message);
         }
         message.markChannelRead(Channel.UNIVERSE);
     }
@@ -236,15 +240,32 @@ public class Universe extends TickingElement {
         if (Arrays.equals(UNLOAD_CHUNKS_IN_COLUMN, message.getCompressedData())) {
             activeWorld.get().removeChunkColumn(message.getColumnX(), message.getColumnZ(), 0, MAX_CHUNK_COLUMN_SECTIONS);
         } else {
-            byte[][][] chunkData = null;
+            final byte[][][] data = new byte[MAX_CHUNK_COLUMN_SECTIONS][][];
             try {
-                chunkData = decompressChunkData(message.isGroundUpContinuous(), message.getPrimaryBitMap(), message.getCompressedData(), true);
+
+                // Find out how many non-air chunks we have in the column and add on a data segment for it
+                int columnDataSize = 0;
+                for (int i = 0; i < MAX_CHUNK_COLUMN_SECTIONS; i++) {
+                    boolean hasData = ((message.getPrimaryBitMap() & 1 << i) != 0);
+                    if (hasData) {
+                        data[i] = new byte[ChunkDataIndex.values().length][];
+                        columnDataSize += Chunk.BLOCKS.HALF_VOLUME * ChunkDataIndex.values().length;
+                        boolean hasAdditionalData = ((message.getAdditionalDataBitMap() & 1 << i) != 0);
+                        if (hasAdditionalData) {
+                            columnDataSize += Chunk.BLOCKS.HALF_VOLUME;
+                        }
+                    }
+                }
+                // If ground up continuous, biome data is sent per column. We need to add on to the data size for this.
+                if (message.isGroundUpContinuous()) {
+                    columnDataSize += Chunk.BLOCKS.AREA;
+                }
+
+                decompressChunkData(data, message.isGroundUpContinuous(), message.getPrimaryBitMap(), message.getAdditionalDataBitMap(), message.getCompressedData(), columnDataSize, true);
             } catch (IOException e) {
                 System.out.println(e);
             }
-            if (chunkData != null) {
-                populateChunks(message.getColumnX(), message.getColumnZ(), chunkData);
-            }
+            populateChunks(message.getColumnX(), message.getColumnZ(), data);
         }
     }
 
@@ -254,40 +275,61 @@ public class Universe extends TickingElement {
      * @param message See {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}
      */
     public void handleChunkDataBulk(ChunkDataBulkMessage message) {
+        int index = 0;
+        for (int i = 0; i < message.getColumnCount(); i++) {
+            byte[][][] data = new byte[MAX_CHUNK_COLUMN_SECTIONS][][];
+            final short primaryBitMap = message.getPrimaryBitMaps()[i];
+            final short additionalDataBitMap = message.getPrimaryBitMaps()[i];
 
+            // Find out how many non-air chunks we have in the column and add on a data segment for it
+            int columnDataSize = 0;
+            for (int j = 0; j < MAX_CHUNK_COLUMN_SECTIONS; j++) {
+                boolean hasData = ((primaryBitMap & 1 << j) != 0);
+                if (hasData) {
+                    data[j] = new byte[ChunkDataIndex.values().length][];
+                    columnDataSize += Chunk.BLOCKS.HALF_VOLUME * ChunkDataIndex.values().length;
+                    boolean hasAdditionalData = ((additionalDataBitMap & 1 << j) != 0);
+                    if (hasAdditionalData) {
+                        columnDataSize += Chunk.BLOCKS.HALF_VOLUME;
+                    }
+                }
+            }
+            //ChunkDataBulk always sends biome data
+            columnDataSize += Chunk.BLOCKS.AREA;
+
+            byte[] compressedDataSection = new byte[columnDataSize];
+            System.arraycopy(message.getCompressedData(), index, compressedDataSection, 0, columnDataSize);
+            index += columnDataSize;
+
+            if (Arrays.equals(UNLOAD_CHUNKS_IN_COLUMN, compressedDataSection)) {
+                activeWorld.get().removeChunkColumn(message.getColumnXs()[i], message.getColumnZs()[i], 0, MAX_CHUNK_COLUMN_SECTIONS);
+            } else {
+                try {
+                    decompressChunkData(data, true, primaryBitMap, additionalDataBitMap, compressedDataSection, columnDataSize, message.isHasSkyLightData());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                populateChunks(message.getColumnXs()[i], message.getColumnZs()[i], data);
+            }
+        }
     }
 
     /**
-     * Decompresses the raw compressed data from the server into a 3D array that comprises:
+     * Decompresses the raw compressed data from the server into the provided 3D array that comprises:
      * <p/>
-     * Section - The section of the column, ground up ChunkDataIndex - See {@link org.spoutcraft.client.universe.Universe.ChunkDataIndex} data - decompressed data as a byte
+     * Section        - The section of the column, ground up
+     * ChunkDataIndex - See {@link org.spoutcraft.client.universe.Universe.ChunkDataIndex}
+     * data           - decompressed data as a byte
      *
      * @param groundUpContinuous True if this is the entire column, false if not. Used to determine if biome data is included
-     * @param primaryBitMap Bit map containing each section of the column, used to determine which sections are air and can be slipped
+     * @param primaryBitMap Bit map containing each section of the column, used to determine which sections are air and can be skipped
      * @param compressedData Compressed data from the server
      * @param hasSkyLight True if the compressed data has sky light, only {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}s can not provide this
-     * @return 3D decompressed byte array mapped to [SECTION][CHUNK_DATA_INDEX][DATA]
      * @throws IOException If the chunk's data is corrupted during inflate or if all bytes are not decompressed
      */
-    private byte[][][] decompressChunkData(boolean groundUpContinuous, short primaryBitMap, byte[] compressedData, boolean hasSkyLight) throws IOException {
-        final byte[][][] data = new byte[MAX_CHUNK_COLUMN_SECTIONS][][];
-
-        //Step 1 - Find out how many non-air chunks we have in the column
-        int dataSize = 0;
-        for (int i = 0; i < MAX_CHUNK_COLUMN_SECTIONS; i++) {
-            if ((primaryBitMap & 1 << i) != 0) {
-                data[i] = new byte[ChunkDataIndex.values().length][];
-                dataSize += Chunk.BLOCKS.HALF_VOLUME * 5;
-            }
-        }
-
-        //Step 2 - If ground up continuous, biome data is sent per column. We need to add on to the data size for this
-        if (groundUpContinuous) {
-            dataSize += Chunk.BLOCKS.AREA;
-        }
-
-        //Step 3 - Decompress the data
-        final byte[] decompressedData = new byte[dataSize];
+    private void decompressChunkData(byte[][][] data, boolean groundUpContinuous, short primaryBitMap, short additionalDataBitMap, byte[] compressedData, int columnDataSize, boolean hasSkyLight) throws IOException {
+        // Step 3 - Decompress the data
+        final byte[] decompressedData = new byte[columnDataSize];
         INFLATER.setInput(compressedData);
         INFLATER.getRemaining();
         int decompressIndex = 0;
@@ -309,11 +351,7 @@ public class Universe extends TickingElement {
             INFLATER.end();
         }
 
-        /*
-         * Step 4 - Build data array
-         *
-         * Data is ordered by [SECTION][CHUNK_DATA_INDEX][DATA]
-         */
+        // Step 4 - Build data array
         for (final byte[][] section : data) {
             if (section == null) {
                 continue;
@@ -357,14 +395,12 @@ public class Universe extends TickingElement {
 
             //TODO Handle Biomes later as they are unique
         }
-
-        return data;
     }
 
     /**
      * Takes a byte array and splits each byte into two values
      * <p/>
-     * This is used in ChunkData to pull out the data provided for metadata, light, and skylight
+     * This is used in ChunkData to pull out the data provided for metadata, light, additional data, and skylight.
      *
      * @param sectionData The byte 2D array of the section of the column
      * @param index See {@link org.spoutcraft.client.universe.Universe.ChunkDataIndex}
@@ -408,7 +444,17 @@ public class Universe extends TickingElement {
                         int y = yy + baseY;
                         int z = zz + baseZ;
 
-                        final short[] blockIds = ByteBuffer.wrap(data[i][ChunkDataIndex.BLOCK_ID.value()]).asShortBuffer().array();
+                        //TODO Test Code, restore the commented out code once we have all materials in place!
+                        //final short[] blockIds = ByteBuffer.wrap(data[i][ChunkDataIndex.BLOCK_ID.value()]).asShortBuffer().array();
+                        final byte[] rawIds = data[i][ChunkDataIndex.BLOCK_ID.value()];
+                        final short[] blockIds = new short[rawIds.length];
+                        for (int idIndex = 0; idIndex < rawIds.length; idIndex++) {
+                            if (rawIds[idIndex] != (byte) 0) {
+                                blockIds[idIndex] = Materials.SOLID.getID();
+                            } else {
+                                blockIds[idIndex] = Materials.AIR.getID();
+                            }
+                        }
                         final short[] blockData = new short[Chunk.BLOCKS.VOLUME];
                         for (int d = 0; i < blockData.length; i++) {
                             blockData[i] = (short) (((data[i][ChunkDataIndex.BLOCK_METADATA.value()][d] & 0xF) << 8) | ((data[i][ChunkDataIndex.BLOCK_LIGHT.value()][d] & 0xF) << 4) | ((data[i][ChunkDataIndex.BLOCK_SKY_LIGHT.value()][d] & 0xF)));
