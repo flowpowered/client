@@ -25,17 +25,18 @@ package org.spoutcraft.client.universe;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ShortBuffer;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.DataFormatException;
-import java.util.zip.Deflater;
 import java.util.zip.Inflater;
+
+import org.spout.math.vector.Vector3i;
 
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.game.Difficulty;
@@ -51,10 +52,7 @@ import org.spoutcraft.client.network.message.play.JoinGameMessage;
 import org.spoutcraft.client.network.message.play.RespawnMessage;
 import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
-import org.spoutcraft.client.util.BitSize;
 import org.spoutcraft.client.util.ticking.TickingElement;
-
-import org.spout.math.vector.Vector3i;
 
 /**
  * Contains and manages all the voxel worlds.
@@ -69,7 +67,7 @@ public class Universe extends TickingElement {
     private final Map<UUID, World> worlds = new ConcurrentHashMap<>();
     private final Map<UUID, WorldSnapshot> worldSnapshots = new ConcurrentHashMap<>();
     private final Map<String, UUID> worldIDsByName = new ConcurrentHashMap<>();
-    private AtomicReference<World> activeWorld;
+    private final AtomicReference<World> activeWorld = new AtomicReference<>(null);
 
     public Universe(Game game) {
         super(TPS);
@@ -81,22 +79,15 @@ public class Universe extends TickingElement {
         System.out.println("Universe start");
 
         // TEST CODE
-        final short[] halfChunkIDs = new short[Chunk.BLOCKS.VOLUME];
-        final short[] halfChunkSubIDs = new short[Chunk.BLOCKS.VOLUME];
-        for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
-            for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
-                for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
-                    halfChunkIDs[yy << Chunk.BLOCKS.DOUBLE_BITS | zz << Chunk.BLOCKS.BITS | xx] = Materials.SOLID.getID();
-                }
-            }
-        }
+        final short[] chunkIDs = new short[Chunk.BLOCKS.VOLUME];
+        Arrays.fill(chunkIDs, Materials.SOLID.getID());
+        final short[] chunkSubIDs = new short[Chunk.BLOCKS.VOLUME];
         final World world = new World("test");
         for (int xx = -2; xx < 2; xx++) {
             for (int zz = -2; zz < 2; zz++) {
-                world.setChunk(new Chunk(world, new Vector3i(xx, 0, zz), halfChunkIDs, halfChunkSubIDs));
+                world.setChunk(new Chunk(world, new Vector3i(xx, 0, zz), chunkIDs, chunkSubIDs));
             }
         }
-
         addWorld(world, true);
     }
 
@@ -109,6 +100,25 @@ public class Universe extends TickingElement {
             while (messages.hasNext()) {
                 final ChannelMessage message = messages.next();
                 handleMessage(message);
+            }
+        }
+
+        // TEST CODE
+        final Random random = new Random();
+        final World world = activeWorld.get();
+        final Map<Vector3i, Chunk> chunks = world.getChunks();
+        if (chunks.isEmpty()) {
+            final short[] chunkIDs = new short[Chunk.BLOCKS.VOLUME];
+            Arrays.fill(chunkIDs, Materials.SOLID.getID());
+            final short[] chunkSubIDs = new short[Chunk.BLOCKS.VOLUME];
+            world.setChunk(new Chunk(world, new Vector3i(random.nextInt(5), 0, random.nextInt(5)), chunkIDs, chunkSubIDs));
+        } else {
+            for (Iterator<Entry<Vector3i, Chunk>> iterator = chunks.entrySet().iterator(); iterator.hasNext(); ) {
+                iterator.next();
+                if (random.nextInt(70) == 0) {
+                    iterator.remove();
+                    break;
+                }
             }
         }
 
@@ -139,7 +149,7 @@ public class Universe extends TickingElement {
     }
 
     public WorldSnapshot getActiveWorldSnapshot() {
-        return activeWorld != null ? worldSnapshots.get(activeWorld.get().getID()) : null;
+        return activeWorld.get() != null ? worldSnapshots.get(activeWorld.get().getID()) : null;
     }
 
     private World getWorld(String name) {
@@ -151,7 +161,7 @@ public class Universe extends TickingElement {
         worldSnapshots.put(world.getID(), new WorldSnapshot(world));
         worldIDsByName.put(world.getName(), world.getID());
         if (setActive) {
-            activeWorld = new AtomicReference<>(world);
+            activeWorld.set(world);
         }
     }
 
@@ -225,7 +235,7 @@ public class Universe extends TickingElement {
         // Check if we should remove a column of chunks
         if (Arrays.equals(UNLOAD_CHUNKS_IN_COLUMN, message.getCompressedData())) {
             activeWorld.get().removeChunkColumn(message.getColumnX(), message.getColumnZ(), 0, MAX_CHUNK_COLUMN_SECTIONS);
-       } else {
+        } else {
             byte[][][] chunkData = null;
             try {
                 chunkData = decompressChunkData(message.isGroundUpContinuous(), message.getPrimaryBitMap(), message.getCompressedData(), true);
@@ -249,10 +259,8 @@ public class Universe extends TickingElement {
 
     /**
      * Decompresses the raw compressed data from the server into a 3D array that comprises:
-     *
-     * Section - The section of the column, ground up
-     * ChunkDataIndex - See {@link org.spoutcraft.client.universe.ChunkDataIndex}
-     * data - decompressed data as a byte
+     * <p/>
+     * Section - The section of the column, ground up ChunkDataIndex - See {@link org.spoutcraft.client.universe.Universe.ChunkDataIndex} data - decompressed data as a byte
      *
      * @param groundUpContinuous True if this is the entire column, false if not. Used to determine if biome data is included
      * @param primaryBitMap Bit map containing each section of the column, used to determine which sections are air and can be slipped
@@ -285,7 +293,7 @@ public class Universe extends TickingElement {
         int decompressIndex = 0;
 
         try {
-            while(decompressIndex < decompressedData.length) {
+            while (decompressIndex < decompressedData.length) {
                 int decompressedAmount = INFLATER.inflate(decompressedData, decompressIndex, decompressedData.length - decompressIndex);
                 decompressIndex += decompressedAmount;
                 if (decompressedAmount == 0) {
@@ -296,7 +304,7 @@ public class Universe extends TickingElement {
                 throw new IOException("Chunk data should be entirely decompressed but some bytes are still compressed!");
             }
         } catch (DataFormatException e) {
-            throw new IOException("Chunk data is corrupted!" , e);
+            throw new IOException("Chunk data is corrupted!", e);
         } finally {
             INFLATER.end();
         }
@@ -355,10 +363,11 @@ public class Universe extends TickingElement {
 
     /**
      * Takes a byte array and splits each byte into two values
-     *
+     * <p/>
      * This is used in ChunkData to pull out the data provided for metadata, light, and skylight
+     *
      * @param sectionData The byte 2D array of the section of the column
-     * @param index See {@link org.spoutcraft.client.universe.ChunkDataIndex}
+     * @param index See {@link org.spoutcraft.client.universe.Universe.ChunkDataIndex}
      * @param decompressedData The byte array of decompressed data
      * @param startIndex Where to start reading data in the decompressed data array
      * @param length How much to read
@@ -376,11 +385,12 @@ public class Universe extends TickingElement {
 
     /**
      * Populates all non-air {@link Chunk}s in the column
-     *
+     * <p/>
      * Any chunks that exist in the {@link org.spoutcraft.client.universe.World} will be replaced.
+     *
      * @param columnX The column's x coordinate
      * @param columnZ The column's z coordinate
-     * @param data The byte 3D array containing section, {@link org.spoutcraft.client.universe.ChunkDataIndex}, and byte (data)
+     * @param data The byte 3D array containing section, {@link org.spoutcraft.client.universe.Universe.ChunkDataIndex}, and byte (data)
      */
     private void populateChunks(int columnX, int columnZ, byte[][][] data) {
         final int baseX = columnX >> Chunk.BLOCKS.BITS;
@@ -409,37 +419,36 @@ public class Universe extends TickingElement {
             }
         }
     }
-}
 
-enum ChunkDataIndex {
-    /**
-     * First index is {@link org.spoutcraft.client.universe.block.material.Material} type, whole byte
-     */
-    BLOCK_ID(0),
-    /**
-     * Second index is {@link org.spoutcraft.client.universe.block.Block} metadata, half byte
-     */
-    BLOCK_METADATA(1),
-    /**
-     * Third index is {@link org.spoutcraft.client.universe.block.Block} light values, half byte
-     */
-    BLOCK_LIGHT(2),
-    /**
-     * Fourth index is {@link org.spoutcraft.client.universe.block.Block} additional data, half byte and should always be 0
-     */
-    BLOCK_ADDITIONAL_DATA(3),
-    /**
-     * Fifth index is {@link org.spoutcraft.client.universe.block.Block} sky light, half byte
-     */
-    BLOCK_SKY_LIGHT(4);
+    private static enum ChunkDataIndex {
+        /**
+         * First index is {@link org.spoutcraft.client.universe.block.material.Material} type, whole byte
+         */
+        BLOCK_ID(0),
+        /**
+         * Second index is {@link org.spoutcraft.client.universe.block.Block} metadata, half byte
+         */
+        BLOCK_METADATA(1),
+        /**
+         * Third index is {@link org.spoutcraft.client.universe.block.Block} light values, half byte
+         */
+        BLOCK_LIGHT(2),
+        /**
+         * Fourth index is {@link org.spoutcraft.client.universe.block.Block} additional data, half byte and should always be 0
+         */
+        BLOCK_ADDITIONAL_DATA(3),
+        /**
+         * Fifth index is {@link org.spoutcraft.client.universe.block.Block} sky light, half byte
+         */
+        BLOCK_SKY_LIGHT(4);
+        private final int value;
 
-    private final int value;
+        ChunkDataIndex(int value) {
+            this.value = value;
+        }
 
-    ChunkDataIndex(int value) {
-        this.value = value;
-    }
-
-    public int value() {
-        return value;
+        public int value() {
+            return value;
+        }
     }
 }

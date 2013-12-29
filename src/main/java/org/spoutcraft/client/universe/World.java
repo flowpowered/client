@@ -23,17 +23,16 @@
  */
 package org.spoutcraft.client.universe;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.spout.math.vector.Vector3i;
 
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
-
-import org.spout.math.vector.Vector3i;
 
 /**
  *
@@ -127,8 +126,8 @@ public class World {
         }
     }
 
-    public Collection<Chunk> getChunks() {
-        return chunks.values();
+    public Map<Vector3i, Chunk> getChunks() {
+        return chunks;
     }
 
     public GameMode getGameMode() {

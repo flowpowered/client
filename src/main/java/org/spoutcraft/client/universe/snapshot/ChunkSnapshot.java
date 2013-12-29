@@ -29,6 +29,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.block.Block;
+import org.spoutcraft.client.universe.block.BlockFaces;
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.store.AtomicBlockStore;
 
@@ -43,6 +44,7 @@ public class ChunkSnapshot {
     private final WorldSnapshot world;
     private final Vector3i position;
     private long updateNumber = 0;
+    private BlockFaces toMesh = BlockFaces.NONE;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
     public ChunkSnapshot(WorldSnapshot world, Chunk chunk) {
@@ -118,6 +120,28 @@ public class ChunkSnapshot {
         } finally {
             lock.unlock();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ChunkSnapshot)) {
+            return false;
+        }
+        final ChunkSnapshot that = (ChunkSnapshot) o;
+        if (!position.equals(that.position)) {
+            return false;
+        }
+        return world.equals(that.world);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = world.hashCode();
+        result = 31 * result + position.hashCode();
+        return result;
     }
 
     private static int getBlockIndex(int x, int y, int z) {

@@ -673,7 +673,7 @@ public class Renderer {
     }
 
     /**
-     * Adds a model to rendeer as a solid.
+     * Adds a model to renderer as a solid.
      *
      * @param vertexData The vertex data of the model
      * @param position The position of the model
@@ -709,6 +709,22 @@ public class Renderer {
      */
     public static void removeModel(Model model) {
         modelRenderList.remove(model);
+    }
+
+    /**
+     * Removes all the models from the renderer.
+     */
+    public static void clearModels() {
+        modelRenderList.clear();
+    }
+
+    /**
+     * Returns the modifiable list of the models. Changes in this list are reflected in the renderer.
+     *
+     * @return The modifiable list of models
+     */
+    public static List<Model> getModels() {
+        return modelRenderList;
     }
 
     private static void addScreen() {

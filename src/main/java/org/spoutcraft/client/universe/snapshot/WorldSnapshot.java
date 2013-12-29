@@ -23,15 +23,20 @@
  */
 package org.spoutcraft.client.universe.snapshot;
 
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.World;
+import org.spoutcraft.client.util.map.TripleIntObjectMap;
+import org.spoutcraft.client.util.map.impl.TTripleInt21ObjectHashMap;
 
 import org.spout.math.vector.Vector3i;
 
@@ -39,15 +44,17 @@ import org.spout.math.vector.Vector3i;
  *
  */
 public class WorldSnapshot {
-    private final Map<Vector3i, ChunkSnapshot> chunks = new ConcurrentHashMap<>();
+    private final TripleIntObjectMap<ChunkSnapshot> chunks = new TTripleInt21ObjectHashMap<>();
     private final UUID id;
     private final String name;
+    private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
     public WorldSnapshot(World world) {
         this.id = world.getID();
         this.name = world.getName();
-        for (Chunk chunk : world.getChunks()) {
-            chunks.put(chunk.getPosition(), new ChunkSnapshot(this, chunk));
+        for (Chunk chunk : world.getChunks().values()) {
+            final Vector3i position = chunk.getPosition();
+            chunks.put(position.getX(), position.getY(), position.getZ(), new ChunkSnapshot(this, chunk));
         }
     }
 
@@ -59,24 +66,46 @@ public class WorldSnapshot {
         return name;
     }
 
-    public boolean hasChunk(int x, int y, int z) {
-        return hasChunk(new Vector3i(x, y, z));
-    }
-
     public boolean hasChunk(Vector3i position) {
-        return chunks.containsKey(position);
+        return hasChunk(position.getX(), position.getY(), position.getZ());
     }
 
-    public ChunkSnapshot getChunk(int x, int y, int z) {
-        return getChunk(new Vector3i(x, y, z));
+    public boolean hasChunk(int x, int y, int z) {
+        final Lock lock = this.lock.readLock();
+        lock.lock();
+        try {
+            return chunks.containsKey(x, y, z);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public ChunkSnapshot getChunk(Vector3i position) {
-        return chunks.get(position);
+        return getChunk(position.getX(), position.getY(), position.getZ());
     }
 
-    public Collection<ChunkSnapshot> getChunks() {
-        return chunks.values();
+    public ChunkSnapshot getChunk(int x, int y, int z) {
+        final Lock lock = this.lock.readLock();
+        lock.lock();
+        try {
+            return chunks.get(x, y, z);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public Map<Vector3i, ChunkSnapshot> getChunks() {
+        final Lock lock = this.lock.readLock();
+        lock.lock();
+        try {
+            final Map<Vector3i, ChunkSnapshot> map = new HashMap<>(chunks.size());
+            for (ChunkSnapshot chunk : chunks.valueCollection()) {
+                map.put(chunk.getPosition(), chunk);
+            }
+            return map;
+        } finally {
+            lock.unlock();
+        }
     }
 
     public void update(World current) {
@@ -84,21 +113,44 @@ public class WorldSnapshot {
             throw new IllegalArgumentException("Cannot update from a world with another ID");
         }
         final Set<Vector3i> validChunks = new HashSet<>();
-        for (Chunk chunk : current.getChunks()) {
-            final Vector3i position = chunk.getPosition();
-            final ChunkSnapshot chunkSnapshot = chunks.get(position);
-            if (chunkSnapshot != null) {
-                chunkSnapshot.update(chunk);
-            } else {
-                chunks.put(position, new ChunkSnapshot(this, chunk));
+        final Lock lock = this.lock.writeLock();
+        lock.lock();
+        try {
+            for (Chunk chunk : current.getChunks().values()) {
+                final Vector3i position = chunk.getPosition();
+                final ChunkSnapshot chunkSnapshot = chunks.get(position.getX(), position.getY(), position.getZ());
+                if (chunkSnapshot != null) {
+                    chunkSnapshot.update(chunk);
+                } else {
+                    chunks.put(position.getX(), position.getY(), position.getZ(), new ChunkSnapshot(this, chunk));
+                }
+                validChunks.add(position);
             }
-            validChunks.add(position);
-        }
-        for (ChunkSnapshot chunkSnapshot : chunks.values()) {
-            final Vector3i position = chunkSnapshot.getPosition();
-            if (!validChunks.contains(position)) {
-                chunks.remove(position);
+            for (Iterator<ChunkSnapshot> iterator = chunks.valueCollection().iterator(); iterator.hasNext(); ) {
+                final Vector3i position = iterator.next().getPosition();
+                if (!validChunks.contains(position)) {
+                    iterator.remove();
+                }
             }
+        } finally {
+            lock.unlock();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof WorldSnapshot)) {
+            return false;
+        }
+        final WorldSnapshot snapshot = (WorldSnapshot) o;
+        return id.equals(snapshot.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return 17 * id.hashCode();
     }
 }

@@ -23,6 +23,11 @@
  */
 package org.spoutcraft.client.nterface;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -30,9 +35,11 @@ import org.lwjgl.opengl.Display;
 import org.spout.math.TrigMath;
 import org.spout.math.imaginary.Quaternionf;
 import org.spout.math.vector.Vector3f;
+import org.spout.math.vector.Vector3i;
 import org.spout.renderer.Camera;
 import org.spout.renderer.GLVersioned.GLVersion;
 import org.spout.renderer.data.Color;
+import org.spout.renderer.model.Model;
 
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.Main;
@@ -52,6 +59,7 @@ public class Interface extends TickingElement {
     public static final float SPOT_CUTOFF = (float) (TrigMath.atan(100 / 50) / 2);
     private final Game game;
     private final ChunkMesher mesher = new StandardChunkMesher();
+    private final Map<Vector3i, Model> chunkModels = new HashMap<>();
 
     /**
      * Constructs a new interface from the game.
@@ -80,25 +88,47 @@ public class Interface extends TickingElement {
     @Override
     public void onTick() {
         // TEST CODE
-        if (!once) {
-            final WorldSnapshot world = game.getUniverse().getActiveWorldSnapshot();
-            if (world == null) {
-                return;
+        final WorldSnapshot world = game.getUniverse().getActiveWorldSnapshot();
+
+        if (world == null) {
+            for (Model model : chunkModels.values()) {
+                Renderer.removeModel(model);
             }
-            for (ChunkSnapshot chunk : world.getChunks()) {
-                Renderer.addSolid(mesher.mesh(new ChunkSnapshotGroup(chunk, world)).build(), chunk.getPosition().mul(16).toFloat(), Quaternionf.IDENTITY);
-            }
-            once = true;
+            chunkModels.clear();
+            return;
         }
+
+        final Map<Vector3i, ChunkSnapshot> chunks = world.getChunks();
+
+        for (Iterator<Entry<Vector3i, Model>> iterator = chunkModels.entrySet().iterator(); iterator.hasNext(); ) {
+            final Entry<Vector3i, Model> chunkModel = iterator.next();
+            if (!chunks.containsKey(chunkModel.getKey())) {
+                // TODO: recycle the vertex arrays?
+                final Model model = chunkModel.getValue();
+                Renderer.removeModel(model);
+                model.getVertexArray().destroy();
+                iterator.remove();
+            }
+        }
+
+        for (ChunkSnapshot chunk : chunks.values()) {
+            if (!chunkModels.containsKey(chunk.getPosition())) {
+                addChunkModel(world, chunk);
+            }
+        }
+
         if (Display.isCloseRequested()) {
+            // TODO: untie Main from the game code
             Main.exit();
         }
         processInput(1f / 20);
         Renderer.render();
     }
 
-    // TEST CODE
-    boolean once = false;
+    private void addChunkModel(WorldSnapshot world, ChunkSnapshot chunk) {
+        final Model model = Renderer.addSolid(mesher.mesh(new ChunkSnapshotGroup(chunk, world)).build(), chunk.getPosition().mul(16).toFloat(), Quaternionf.IDENTITY);
+        chunkModels.put(chunk.getPosition(), model);
+    }
 
     @Override
     public void onStop() {
@@ -117,6 +147,7 @@ public class Interface extends TickingElement {
     }
 
     // TEST CODE
+    // TODO: properly handle user input
     private static float cameraPitch = 0;
     private static float cameraYaw = 0;
     private static float mouseSensitivity = 0.08f;
