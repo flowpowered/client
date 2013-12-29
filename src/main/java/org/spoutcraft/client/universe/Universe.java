@@ -58,7 +58,7 @@ import org.spout.math.vector.Vector3i;
  */
 public class Universe extends TickingElement {
     private static final int TPS = 20;
-    //Chunk data handling
+    // Chunk data handling
     private static final int MAX_CHUNK_COLUMN_SECTIONS = 16;
     private static final byte[] UNLOAD_CHUNKS_IN_COLUMN = {0x78, (byte) 0x9C, 0x63, 0x64, 0x1C, (byte) 0xD9, 0x00, 0x00, (byte) 0x81, (byte) 0x80, 0x01, 0x01};
     private static final Inflater INFLATER = new Inflater();
@@ -442,7 +442,7 @@ public class Universe extends TickingElement {
                         int z = zz + baseZ;
 
                         //TODO Test Code, restore the commented out code once we have all materials in place!
-                        //final short[] blockIds = ByteBuffer.wrap(data[i][ChunkDataIndex.BLOCK_ID.value()]).asShortBuffer().array();
+                        //final short[] blockIds = toShort(data[i][ChunkDataIndex.BLOCK_ID.value()]);
                         final byte[] rawIds = data[i][ChunkDataIndex.BLOCK_ID.value()];
                         final short[] blockIds = new short[rawIds.length];
                         for (int idIndex = 0; idIndex < rawIds.length; idIndex++) {
@@ -454,13 +454,24 @@ public class Universe extends TickingElement {
                         }
                         final short[] blockData = new short[Chunk.BLOCKS.VOLUME];
                         for (int d = 0; i < blockData.length; i++) {
-                            blockData[i] = (short) (((data[i][ChunkDataIndex.BLOCK_METADATA.value()][d] & 0xF) << 8) | ((data[i][ChunkDataIndex.BLOCK_LIGHT.value()][d] & 0xF) << 4) | ((data[i][ChunkDataIndex.BLOCK_SKY_LIGHT.value()][d] & 0xF)));
+                            // final block data order: MMMM-BB-SS (M = metadata, B = block light, S = sky light)
+                            blockData[i] = (short) (((data[i][ChunkDataIndex.BLOCK_METADATA.value()][d] & 0xF) << 8)
+                                    | ((data[i][ChunkDataIndex.BLOCK_LIGHT.value()][d] & 0xF) << 4)
+                                    | ((data[i][ChunkDataIndex.BLOCK_SKY_LIGHT.value()][d] & 0xF)));
                         }
                         activeWorld.get().setChunk(new Chunk(activeWorld.get(), new Vector3i(x, y, z), blockIds, blockData));
                     }
                 }
             }
         }
+    }
+
+    private static short[] toShort(byte[] a) {
+        final short[] b = new short[a.length];
+        for(int i = 0; i < a.length; i++) {
+            b[i] = a[i];
+        }
+        return b;
     }
 
     private static enum ChunkDataIndex {
