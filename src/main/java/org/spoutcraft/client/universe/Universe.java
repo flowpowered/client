@@ -246,11 +246,8 @@ public class Universe extends TickingElement {
                     boolean hasData = ((message.getPrimaryBitMap() & 1 << i) != 0);
                     if (hasData) {
                         data[i] = new byte[ChunkDataIndex.values().length][];
-                        columnDataSize += Chunk.BLOCKS.HALF_VOLUME * ChunkDataIndex.values().length;
-                        boolean hasAdditionalData = ((message.getAdditionalDataBitMap() & 1 << i) != 0);
-                        if (hasAdditionalData) {
-                            columnDataSize += Chunk.BLOCKS.HALF_VOLUME;
-                        }
+                        //Blocks + (Metadata + Light + Skylight)
+                        columnDataSize += Chunk.BLOCKS.VOLUME + (Chunk.BLOCKS.HALF_VOLUME * 3);
                     }
                 }
                 // If ground up continuous, biome data is sent per column. We need to add on to the data size for this.
@@ -276,7 +273,6 @@ public class Universe extends TickingElement {
         for (int i = 0; i < message.getColumnCount(); i++) {
             byte[][][] data = new byte[MAX_CHUNK_COLUMN_SECTIONS][][];
             final short primaryBitMap = message.getPrimaryBitMaps()[i];
-            final short additionalDataBitMap = message.getPrimaryBitMaps()[i];
 
             // Find out how many non-air chunks we have in the column and add on a data segment for it
             int columnDataSize = 0;
@@ -284,11 +280,8 @@ public class Universe extends TickingElement {
                 boolean hasData = ((primaryBitMap & 1 << j) != 0);
                 if (hasData) {
                     data[j] = new byte[ChunkDataIndex.values().length][];
-                    columnDataSize += Chunk.BLOCKS.HALF_VOLUME * ChunkDataIndex.values().length;
-                    boolean hasAdditionalData = ((additionalDataBitMap & 1 << j) != 0);
-                    if (hasAdditionalData) {
-                        columnDataSize += Chunk.BLOCKS.HALF_VOLUME;
-                    }
+                    //Blocks + (Metadata + Light + Skylight)
+                    columnDataSize += Chunk.BLOCKS.VOLUME + (Chunk.BLOCKS.HALF_VOLUME * (message.hasSkyLightData() ? 3 : 2));
                 }
             }
             //ChunkDataBulk always sends biome data
