@@ -29,12 +29,12 @@ public class ChunkDataMessage extends ChannelMessage {
     private final int columnX;
     private final int columnZ;
     private final boolean groundUpContinuous;
-    private final short primaryBitMap;
-    private final short additionalDataBitMap;
+    private final int primaryBitMap;
+    private final int additionalDataBitMap;
     private final int compressedDataLength;
     private final byte[] compressedData;
 
-    public ChunkDataMessage(int columnX, int columnZ, boolean groundUpContinuous, short primaryBitMap, short additionalDataBitMap, int compressedDataLength, byte[] compressedData) {
+    public ChunkDataMessage(int columnX, int columnZ, boolean groundUpContinuous, int primaryBitMap, int additionalDataBitMap, int compressedDataLength, byte[] compressedData) {
         super(Channel.UNIVERSE);
         this.columnX = columnX;
         this.columnZ = columnZ;
@@ -57,11 +57,11 @@ public class ChunkDataMessage extends ChannelMessage {
         return groundUpContinuous;
     }
 
-    public short getPrimaryBitMap() {
+    public int getPrimaryBitMap() {
         return primaryBitMap;
     }
 
-    public short getAdditionalDataBitMap() {
+    public int getAdditionalDataBitMap() {
         return additionalDataBitMap;
     }
 

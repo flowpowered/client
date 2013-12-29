@@ -275,8 +275,8 @@ public class Universe extends TickingElement {
         int index = 0;
         for (int i = 0; i < message.getColumnCount(); i++) {
             byte[][][] data = new byte[MAX_CHUNK_COLUMN_SECTIONS][][];
-            final short primaryBitMap = message.getPrimaryBitMaps()[i];
-            final short additionalDataBitMap = message.getPrimaryBitMaps()[i];
+            final int primaryBitMap = message.getPrimaryBitMaps()[i];
+            final int additionalDataBitMap = message.getPrimaryBitMaps()[i];
 
             // Find out how many non-air chunks we have in the column and add on a data segment for it
             int columnDataSize = 0;
@@ -324,7 +324,7 @@ public class Universe extends TickingElement {
      * @param hasSkyLight True if the compressed data has sky light, only {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}s can not provide this
      * @throws IOException If the chunk's data is corrupted during inflate or if all bytes are not decompressed
      */
-    private void decompressChunkData(byte[][][] data, boolean groundUpContinuous, short primaryBitMap, short additionalDataBitMap, byte[] compressedData, int columnDataSize, boolean hasSkyLight) throws IOException {
+    private void decompressChunkData(byte[][][] data, boolean groundUpContinuous, int primaryBitMap, int additionalDataBitMap, byte[] compressedData, int columnDataSize, boolean hasSkyLight) throws IOException {
         // Step 3 - Decompress the data
         final byte[] decompressedData = new byte[columnDataSize];
         INFLATER.setInput(compressedData);

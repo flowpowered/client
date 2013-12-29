@@ -50,7 +50,7 @@ public class ChunkDataCodec extends Codec<ChunkDataMessage> implements MessageHa
         final int compressedSize = buf.readInt();
         final byte[] compressedData = new byte[compressedSize];
         buf.readBytes(compressedData);
-        return new ChunkDataMessage(x, z, groundUpContinuous, (short) primaryBitMap, (short) additionalDataBitMap, compressedSize, compressedData);
+        return new ChunkDataMessage(x, z, groundUpContinuous, primaryBitMap, additionalDataBitMap, compressedSize, compressedData);
     }
 
     @Override
