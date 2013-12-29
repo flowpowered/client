@@ -30,6 +30,11 @@ ext.buildNumber = '0'
 ext.ciSystem = 'unknown'
 ext.commit = 'unknown'
 
+// Configuration settings
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds' // Always check for new snapshots
+}
+
 // Plugin repositories and dependencies
 buildscript {
     repositories {
