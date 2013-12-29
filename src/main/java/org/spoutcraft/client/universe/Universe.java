@@ -106,23 +106,23 @@ public class Universe extends TickingElement {
         }
 
 //        // TEST CODE
-//        final Random random = new Random();
-//        final World world = activeWorld.get();
-//        final Map<Vector3i, Chunk> chunks = world.getChunks();
-//        if (chunks.isEmpty()) {
-//            final short[] chunkIDs = new short[Chunk.BLOCKS.VOLUME];
-//            Arrays.fill(chunkIDs, Materials.SOLID.getID());
-//            final short[] chunkSubIDs = new short[Chunk.BLOCKS.VOLUME];
-//            world.setChunk(new Chunk(world, new Vector3i(random.nextInt(5), 0, random.nextInt(5)), chunkIDs, chunkSubIDs));
-//        } else {
-//            for (Iterator<Entry<Vector3i, Chunk>> iterator = chunks.entrySet().iterator(); iterator.hasNext(); ) {
-//                iterator.next();
-//                if (random.nextInt(70) == 0) {
-//                    iterator.remove();
-//                    break;
-//                }
-//            }
-//        }
+        final Random random = new Random();
+        final World world = activeWorld.get();
+        final Map<Vector3i, Chunk> chunks = world.getChunks();
+        if (chunks.isEmpty()) {
+            final short[] chunkIDs = new short[Chunk.BLOCKS.VOLUME];
+            Arrays.fill(chunkIDs, Materials.SOLID.getID());
+            final short[] chunkSubIDs = new short[Chunk.BLOCKS.VOLUME];
+            world.setChunk(new Chunk(world, new Vector3i(random.nextInt(5), 0, random.nextInt(5)), chunkIDs, chunkSubIDs));
+        } else {
+            for (Iterator<Entry<Vector3i, Chunk>> iterator = chunks.entrySet().iterator(); iterator.hasNext(); ) {
+                iterator.next();
+                if (random.nextInt(70) == 0) {
+                    iterator.remove();
+                    break;
+                }
+            }
+        }
 
         for (Entry<UUID, World> entry : worlds.entrySet()) {
             final UUID id = entry.getKey();
