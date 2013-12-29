@@ -35,6 +35,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
+import org.spout.math.vector.Vector3i;
+
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
@@ -50,8 +52,6 @@ import org.spoutcraft.client.network.message.play.RespawnMessage;
 import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.util.ticking.TickingElement;
-
-import org.spout.math.vector.Vector3i;
 
 /**
  * Contains and manages all the voxel worlds.
@@ -454,7 +454,7 @@ public class Universe extends TickingElement {
                         }
                         final short[] blockData = new short[Chunk.BLOCKS.VOLUME];
                         for (int d = 0; i < blockData.length; i++) {
-                            // final block data order: MMMM-BB-SS (M = metadata, B = block light, S = sky light)
+                            // final block data order: 00MM-BB-SS (M = metadata, B = block light, S = sky light)
                             blockData[i] = (short) (((data[i][ChunkDataIndex.BLOCK_METADATA.value()][d] & 0xF) << 8)
                                     | ((data[i][ChunkDataIndex.BLOCK_LIGHT.value()][d] & 0xF) << 4)
                                     | ((data[i][ChunkDataIndex.BLOCK_SKY_LIGHT.value()][d] & 0xF)));

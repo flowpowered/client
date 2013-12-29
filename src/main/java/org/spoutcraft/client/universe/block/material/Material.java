@@ -63,10 +63,6 @@ public abstract class Material {
         return get(id, (short) 0);
     }
 
-    public static Material getPacked(int packed) {
-        return get((short) (packed >> 16), (short) packed);
-    }
-
     public static Material get(short id, short subID) {
         final MasterMaterial master = MATERIALS_BY_ID.get(id);
         if (master == null) {

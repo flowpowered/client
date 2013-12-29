@@ -101,7 +101,7 @@ public class Chunk {
     }
 
     public Material getMaterial(int x, int y, int z) {
-        return Material.getPacked(blocks.getFullData(x & BLOCKS.MASK, y & BLOCKS.MASK, z & BLOCKS.MASK));
+        return getPacked(blocks.getFullData(x & BLOCKS.MASK, y & BLOCKS.MASK, z & BLOCKS.MASK));
     }
 
     public void setMaterial(Vector3i position, Material material) {
@@ -162,5 +162,9 @@ public class Chunk {
         } else {
             toMesh.add(BlockFace.THIS);
         }
+    }
+
+    private static Material getPacked(int packed) {
+        return Material.get((short) (packed >> 16), (short) (packed >> 8 & 0xff));
     }
 }
