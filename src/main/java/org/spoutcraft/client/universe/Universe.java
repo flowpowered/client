@@ -258,7 +258,7 @@ public class Universe extends TickingElement {
                     columnDataSize += Chunk.BLOCKS.AREA;
                 }
 
-                decompressChunkData(data, message.isGroundUpContinuous(), message.getPrimaryBitMap(), message.getAdditionalDataBitMap(), message.getCompressedData(), columnDataSize, true);
+                decompressChunkData(data, message.isGroundUpContinuous(), message.getCompressedData(), columnDataSize, true);
             } catch (IOException e) {
                 System.out.println(e);
             }
@@ -275,8 +275,8 @@ public class Universe extends TickingElement {
         int index = 0;
         for (int i = 0; i < message.getColumnCount(); i++) {
             byte[][][] data = new byte[MAX_CHUNK_COLUMN_SECTIONS][][];
-            final int primaryBitMap = message.getPrimaryBitMaps()[i];
-            final int additionalDataBitMap = message.getPrimaryBitMaps()[i];
+            final short primaryBitMap = message.getPrimaryBitMaps()[i];
+            final short additionalDataBitMap = message.getPrimaryBitMaps()[i];
 
             // Find out how many non-air chunks we have in the column and add on a data segment for it
             int columnDataSize = 0;
@@ -302,7 +302,7 @@ public class Universe extends TickingElement {
                 activeWorld.get().removeChunkColumn(message.getColumnXs()[i], message.getColumnZs()[i], 0, MAX_CHUNK_COLUMN_SECTIONS);
             } else {
                 try {
-                    decompressChunkData(data, true, primaryBitMap, additionalDataBitMap, compressedDataSection, columnDataSize, message.hasSkyLightData());
+                    decompressChunkData(data, true, compressedDataSection, columnDataSize, message.hasSkyLightData());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -319,12 +319,11 @@ public class Universe extends TickingElement {
      * data           - decompressed data as a byte
      *
      * @param groundUpContinuous True if this is the entire column, false if not. Used to determine if biome data is included
-     * @param primaryBitMap Bit map containing each section of the column, used to determine which sections are air and can be skipped
      * @param compressedData Compressed data from the server
      * @param hasSkyLight True if the compressed data has sky light, only {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}s can not provide this
      * @throws IOException If the chunk's data is corrupted during inflate or if all bytes are not decompressed
      */
-    private void decompressChunkData(byte[][][] data, boolean groundUpContinuous, int primaryBitMap, int additionalDataBitMap, byte[] compressedData, int columnDataSize, boolean hasSkyLight) throws IOException {
+    private void decompressChunkData(byte[][][] data, boolean groundUpContinuous, byte[] compressedData, int columnDataSize, boolean hasSkyLight) throws IOException {
         // Step 3 - Decompress the data
         final byte[] decompressedData = new byte[columnDataSize];
         INFLATER.setInput(compressedData);
@@ -468,7 +467,7 @@ public class Universe extends TickingElement {
 
     private static short[] toShort(byte[] a) {
         final short[] b = new short[a.length];
-        for(int i = 0; i < a.length; i++) {
+        for (int i = 0; i < a.length; i++) {
             b[i] = a[i];
         }
         return b;

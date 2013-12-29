@@ -32,10 +32,10 @@ public class ChunkDataBulkMessage extends ChannelMessage {
     private final byte[] compressedData;
     private final int[] columnXs;
     private final int[] columnZs;
-    private final int[] primaryBitMaps;
-    private final int[] additionalDataBitMaps;
+    private final short[] primaryBitMaps;
+    private final short[] additionalDataBitMaps;
 
-    public ChunkDataBulkMessage(short columnCount, int compressedDataLength, boolean hasSkyLightData, byte[] compressedData, int[] columnXs, int[] columnZs, int[] primaryBitMaps, int[] additionalDataBitMaps) {
+    public ChunkDataBulkMessage(short columnCount, int compressedDataLength, boolean hasSkyLightData, byte[] compressedData, int[] columnXs, int[] columnZs, short[] primaryBitMaps, short[] additionalDataBitMaps) {
         super(Channel.UNIVERSE);
 
         this.columnCount = columnCount;
@@ -72,11 +72,11 @@ public class ChunkDataBulkMessage extends ChannelMessage {
         return columnZs;
     }
 
-    public int[] getPrimaryBitMaps() {
+    public short[] getPrimaryBitMaps() {
         return primaryBitMaps;
     }
 
-    public int[] getAdditionalDataBitMaps() {
+    public short[] getAdditionalDataBitMaps() {
         return additionalDataBitMaps;
     }
 
