@@ -44,14 +44,14 @@ public class ChunkSnapshotGroup {
     private final ChunkSnapshot west;
 
     /**
-     * Constructs a new snapshot group from the middle chunk snapshot and the world snapshot. The world snapshot will be used to source the neighbouring chunks (if they exist).
+     * Constructs a new snapshot group from the middle chunk snapshot and the world snapshot. The world snapshot from the chunk will be used to source the neighbouring chunks (if they exist).
      *
      * @param middle The middle chunk
-     * @param world The world snapshot containing the chunk
      */
-    public ChunkSnapshotGroup(ChunkSnapshot middle, WorldSnapshot world) {
+    public ChunkSnapshotGroup(ChunkSnapshot middle) {
         this.middle = middle;
         final Vector3i position = middle.getPosition();
+        final WorldSnapshot world = middle.getWorld();
         top = world.getChunk(position.add(Vector3i.UP));
         bottom = world.getChunk(position.sub(Vector3i.UP));
         north = world.getChunk(position.sub(Vector3i.RIGHT));

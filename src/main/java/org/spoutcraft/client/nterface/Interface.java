@@ -24,9 +24,14 @@
 package org.spoutcraft.client.nterface;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+
+import gnu.trove.map.TObjectLongMap;
+import gnu.trove.map.hash.TObjectLongHashMap;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -60,6 +65,8 @@ public class Interface extends TickingElement {
     private final Game game;
     private final ChunkMesher mesher = new StandardChunkMesher();
     private final Map<Vector3i, Model> chunkModels = new HashMap<>();
+    private long worldLastUpdateNumber;
+    private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
 
     /**
      * Constructs a new interface from the game.
@@ -87,47 +94,16 @@ public class Interface extends TickingElement {
 
     @Override
     public void onTick() {
-        // TEST CODE
-        final WorldSnapshot world = game.getUniverse().getActiveWorldSnapshot();
-
-        if (world == null) {
-            for (Model model : chunkModels.values()) {
-                Renderer.removeModel(model);
-            }
-            chunkModels.clear();
-            return;
-        }
-
-        final Map<Vector3i, ChunkSnapshot> chunks = world.getChunks();
-
-        for (Iterator<Entry<Vector3i, Model>> iterator = chunkModels.entrySet().iterator(); iterator.hasNext(); ) {
-            final Entry<Vector3i, Model> chunkModel = iterator.next();
-            if (!chunks.containsKey(chunkModel.getKey())) {
-                // TODO: recycle the vertex arrays?
-                final Model model = chunkModel.getValue();
-                Renderer.removeModel(model);
-                model.getVertexArray().destroy();
-                iterator.remove();
-            }
-        }
-
-        for (ChunkSnapshot chunk : chunks.values()) {
-            if (!chunkModels.containsKey(chunk.getPosition())) {
-                addChunkModel(world, chunk);
-            }
-        }
-
         if (Display.isCloseRequested()) {
             // TODO: untie Main from the game code
             Main.exit();
         }
+
+        // TEST CODE
+        updateChunkModels(game.getUniverse().getActiveWorldSnapshot());
+
         processInput(1f / 20);
         Renderer.render();
-    }
-
-    private void addChunkModel(WorldSnapshot world, ChunkSnapshot chunk) {
-        final Model model = Renderer.addSolid(mesher.mesh(new ChunkSnapshotGroup(chunk, world)).build(), chunk.getPosition().mul(16).toFloat(), Quaternionf.IDENTITY);
-        chunkModels.put(chunk.getPosition(), model);
     }
 
     @Override
@@ -135,6 +111,75 @@ public class Interface extends TickingElement {
         System.out.println("Interface stop");
 
         Renderer.dispose();
+    }
+
+    private void updateChunkModels(WorldSnapshot world) {
+        // If we have no world, remove all chunks
+        if (world == null) {
+            for (Model model : chunkModels.values()) {
+                removeChunkModel(model);
+            }
+            chunkModels.clear();
+            return;
+        }
+        // If the snapshot hasn't updated there's nothing to do
+        if (world.getUpdateNumber() <= worldLastUpdateNumber) {
+            return;
+        }
+        // Else, we need to build a list of chunks to mesh
+        final Set<ChunkSnapshot> toMesh = new HashSet<>();
+        final Map<Vector3i, ChunkSnapshot> chunks = world.getChunks();
+        // Remove chunks we don't need anymore
+        for (Iterator<Entry<Vector3i, Model>> iterator = chunkModels.entrySet().iterator(); iterator.hasNext(); ) {
+            final Entry<Vector3i, Model> chunkModel = iterator.next();
+            final Vector3i position = chunkModel.getKey();
+            // If a model is not in the world chunk collection, we remove
+            if (!chunks.containsKey(position)) {
+                final Model model = chunkModel.getValue();
+                // Remove the model
+                removeChunkModel(model);
+                // Finally, remove the chunk from the collections
+                iterator.remove();
+                chunkLastUpdateNumbers.remove(position);
+            }
+        }
+        // Next go through all the chunks, and add the chunks that are out of date
+        for (ChunkSnapshot chunk : chunks.values()) {
+            if (chunk.getUpdateNumber() > chunkLastUpdateNumbers.get(chunk.getPosition())) {
+                toMesh.add(chunk);
+            }
+        }
+        // Next mesh those chunks and replace the models that need updating
+        for (ChunkSnapshot chunk : toMesh) {
+            // Only mesh the existing ones
+            final Vector3i position = chunk.getPosition();
+            // If we have a previous model remove it to be replaced
+            final Model previous = chunkModels.get(position);
+            if (previous != null) {
+                removeChunkModel(previous);
+            }
+            // Add the new model
+            addChunkModel(chunk);
+        }
+        // Update the world update number
+        worldLastUpdateNumber = world.getUpdateNumber();
+        // Safety precautions
+        if (Renderer.getModels().size() > chunkModels.size()) {
+            System.out.println("They're more models in the renderer than they are chunk models, leak?");
+        }
+    }
+
+    private void addChunkModel(ChunkSnapshot chunk) {
+        final Vector3i position = chunk.getPosition();
+        final Model model = Renderer.addSolid(mesher.mesh(new ChunkSnapshotGroup(chunk)).build(), position.mul(16).toFloat(), Quaternionf.IDENTITY);
+        chunkModels.put(position, model);
+        chunkLastUpdateNumbers.put(position, chunk.getUpdateNumber());
+    }
+
+    private void removeChunkModel(Model model) {
+        Renderer.removeModel(model);
+        // Destroy the vertex array TODO: recycle it?
+        model.getVertexArray().destroy();
     }
 
     /**

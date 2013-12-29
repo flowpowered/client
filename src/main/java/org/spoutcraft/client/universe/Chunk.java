@@ -23,17 +23,13 @@
  */
 package org.spoutcraft.client.universe;
 
-import java.util.Set;
-
 import org.spout.math.vector.Vector3i;
 
 import org.spoutcraft.client.universe.block.Block;
-import org.spoutcraft.client.universe.block.BlockFace;
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.store.AtomicBlockStore;
 import org.spoutcraft.client.universe.store.impl.AtomicPaletteBlockStore;
 import org.spoutcraft.client.util.BitSize;
-import org.spoutcraft.client.util.ConcurrentRegularEnumSet;
 
 /**
  *
@@ -49,19 +45,21 @@ public class Chunk {
     private final World world;
     // The chunk's position
     private final Vector3i position;
-    // Chunks that need to be meshed for rendering to prevent gaps
-    private final Set<BlockFace> toMesh = new ConcurrentRegularEnumSet<>(BlockFace.class);
 
     public Chunk(World world, Vector3i position) {
         this.world = world;
         this.position = position;
         blocks = new AtomicPaletteBlockStore(BLOCKS.BITS, true, DIRTY_ARRAY_SIZE);
+        // Set the chunk as dirty for the first snapshot
+        blocks.touchBlock(0, 0, 0);
     }
 
     public Chunk(World world, Vector3i position, short[] blocks, short[] data) {
         this.world = world;
         this.position = position;
         this.blocks = new AtomicPaletteBlockStore(BLOCKS.BITS, true, false, DIRTY_ARRAY_SIZE, blocks, data);
+        // Set the chunk as dirty for the first snapshot
+        this.blocks.touchBlock(0, 0, 0);
     }
 
     public World getWorld() {
@@ -109,16 +107,12 @@ public class Chunk {
     }
 
     public void setMaterial(int x, int y, int z, Material material) {
+        // TODO: fix this so it doesn't overwrite all the data bits, only the subID ones
         blocks.setBlock(x & BLOCKS.MASK, y & BLOCKS.MASK, z & BLOCKS.MASK, material);
-        computeToMesh(x, y, z);
     }
 
     public AtomicBlockStore getBlocks() {
         return blocks;
-    }
-
-    public Set<BlockFace> getToMesh() {
-        return toMesh;
     }
 
     @Override
@@ -141,27 +135,6 @@ public class Chunk {
         int result = world.hashCode();
         result = 31 * result + position.hashCode();
         return result;
-    }
-
-    private void computeToMesh(int x, int y, int z) {
-        x &= BLOCKS.MASK;
-        y &= BLOCKS.MASK;
-        z &= BLOCKS.MASK;
-        if (x == 0) {
-            toMesh.add(BlockFace.NORTH);
-        } else if (x == Chunk.BLOCKS.SIZE - 1) {
-            toMesh.add(BlockFace.SOUTH);
-        } else if (y == 0) {
-            toMesh.add(BlockFace.BOTTOM);
-        } else if (y == Chunk.BLOCKS.SIZE - 1) {
-            toMesh.add(BlockFace.TOP);
-        } else if (z == 0) {
-            toMesh.add(BlockFace.EAST);
-        } else if (z == Chunk.BLOCKS.SIZE - 1) {
-            toMesh.add(BlockFace.WEST);
-        } else {
-            toMesh.add(BlockFace.THIS);
-        }
     }
 
     private static Material getPacked(int packed) {

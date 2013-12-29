@@ -33,12 +33,12 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.spout.math.vector.Vector3i;
+
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.World;
 import org.spoutcraft.client.util.map.TripleIntObjectMap;
 import org.spoutcraft.client.util.map.impl.TTripleInt21ObjectHashMap;
-
-import org.spout.math.vector.Vector3i;
 
 /**
  *
@@ -47,15 +47,12 @@ public class WorldSnapshot {
     private final TripleIntObjectMap<ChunkSnapshot> chunks = new TTripleInt21ObjectHashMap<>();
     private final UUID id;
     private final String name;
+    private long updateNumber = 0;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
     public WorldSnapshot(World world) {
         this.id = world.getID();
         this.name = world.getName();
-        for (Chunk chunk : world.getChunks().values()) {
-            final Vector3i position = chunk.getPosition();
-            chunks.put(position.getX(), position.getY(), position.getZ(), new ChunkSnapshot(this, chunk));
-        }
     }
 
     public UUID getID() {
@@ -108,6 +105,10 @@ public class WorldSnapshot {
         }
     }
 
+    public long getUpdateNumber() {
+        return updateNumber;
+    }
+
     public void update(World current) {
         if (!current.getID().equals(id)) {
             throw new IllegalArgumentException("Cannot update from a world with another ID");
@@ -116,13 +117,16 @@ public class WorldSnapshot {
         final Lock lock = this.lock.writeLock();
         lock.lock();
         try {
+            boolean changed = false;
             for (Chunk chunk : current.getChunks().values()) {
                 final Vector3i position = chunk.getPosition();
-                final ChunkSnapshot chunkSnapshot = chunks.get(position.getX(), position.getY(), position.getZ());
-                if (chunkSnapshot != null) {
-                    chunkSnapshot.update(chunk);
-                } else {
-                    chunks.put(position.getX(), position.getY(), position.getZ(), new ChunkSnapshot(this, chunk));
+                ChunkSnapshot chunkSnapshot = chunks.get(position.getX(), position.getY(), position.getZ());
+                if (chunkSnapshot == null) {
+                    chunkSnapshot = new ChunkSnapshot(this, position);
+                    chunks.put(position.getX(), position.getY(), position.getZ(), chunkSnapshot);
+                }
+                if (chunkSnapshot.update(chunk)) {
+                    changed = true;
                 }
                 validChunks.add(position);
             }
@@ -130,7 +134,11 @@ public class WorldSnapshot {
                 final Vector3i position = iterator.next().getPosition();
                 if (!validChunks.contains(position)) {
                     iterator.remove();
+                    changed = true;
                 }
+            }
+            if (changed) {
+                updateNumber++;
             }
         } finally {
             lock.unlock();

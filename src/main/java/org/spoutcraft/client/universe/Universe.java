@@ -105,26 +105,17 @@ public class Universe extends TickingElement {
         // TEST CODE
         final Random random = new Random();
         final World world = activeWorld.get();
-        final Map<Vector3i, Chunk> chunks = world.getChunks();
-        if (chunks.isEmpty()) {
-            final short[] chunkIDs = new short[Chunk.BLOCKS.VOLUME];
-            Arrays.fill(chunkIDs, Materials.SOLID.getID());
-            final short[] chunkSubIDs = new short[Chunk.BLOCKS.VOLUME];
-            world.setChunk(new Chunk(world, new Vector3i(random.nextInt(5), 0, random.nextInt(5)), chunkIDs, chunkSubIDs));
-        } else {
-            for (Iterator<Entry<Vector3i, Chunk>> iterator = chunks.entrySet().iterator(); iterator.hasNext(); ) {
-                iterator.next();
-                if (random.nextInt(70) == 0) {
-                    iterator.remove();
-                    break;
-                }
+        int x = random.nextInt(64) - 32;
+        int z = random.nextInt(64) - 32;
+        final Chunk chunk = world.getChunk(x >> Chunk.BLOCKS.BITS, 0, z >> Chunk.BLOCKS.BITS);
+        for (int y = 15; y >= 0; y--) {
+            if (chunk.getMaterial(x, y, z) != Materials.AIR) {
+                chunk.setMaterial(x, y, z, Materials.AIR);
+                break;
             }
         }
 
-        for (Entry<UUID, World> entry : worlds.entrySet()) {
-            final UUID id = entry.getKey();
-            worldSnapshots.get(id).update(worlds.get(id));
-        }
+        updateSnapshots();
     }
 
     @Override
@@ -161,6 +152,13 @@ public class Universe extends TickingElement {
         worldIDsByName.put(world.getName(), world.getID());
         if (setActive) {
             activeWorld.set(world);
+        }
+    }
+
+    private void updateSnapshots() {
+        for (Entry<UUID, World> entry : worlds.entrySet()) {
+            final UUID id = entry.getKey();
+            worldSnapshots.get(id).update(worlds.get(id));
         }
     }
 
@@ -307,9 +305,7 @@ public class Universe extends TickingElement {
     /**
      * Decompresses the raw compressed data from the server into the provided 3D array that comprises:
      * <p/>
-     * Section        - The section of the column, ground up
-     * ChunkDataIndex - See {@link org.spoutcraft.client.universe.Universe.ChunkDataIndex}
-     * data           - decompressed data as a byte
+     * Section        - The section of the column, ground up ChunkDataIndex - See {@link org.spoutcraft.client.universe.Universe.ChunkDataIndex} data           - decompressed data as a byte
      *
      * @param groundUpContinuous True if this is the entire column, false if not. Used to determine if biome data is included
      * @param compressedData Compressed data from the server

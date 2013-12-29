@@ -27,32 +27,29 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.spout.math.vector.Vector3i;
+
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.block.Block;
-import org.spoutcraft.client.universe.block.BlockFaces;
+import org.spoutcraft.client.universe.block.BlockFace;
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.store.AtomicBlockStore;
-
-import org.spout.math.vector.Vector3i;
 
 /**
  *
  */
 public class ChunkSnapshot {
-    private final short[] blockIDs;
-    private final short[] blockSubIDs;
+    private static final BlockFace[] EMPTY_TO_MESH = new BlockFace[0];
+    private final short[] blockIDs = new short[Chunk.BLOCKS.VOLUME];
+    private final short[] blockSubIDs = new short[Chunk.BLOCKS.VOLUME];
     private final WorldSnapshot world;
     private final Vector3i position;
     private long updateNumber = 0;
-    private BlockFaces toMesh = BlockFaces.NONE;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-    public ChunkSnapshot(WorldSnapshot world, Chunk chunk) {
+    public ChunkSnapshot(WorldSnapshot world, Vector3i position) {
         this.world = world;
-        this.position = chunk.getPosition();
-        final AtomicBlockStore blocks = chunk.getBlocks();
-        this.blockIDs = blocks.getBlockIdArray();
-        this.blockSubIDs = blocks.getDataArray();
+        this.position = position;
     }
 
     public WorldSnapshot getWorld() {
@@ -101,22 +98,30 @@ public class ChunkSnapshot {
         return updateNumber;
     }
 
-    public void update(Chunk current) {
+    /**
+     * Updates the snapshot to the current chunk passed to the constructor. The chunk passed must be a the same location and world than the snapshot. Returns whether or not the snapshot state has
+     * changed. Clears the chunk block store dirty arrays.
+     *
+     * @param current The current chunk to update from
+     * @return Whether or not the snapshot state has changed
+     */
+    public boolean update(Chunk current) {
         if (!current.getPosition().equals(position) || !current.getWorld().getID().equals(world.getID())) {
             throw new IllegalArgumentException("Cannot accept a chunk from another position or world");
-        }
-        final AtomicBlockStore blocks = current.getBlocks();
-        if (!blocks.isDirty()) {
-            return;
         }
         final Lock lock = this.lock.writeLock();
         lock.lock();
         try {
             // TODO: update only the dirty blocks, unless the dirty arrays are overflown
-            blocks.getBlockIdArray(blockIDs);
-            blocks.getDataArray(blockSubIDs);
-            blocks.resetDirtyArrays();
-            updateNumber++;
+            final AtomicBlockStore blocks = current.getBlocks();
+            if (blocks.isDirty()) {
+                blocks.getBlockIdArray(blockIDs);
+                blocks.getDataArray(blockSubIDs);
+                blocks.resetDirtyArrays();
+                updateNumber++;
+                return true;
+            }
+            return false;
         } finally {
             lock.unlock();
         }

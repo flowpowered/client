@@ -71,13 +71,10 @@ public class ConcurrentRegularEnumSet<E extends Enum<E>> extends AbstractSet<E> 
     public E[] toArray() {
         final E[] array = (E[]) Array.newInstance(enumClass, enumConstants.length);
         int i = 0;
-        int l = 0;
-        if (l < Long.bitCount(set.get())) {
-            while ((set.get() & (1l << l)) != 0) {
-                if (++l > Long.bitCount(set.get())) {
-                    break;
-                }
-                array[i++] = enumConstants[Long.numberOfTrailingZeros(1l << (l - 1))];
+        for (int l = 0; l < enumConstants.length; l++) {
+            final long mask = 1l << l;
+            if ((set.get() & mask) != 0) {
+                array[i++] = enumConstants[Long.numberOfTrailingZeros(mask)];
             }
         }
         final E[] finalArray = (E[]) Array.newInstance(enumClass, i);
