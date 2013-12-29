@@ -56,7 +56,7 @@ public class ChunkDataBulkMessage extends ChannelMessage {
         return compressedDataLength;
     }
 
-    public boolean isHasSkyLightData() {
+    public boolean hasSkyLightData() {
         return hasSkyLightData;
     }
 

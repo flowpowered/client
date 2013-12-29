@@ -24,7 +24,6 @@
 package org.spoutcraft.client.universe;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,15 +35,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
-import org.spout.math.vector.Vector3i;
-
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.network.Network;
-import org.spoutcraft.client.network.codec.play.ChunkDataBulkCodec;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.ChannelMessage.Channel;
 import org.spoutcraft.client.network.message.play.ChunkDataBulkMessage;
@@ -53,8 +49,9 @@ import org.spoutcraft.client.network.message.play.JoinGameMessage;
 import org.spoutcraft.client.network.message.play.RespawnMessage;
 import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
-import org.spoutcraft.client.universe.store.impl.PaletteFullException;
 import org.spoutcraft.client.util.ticking.TickingElement;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  * Contains and manages all the voxel worlds.
@@ -105,7 +102,7 @@ public class Universe extends TickingElement {
             }
         }
 
-//        // TEST CODE
+        // TEST CODE
         final Random random = new Random();
         final World world = activeWorld.get();
         final Map<Vector3i, Chunk> chunks = world.getChunks();
@@ -305,7 +302,7 @@ public class Universe extends TickingElement {
                 activeWorld.get().removeChunkColumn(message.getColumnXs()[i], message.getColumnZs()[i], 0, MAX_CHUNK_COLUMN_SECTIONS);
             } else {
                 try {
-                    decompressChunkData(data, true, primaryBitMap, additionalDataBitMap, compressedDataSection, columnDataSize, message.isHasSkyLightData());
+                    decompressChunkData(data, true, primaryBitMap, additionalDataBitMap, compressedDataSection, columnDataSize, message.hasSkyLightData());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
