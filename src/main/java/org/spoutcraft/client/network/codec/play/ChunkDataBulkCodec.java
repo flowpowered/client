@@ -49,13 +49,13 @@ public class ChunkDataBulkCodec extends Codec<ChunkDataBulkMessage> implements M
         buf.readBytes(compressedData);
         final int[] columnXs = new int[columnCount];
         final int[] columnZs = new int[columnCount];
-        final int[] primaryBitMaps = new int[columnCount];
-        final int[] additionalDataBitMaps = new int[columnCount];
+        final short[] primaryBitMaps = new short[columnCount];
+        final short[] additionalDataBitMaps = new short[columnCount];
         for (int i = 0; i < columnCount; i++) {
             columnXs[i] = buf.readInt();
             columnZs[i] = buf.readInt();
-            primaryBitMaps[i] = buf.readUnsignedShort();
-            additionalDataBitMaps[i] = buf.readUnsignedShort();
+            primaryBitMaps[i] = (short) buf.readUnsignedShort();
+            additionalDataBitMaps[i] = (short) buf.readUnsignedShort();
         }
         return new ChunkDataBulkMessage(columnCount, compressedDataLength, hasSkyLight, compressedData, columnXs, columnZs, primaryBitMaps, additionalDataBitMaps);
     }
