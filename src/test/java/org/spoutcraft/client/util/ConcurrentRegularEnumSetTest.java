@@ -30,6 +30,8 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
+import org.spoutcraft.client.util.set.ConcurrentRegularEnumSet;
+
 public class ConcurrentRegularEnumSetTest {
     @Test
     public void testConstructor() {

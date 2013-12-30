@@ -31,7 +31,6 @@ import org.spout.math.vector.Vector3i;
 
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.block.Block;
-import org.spoutcraft.client.universe.block.BlockFace;
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.store.AtomicBlockStore;
 
@@ -39,9 +38,8 @@ import org.spoutcraft.client.universe.store.AtomicBlockStore;
  *
  */
 public class ChunkSnapshot {
-    private static final BlockFace[] EMPTY_TO_MESH = new BlockFace[0];
     private final short[] blockIDs = new short[Chunk.BLOCKS.VOLUME];
-    private final short[] blockSubIDs = new short[Chunk.BLOCKS.VOLUME];
+    private final short[] blockData = new short[Chunk.BLOCKS.VOLUME];
     private final WorldSnapshot world;
     private final Vector3i position;
     private long updateNumber = 0;
@@ -73,7 +71,14 @@ public class ChunkSnapshot {
     }
 
     public Block getBlock(Vector3i position) {
-        return new Block(getMaterial(position), position);
+        final Lock lock = this.lock.readLock();
+        lock.lock();
+        try {
+            final int index = getBlockIndex(position);
+            return new Block(position, blockIDs[index], blockData[index]);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public Block getBlock(int x, int y, int z) {
@@ -88,7 +93,28 @@ public class ChunkSnapshot {
         final Lock lock = this.lock.readLock();
         lock.lock();
         try {
-            return Material.get(blockIDs[getBlockIndex(x, y, z)], blockSubIDs[getBlockIndex(x, y, z)]);
+            final int index = getBlockIndex(x, y, z);
+            return Material.get(blockIDs[index], Chunk.SUB_ID_MASK.extract(blockData[index]));
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public short getBlockLight(int x, int y, int z) {
+        final Lock lock = this.lock.readLock();
+        lock.lock();
+        try {
+            return Chunk.BLOCK_LIGHT_MASK.extract(blockData[getBlockIndex(x, y, z)]);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public short getBlockSkyLight(int x, int y, int z) {
+        final Lock lock = this.lock.readLock();
+        lock.lock();
+        try {
+            return Chunk.BLOCK_SKY_LIGHT_MASK.extract(blockData[getBlockIndex(x, y, z)]);
         } finally {
             lock.unlock();
         }
@@ -116,7 +142,7 @@ public class ChunkSnapshot {
             final AtomicBlockStore blocks = current.getBlocks();
             if (blocks.isDirty()) {
                 blocks.getBlockIdArray(blockIDs);
-                blocks.getDataArray(blockSubIDs);
+                blocks.getDataArray(blockData);
                 blocks.resetDirtyArrays();
                 updateNumber++;
                 return true;
@@ -147,6 +173,10 @@ public class ChunkSnapshot {
         int result = world.hashCode();
         result = 31 * result + position.hashCode();
         return result;
+    }
+
+    private static int getBlockIndex(Vector3i position) {
+        return getBlockIndex(position.getX(), position.getY(), position.getZ());
     }
 
     private static int getBlockIndex(int x, int y, int z) {

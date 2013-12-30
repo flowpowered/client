@@ -23,20 +23,36 @@
  */
 package org.spoutcraft.client.universe.block;
 
-import org.spoutcraft.client.universe.block.material.Material;
-
 import org.spout.math.vector.Vector3i;
+
+import org.spoutcraft.client.universe.Chunk;
+import org.spoutcraft.client.universe.block.material.Material;
 
 /**
  *
  */
 public class Block {
-    private final Material material;
     private final Vector3i position;
+    private final Material material;
+    private final short blockLight;
+    private final short blockSkyLight;
 
-    public Block(Material material, Vector3i position) {
-        this.material = material;
+    public Block(Vector3i position, int packed) {
+        this(position, (short) (packed >> 16), (short) packed);
+    }
+
+    public Block(Vector3i position, short id, short data) {
+        this(position,
+                Material.get(id, Chunk.SUB_ID_MASK.extract(data)),
+                Chunk.BLOCK_LIGHT_MASK.extract(data),
+                Chunk.BLOCK_SKY_LIGHT_MASK.extract(data));
+    }
+
+    public Block(Vector3i position, Material material, short blockLight, short blockSkyLight) {
         this.position = position;
+        this.material = material;
+        this.blockLight = blockLight;
+        this.blockSkyLight = blockSkyLight;
     }
 
     public Material getMaterial() {
@@ -45,5 +61,13 @@ public class Block {
 
     public Vector3i getPosition() {
         return position;
+    }
+
+    public short getBlockLight() {
+        return blockLight;
+    }
+
+    public short getBlockSkyLight() {
+        return blockSkyLight;
     }
 }

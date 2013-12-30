@@ -26,10 +26,10 @@ package org.spoutcraft.client.universe.store.impl;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import gnu.trove.set.hash.TIntHashSet;
-import org.spoutcraft.client.universe.block.material.Material;
-import org.spoutcraft.client.universe.store.AtomicBlockStore;
 
 import org.spout.math.vector.Vector3i;
+
+import org.spoutcraft.client.universe.store.AtomicBlockStore;
 
 public class AtomicPaletteBlockStore implements AtomicBlockStore {
     private final int shift;
@@ -86,7 +86,7 @@ public class AtomicPaletteBlockStore implements AtomicBlockStore {
             int[] initial = new int[Math.min(blocks.length, this.length)];
             for (int i = 0; i < blocks.length; i++) {
                 short d = data != null ? data[i] : 0;
-                initial[i] = blocks[i] << 16 | (d & 0xFFFF);
+                initial[i] = blocks[i] << 16 | d & 0xFFFF;
             }
             if (compress) {
                 store.set(initial);
@@ -116,7 +116,7 @@ public class AtomicPaletteBlockStore implements AtomicBlockStore {
 
     @Override
     public int getAndSetBlock(int x, int y, int z, short id, short data) {
-        int newState = id << 16 | (data & 0xFFFF);
+        int newState = id << 16 | data & 0xFFFF;
         int oldState = 0;
         try {
             return oldState = store.set(getIndex(x, y, z), newState);
@@ -126,8 +126,21 @@ public class AtomicPaletteBlockStore implements AtomicBlockStore {
     }
 
     @Override
-    public int getAndSetBlock(int x, int y, int z, Material m) {
-        return getAndSetBlock(x, y, z, m.getID(), m.getSubID());
+    public int getAndSetBlock(int x, int y, int z, short id, short data, DataMask mask) {
+        final int index = getIndex(x, y, z);
+        data = mask.apply(data);
+        boolean done = false;
+        int oldState = 0, newState = 0;
+        try {
+            while (!done) {
+                oldState = store.get(index);
+                newState = id << 16 | (oldState & ~(mask.getMask() << mask.getShift()) & 0xFFFF | data & 0xFFFF);
+                done = store.compareAndSet(index, oldState, newState);
+            }
+            return oldState;
+        } finally {
+            markDirty(x, y, z, oldState, newState);
+        }
     }
 
     @Override
@@ -138,29 +151,83 @@ public class AtomicPaletteBlockStore implements AtomicBlockStore {
     }
 
     @Override
+    public void setBlockId(int x, int y, int z, short id) {
+        final int index = getIndex(x, y, z);
+        boolean done = false;
+        int oldState = 0, newState = 0;
+        try {
+            while (!done) {
+                oldState = store.get(index);
+                newState = id << 16 | oldState & 0xFFFF;
+                done = store.compareAndSet(index, oldState, newState);
+            }
+        } finally {
+            markDirty(x, y, z, oldState, newState);
+        }
+    }
+
+    @Override
+    public void setData(int x, int y, int z, short data) {
+        final int index = getIndex(x, y, z);
+        boolean done = false;
+        int oldState = 0, newState = 0;
+        try {
+            while (!done) {
+                oldState = store.get(index);
+                newState = oldState & 0xFFFF0000 | data & 0xFFFF;
+                done = store.compareAndSet(index, oldState, newState);
+            }
+        } finally {
+            markDirty(x, y, z, oldState, newState);
+        }
+    }
+
+    @Override
+    public void setData(int x, int y, int z, short data, DataMask mask) {
+        final int index = getIndex(x, y, z);
+        data = mask.apply(data);
+        boolean done = false;
+        int oldState = 0, newState = 0;
+        try {
+            while (!done) {
+                oldState = store.get(index);
+                newState = oldState & 0xFFFF0000 | data & 0xFFFF;
+                done = store.compareAndSet(index, oldState, newState);
+            }
+        } finally {
+            markDirty(x, y, z, oldState, newState);
+        }
+    }
+
+    @Override
     public void setBlock(int x, int y, int z, short id, short data) {
         getAndSetBlock(x, y, z, id, data);
     }
 
     @Override
-    public void setBlock(int x, int y, int z, Material material) {
-        getAndSetBlock(x, y, z, material);
+    public void setBlock(int x, int y, int z, short id, short data, DataMask mask) {
+        getAndSetBlock(x, y, z, id, data, mask);
     }
 
     @Override
-    public int getBlockId(int x, int y, int z) {
+    public short getBlockId(int x, int y, int z) {
         return (short) (getFullData(x, y, z) >> 16);
     }
 
     @Override
-    public int getData(int x, int y, int z) {
+    public short getData(int x, int y, int z) {
         return (short) getFullData(x, y, z);
     }
 
     @Override
+    public short getData(int x, int y, int z, DataMask mask) {
+        return mask.extract(getData(x, y, z));
+    }
+
+    @Override
     public boolean compareAndSetBlock(int x, int y, int z, short expectId, short expectData, short newId, short newData) {
-        int exp = expectId << 16 | (expectData & 0xFFFF);
-        int update = newId << 16 | (newData & 0xFFFF);
+        int exp = expectId << 16 | expectData & 0xFFFF;
+        int update = newId << 16 | newData & 0xFFFF;
         boolean success = store.compareAndSet(getIndex(x, y, z), exp, update);
         if (success && exp != update) {
             markDirty(x, y, z, exp, update);
@@ -196,12 +263,28 @@ public class AtomicPaletteBlockStore implements AtomicBlockStore {
     }
 
     @Override
+    public short[] getDataArray(DataMask mask) {
+        return getDataArray(new short[length], mask);
+    }
+
+    @Override
     public short[] getDataArray(short[] array) {
         if (array.length != length) {
             array = new short[length];
         }
         for (int i = 0; i < length; i++) {
             array[i] = (short) (store.get(i));
+        }
+        return array;
+    }
+
+    @Override
+    public short[] getDataArray(short[] array, DataMask mask) {
+        if (array.length != length) {
+            array = new short[length];
+        }
+        for (int i = 0; i < length; i++) {
+            array[i] = mask.extract((short) store.get(i));
         }
         return array;
     }

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.util;
+package org.spoutcraft.client.util.set;
 
 import java.lang.reflect.Array;
 import java.util.AbstractSet;

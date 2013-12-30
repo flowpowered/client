@@ -28,6 +28,7 @@ import org.spout.math.vector.Vector3i;
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.store.AtomicBlockStore;
+import org.spoutcraft.client.universe.store.AtomicBlockStore.DataMask;
 import org.spoutcraft.client.universe.store.impl.AtomicPaletteBlockStore;
 import org.spoutcraft.client.util.BitSize;
 
@@ -37,6 +38,10 @@ import org.spoutcraft.client.util.BitSize;
 public class Chunk {
     // Stores the size of the amount of blocks in this Chunk
     public static final BitSize BLOCKS = new BitSize(4);
+    // Data mask for the various data stored inside the data short
+    public static final DataMask SUB_ID_MASK = new DataMask((short) 0xff, (short) 8);
+    public static final DataMask BLOCK_LIGHT_MASK = new DataMask((short) 0xf, (short) 4);
+    public static final DataMask BLOCK_SKY_LIGHT_MASK = new DataMask((short) 0xf, (short) 0);
     // Default size of the arrays in the block store that store the dirty blocks since the last reset
     private static final int DIRTY_ARRAY_SIZE = 10;
     // Stores all the blocks in the chunk
@@ -87,11 +92,7 @@ public class Chunk {
     }
 
     public Block getBlock(Vector3i position) {
-        return new Block(getMaterial(position), position);
-    }
-
-    public void setBlock(Block block) {
-        setMaterial(block.getPosition(), block.getMaterial());
+        return new Block(position, blocks.getFullData(position.getX() & BLOCKS.MASK, position.getY() & BLOCKS.MASK, position.getZ() & BLOCKS.MASK));
     }
 
     public Material getMaterial(Vector3i position) {
@@ -107,8 +108,39 @@ public class Chunk {
     }
 
     public void setMaterial(int x, int y, int z, Material material) {
-        // TODO: fix this so it doesn't overwrite all the data bits, only the subID ones
-        blocks.setBlock(x & BLOCKS.MASK, y & BLOCKS.MASK, z & BLOCKS.MASK, material);
+        blocks.setBlock(x & BLOCKS.MASK, y & BLOCKS.MASK, z & BLOCKS.MASK, material.getID(), material.getSubID(), SUB_ID_MASK);
+    }
+
+    public short getBlockLight(Vector3i position) {
+        return getBlockLight(position.getX(), position.getY(), position.getZ());
+    }
+
+    public short getBlockLight(int x, int y, int z) {
+        return blocks.getData(x, y, z, BLOCK_LIGHT_MASK);
+    }
+
+    public void setBlockLight(Vector3i position, short light) {
+        setBlockLight(position.getX(), position.getY(), position.getZ(), light);
+    }
+
+    public void setBlockLight(int x, int y, int z, short light) {
+        blocks.setData(x, y, z, light, BLOCK_LIGHT_MASK);
+    }
+
+    public short getBlockSkyLight(Vector3i position) {
+        return getBlockSkyLight(position.getX(), position.getY(), position.getZ());
+    }
+
+    public short getBlockSkyLight(int x, int y, int z) {
+        return blocks.getData(x, y, z, BLOCK_SKY_LIGHT_MASK);
+    }
+
+    public void setBlockSkyLight(Vector3i position, short light) {
+        setBlockSkyLight(position.getX(), position.getY(), position.getZ(), light);
+    }
+
+    public void setBlockSkyLight(int x, int y, int z, short light) {
+        blocks.setData(x, y, z, light, BLOCK_SKY_LIGHT_MASK);
     }
 
     public AtomicBlockStore getBlocks() {
@@ -138,6 +170,6 @@ public class Chunk {
     }
 
     private static Material getPacked(int packed) {
-        return Material.get((short) (packed >> 16), (short) (packed >> 8 & 0xff));
+        return Material.get((short) (packed >> 16), SUB_ID_MASK.extract((short) packed));
     }
 }
