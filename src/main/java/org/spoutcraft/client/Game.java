@@ -32,6 +32,7 @@ import org.spoutcraft.client.universe.Universe;
  */
 public class Game {
     private final Object wait = new Object();
+    private volatile boolean running = false;
     private final Universe universe;
     private final Interface nterface;
     private final Network network;
@@ -54,12 +55,14 @@ public class Game {
         universe.start();
         nterface.start();
         network.start();
+        running = true;
     }
 
     private void stop() {
         nterface.stop();
         universe.stop();
         network.stop();
+        running = false;
     }
 
     public Universe getUniverse() {
@@ -85,13 +88,24 @@ public class Game {
     }
 
     /**
+     * Returns true if the game is running, false if otherwise.
+     *
+     * @return Whether or not the game is running
+     */
+    public boolean isRunning() {
+        return running;
+    }
+
+    /**
      * Causes the current thread to wait until the {@link #exit()} method is called.
      *
      * @throws InterruptedException If the thread is interrupted while waiting
      */
     public void waitForExit() throws InterruptedException {
         synchronized (wait) {
-            wait.wait();
+            while (isRunning()) {
+                wait.wait();
+            }
         }
     }
 }
