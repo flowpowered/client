@@ -92,9 +92,10 @@ public class ParallelChunkMesher {
                 vertexArray.setData(vertexData);
                 vertexArray.create();
                 setVertexArray(vertexArray);
-                // Destroy the previous model (if any), as it is now obsolete
+                // Destroy and discard the previous model (if any), as it is now obsolete
                 if (previous != null) {
                     previous.destroy();
+                    previous = null;
                 }
             }
             // If we have a vertex array, we can render
