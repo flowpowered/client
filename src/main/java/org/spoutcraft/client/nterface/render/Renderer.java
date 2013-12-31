@@ -64,7 +64,6 @@ import org.spout.renderer.data.Uniform.Vector2Uniform;
 import org.spout.renderer.data.Uniform.Vector3Uniform;
 import org.spout.renderer.data.UniformHolder;
 import org.spout.renderer.data.VertexAttribute.DataType;
-import org.spout.renderer.data.VertexData;
 import org.spout.renderer.gl.Context;
 import org.spout.renderer.gl.Context.Capability;
 import org.spout.renderer.gl.FrameBuffer;
@@ -84,6 +83,7 @@ import org.spout.renderer.model.StringModel;
 import org.spout.renderer.util.Rectangle;
 
 import org.spoutcraft.client.nterface.Interface;
+import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel;
 import org.spoutcraft.client.nterface.render.effect.BlurEffect;
 import org.spoutcraft.client.nterface.render.effect.SSAOEffect;
 import org.spoutcraft.client.nterface.render.effect.ShadowMappingEffect;
@@ -607,6 +607,24 @@ public class Renderer {
     }
 
     /**
+     * Returns the OpenGL version.
+     *
+     * @return The OpenGL version
+     */
+    public static GLVersion getGLVersion() {
+        return glVersion;
+    }
+
+    /**
+     * Returns the OpenGL factory.
+     *
+     * @return The OpenGL factory
+     */
+    public static GLFactory getGLFactory() {
+        return glFactory;
+    }
+
+    /**
      * Sets whether or not to cull the back faces of the geometry.
      *
      * @param cull Whether or not to cull the back faces
@@ -673,23 +691,14 @@ public class Renderer {
     }
 
     /**
-     * Adds a model to renderer as a solid.
+     * Adds a model to be rendered as a solid.
      *
-     * @param vertexData The vertex data of the model
-     * @param position The position of the model
-     * @param orientation The orientation of the model
-     * @return The added model
+     * @param model The model
      */
-    public static Model addSolid(VertexData vertexData, Vector3f position, Quaternionf orientation) {
-        final VertexArray vertexArray = glFactory.createVertexArray();
-        vertexArray.setData(vertexData);
-        vertexArray.create();
-        final Model model = new Model(vertexArray, solidMaterial);
-        model.setPosition(position);
-        model.setRotation(orientation);
+    public static void addSolidModel(ChunkModel model) {
+        model.setMaterial(solidMaterial);
         model.getUniforms().add(new ColorUniform("modelColor", solidModelColor));
         addModel(model);
-        return model;
     }
 
     /**

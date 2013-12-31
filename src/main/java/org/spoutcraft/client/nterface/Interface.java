@@ -24,11 +24,9 @@
 package org.spoutcraft.client.nterface;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
@@ -44,11 +42,10 @@ import org.spout.math.vector.Vector3i;
 import org.spout.renderer.Camera;
 import org.spout.renderer.GLVersioned.GLVersion;
 import org.spout.renderer.data.Color;
-import org.spout.renderer.model.Model;
 
 import org.spoutcraft.client.Game;
-import org.spoutcraft.client.nterface.mesh.ChunkMesher;
-import org.spoutcraft.client.nterface.mesh.ChunkSnapshotGroup;
+import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher;
+import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel;
 import org.spoutcraft.client.nterface.mesh.StandardChunkMesher;
 import org.spoutcraft.client.nterface.render.Renderer;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
@@ -62,8 +59,8 @@ public class Interface extends TickingElement {
     public static final int TPS = 60;
     public static final float SPOT_CUTOFF = (float) (TrigMath.atan(100 / 50) / 2);
     private final Game game;
-    private final ChunkMesher mesher = new StandardChunkMesher();
-    private final Map<Vector3i, Model> chunkModels = new HashMap<>();
+    private final ParallelChunkMesher mesher = new ParallelChunkMesher(new StandardChunkMesher());
+    private final Map<Vector3i, ChunkModel> chunkModels = new HashMap<>();
     private long worldLastUpdateNumber;
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
 
@@ -96,10 +93,7 @@ public class Interface extends TickingElement {
         if (Display.isCloseRequested()) {
             game.exit();
         }
-
-        // TEST CODE
         updateChunkModels(game.getUniverse().getActiveWorldSnapshot());
-
         processInput(1f / 20);
         Renderer.render();
     }
@@ -108,76 +102,85 @@ public class Interface extends TickingElement {
     public void onStop() {
         System.out.println("Interface stop");
 
+        mesher.shutdown();
+        // Updating with a null world will clear all models
+        updateChunkModels(null);
         Renderer.dispose();
     }
 
     private void updateChunkModels(WorldSnapshot world) {
         // If we have no world, remove all chunks
         if (world == null) {
-            for (Model model : chunkModels.values()) {
-                removeChunkModel(model);
+            for (ChunkModel model : chunkModels.values()) {
+                // Remove and destroy the model
+                removeChunkModel(model, true);
             }
             chunkModels.clear();
+            chunkLastUpdateNumbers.clear();
+            worldLastUpdateNumber = 0;
             return;
         }
         // If the snapshot hasn't updated there's nothing to do
         if (world.getUpdateNumber() <= worldLastUpdateNumber) {
             return;
         }
-        // Else, we need to build a list of chunks to mesh
-        final Set<ChunkSnapshot> toMesh = new HashSet<>();
+        // Else, we need to update the chunk models
         final Map<Vector3i, ChunkSnapshot> chunks = world.getChunks();
         // Remove chunks we don't need anymore
-        for (Iterator<Entry<Vector3i, Model>> iterator = chunkModels.entrySet().iterator(); iterator.hasNext(); ) {
-            final Entry<Vector3i, Model> chunkModel = iterator.next();
+        for (Iterator<Entry<Vector3i, ChunkModel>> iterator = chunkModels.entrySet().iterator(); iterator.hasNext(); ) {
+            final Entry<Vector3i, ChunkModel> chunkModel = iterator.next();
             final Vector3i position = chunkModel.getKey();
             // If a model is not in the world chunk collection, we remove
             if (!chunks.containsKey(position)) {
-                final Model model = chunkModel.getValue();
-                // Remove the model
-                removeChunkModel(model);
+                final ChunkModel model = chunkModel.getValue();
+                // Remove the model, destroying it
+                removeChunkModel(model, true);
                 // Finally, remove the chunk from the collections
                 iterator.remove();
                 chunkLastUpdateNumbers.remove(position);
             }
         }
-        // Next go through all the chunks, and add the chunks that are out of date
+        // Next go through all the chunks, and update the chunks that are out of date
         for (ChunkSnapshot chunk : chunks.values()) {
+            // If the chunk model is out of date
             if (chunk.getUpdateNumber() > chunkLastUpdateNumbers.get(chunk.getPosition())) {
-                toMesh.add(chunk);
+                final Vector3i position = chunk.getPosition();
+                // If we have a previous model remove it to be replaced
+                final ChunkModel previous = chunkModels.get(position);
+                if (previous != null) {
+                    // Don't destroy the model, we'll keep it to render until the new chunk is ready
+                    removeChunkModel(previous, false);
+                }
+                // Add the new model
+                addChunkModel(chunk, previous);
             }
-        }
-        // Next mesh those chunks and replace the models that need updating
-        for (ChunkSnapshot chunk : toMesh) {
-            // Only mesh the existing ones
-            final Vector3i position = chunk.getPosition();
-            // If we have a previous model remove it to be replaced
-            final Model previous = chunkModels.get(position);
-            if (previous != null) {
-                removeChunkModel(previous);
-            }
-            // Add the new model
-            addChunkModel(chunk);
         }
         // Update the world update number
         worldLastUpdateNumber = world.getUpdateNumber();
         // Safety precautions
         if (Renderer.getModels().size() > chunkModels.size()) {
-            System.out.println("They're more models in the renderer than they are chunk models, leak?");
+            System.out.println("There are more models in the renderer (" + Renderer.getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
         }
     }
 
-    private void addChunkModel(ChunkSnapshot chunk) {
+    private void addChunkModel(ChunkSnapshot chunk, ChunkModel previous) {
+        final ChunkModel model = mesher.queue(chunk);
         final Vector3i position = chunk.getPosition();
-        final Model model = Renderer.addSolid(mesher.mesh(new ChunkSnapshotGroup(chunk)).build(), position.mul(16).toFloat(), Quaternionf.IDENTITY);
+        model.setPosition(position.mul(16).toFloat());
+        model.setRotation(Quaternionf.IDENTITY);
+        // The previous model is kept to prevent frames with missing chunks because they're being meshed
+        model.setPrevious(previous);
+        Renderer.addSolidModel(model);
         chunkModels.put(position, model);
         chunkLastUpdateNumbers.put(position, chunk.getUpdateNumber());
     }
 
-    private void removeChunkModel(Model model) {
+    private void removeChunkModel(ChunkModel model, boolean destroy) {
         Renderer.removeModel(model);
-        // Destroy the vertex array TODO: recycle it?
-        model.getVertexArray().destroy();
+        if (destroy) {
+            // TODO: recycle the vertex array?
+            model.destroy();
+        }
     }
 
     /**
