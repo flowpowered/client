@@ -21,27 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.nterface.render.effect;
+package org.spoutcraft.client.Interface.mesh;
 
-import org.spout.math.vector.Vector2f;
-import org.spout.renderer.data.Uniform.IntUniform;
-import org.spout.renderer.data.Uniform.Vector2Uniform;
-import org.spout.renderer.data.UniformHolder;
-
-public class BlurEffect {
-	private final int blurSize;
-	private final Vector2f texelSize;
-
-	public BlurEffect(Vector2f resolution, int blurSize) {
-		this.blurSize = blurSize;
-		this.texelSize = Vector2f.ONE.div(resolution);
-	}
-
-	public void dispose() {
-	}
-
-	public void addUniforms(UniformHolder destination) {
-		destination.add(new IntUniform("blurSize", blurSize));
-		destination.add(new Vector2Uniform("texelSize", texelSize));
-	}
+/**
+ * Converts chunk snapshot groups to meshes for rendering.
+ */
+public interface ChunkMesher {
+    /**
+     * Converts the chunk snapshot group to a mesh.
+     *
+     * @param chunk The chunk snapshot group
+     * @return The mesh
+     */
+    public Mesh mesh(ChunkSnapshotGroup chunk);
 }

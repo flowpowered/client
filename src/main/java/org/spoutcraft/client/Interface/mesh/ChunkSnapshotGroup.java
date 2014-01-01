@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.nterface.mesh;
+package org.spoutcraft.client.Interface.mesh;
 
 import org.spout.math.vector.Vector3i;
 

@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.nterface.mesh;
+package org.spoutcraft.client.Interface.mesh;
 
 import gnu.trove.list.TFloatList;
 import gnu.trove.list.TIntList;
 
-import org.spoutcraft.client.nterface.mesh.Mesh.MeshAttribute;
+import org.spoutcraft.client.Interface.mesh.Mesh.MeshAttribute;
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.block.BlockFace;
 import org.spoutcraft.client.universe.block.BlockFaces;

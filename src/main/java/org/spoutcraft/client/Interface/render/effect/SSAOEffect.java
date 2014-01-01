@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.nterface.render.effect;
+package org.spoutcraft.client.Interface.render.effect;
 
 import java.nio.ByteBuffer;
 import java.util.Random;

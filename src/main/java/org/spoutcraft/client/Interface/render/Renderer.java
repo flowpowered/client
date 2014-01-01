@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.nterface.render;
+package org.spoutcraft.client.Interface.render;
 
 import javax.imageio.ImageIO;
 import java.awt.Font;
@@ -83,10 +83,10 @@ import org.spout.renderer.model.Model;
 import org.spout.renderer.model.StringModel;
 import org.spout.renderer.util.Rectangle;
 
-import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.nterface.render.effect.BlurEffect;
-import org.spoutcraft.client.nterface.render.effect.SSAOEffect;
-import org.spoutcraft.client.nterface.render.effect.ShadowMappingEffect;
+import org.spoutcraft.client.Interface.Interface;
+import org.spoutcraft.client.Interface.render.effect.BlurEffect;
+import org.spoutcraft.client.Interface.render.effect.SSAOEffect;
+import org.spoutcraft.client.Interface.render.effect.ShadowMappingEffect;
 import org.spoutcraft.client.util.MeshGenerator;
 import org.spoutcraft.client.util.TPSMonitor;
 

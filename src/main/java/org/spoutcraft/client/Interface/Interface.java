@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.nterface;
+package org.spoutcraft.client.Interface;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,10 +47,10 @@ import org.spout.renderer.data.Color;
 import org.spout.renderer.model.Model;
 
 import org.spoutcraft.client.Game;
-import org.spoutcraft.client.nterface.mesh.ChunkMesher;
-import org.spoutcraft.client.nterface.mesh.ChunkSnapshotGroup;
-import org.spoutcraft.client.nterface.mesh.StandardChunkMesher;
-import org.spoutcraft.client.nterface.render.Renderer;
+import org.spoutcraft.client.Interface.mesh.ChunkMesher;
+import org.spoutcraft.client.Interface.mesh.ChunkSnapshotGroup;
+import org.spoutcraft.client.Interface.mesh.StandardChunkMesher;
+import org.spoutcraft.client.Interface.render.Renderer;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.util.ticking.TickingElement;

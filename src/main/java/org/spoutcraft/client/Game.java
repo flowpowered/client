@@ -24,7 +24,7 @@
 package org.spoutcraft.client;
 
 import org.spoutcraft.client.network.Network;
-import org.spoutcraft.client.nterface.Interface;
+import org.spoutcraft.client.Interface.Interface;
 import org.spoutcraft.client.universe.Universe;
 
 /**
