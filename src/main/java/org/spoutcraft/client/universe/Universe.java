@@ -69,7 +69,7 @@ public class Universe extends TickingElement {
     private final AtomicReference<World> activeWorld = new AtomicReference<>(null);
 
     public Universe(Game game) {
-        super(TPS);
+        super("universe", TPS);
         this.game = game;
     }
 

@@ -27,15 +27,17 @@ package org.spoutcraft.client.util.ticking;
  * Represents an element that ticks at a specific TPS.
  */
 public abstract class TickingElement {
-    private int tps;
+    private final String name;
+    private final int tps;
     private TPSLimitedThread thread;
 
-    public TickingElement(int tps) {
+    public TickingElement(String name, int tps) {
+        this.name = name;
         this.tps = tps;
     }
 
     public final void start() {
-        thread = new TPSLimitedThread(this, tps);
+        thread = new TPSLimitedThread(name, this, tps);
         thread.start();
     }
 

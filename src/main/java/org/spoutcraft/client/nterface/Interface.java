@@ -70,7 +70,7 @@ public class Interface extends TickingElement {
      * @param game The game
      */
     public Interface(Game game) {
-        super(TPS);
+        super("interface", TPS);
         this.game = game;
     }
 

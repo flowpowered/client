@@ -31,7 +31,8 @@ public class TPSLimitedThread extends Thread {
     private final Timer timer;
     private volatile boolean running = true;
 
-    public TPSLimitedThread(TickingElement element, int tps) {
+    public TPSLimitedThread(String name, TickingElement element, int tps) {
+        super(name);
         this.element = element;
         timer = new Timer(tps);
     }

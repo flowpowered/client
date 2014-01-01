@@ -54,7 +54,7 @@ public class Network extends TickingElement {
      * @param game The game
      */
     public Network(Game game) {
-        super(TPS);
+        super("network", TPS);
         this.game = game;
         client = new GameNetworkClient(game);
         messageQueue.put(Channel.UNIVERSE, new ConcurrentLinkedQueue<ChannelMessage>());
