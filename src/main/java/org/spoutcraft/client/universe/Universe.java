@@ -48,7 +48,10 @@ import org.spoutcraft.client.network.message.ChannelMessage.Channel;
 import org.spoutcraft.client.network.message.play.ChunkDataBulkMessage;
 import org.spoutcraft.client.network.message.play.ChunkDataMessage;
 import org.spoutcraft.client.network.message.play.JoinGameMessage;
+import org.spoutcraft.client.network.message.play.PlayerMessage;
+import org.spoutcraft.client.network.message.play.PositionLookMessage;
 import org.spoutcraft.client.network.message.play.RespawnMessage;
+import org.spoutcraft.client.network.message.play.SpawnPositionMessage;
 import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.util.ticking.TickingElement;
@@ -94,12 +97,15 @@ public class Universe extends TickingElement {
     public void onTick() {
         // TODO: Optimization needed here, process so many per tick?
         final Network network = game.getNetwork();
-        if (network.isRunning()) {
-            final Iterator<ChannelMessage> messages = network.getChannel(Channel.UNIVERSE);
-            while (messages.hasNext()) {
-                final ChannelMessage message = messages.next();
-                handleMessage(message);
-            }
+
+        final Iterator<ChannelMessage> messages = network.getChannel(Channel.UNIVERSE);
+        while (messages.hasNext()) {
+            final ChannelMessage message = messages.next();
+            handleMessage(message);
+        }
+
+        if (network.getSession() != null) {
+            network.getSession().send(new PlayerMessage(true));
         }
 
         // TEST CODE
@@ -179,13 +185,15 @@ public class Universe extends TickingElement {
     }
 
     /**
-     * Processes the next {@link org.spoutcraft.client.network.message.ChannelMessage} in the network pipeline
+     * Processes the next {@link org.spoutcraft.client.network.message.ChannelMessage} in the network pipeline.
      *
      * @param message See {@link org.spoutcraft.client.network.message.ChannelMessage}
      */
     private void handleMessage(ChannelMessage message) {
         if (message.getClass() == JoinGameMessage.class) {
             handleJoinGame((JoinGameMessage) message);
+        } else if (message.getClass() == SpawnPositionMessage.class) {
+            handleSpawnPosition((SpawnPositionMessage) message);
         } else if (message.getClass() == RespawnMessage.class) {
             handleRespawn((RespawnMessage) message);
         } else if (message.getClass() == ChunkDataMessage.class) {
@@ -197,16 +205,24 @@ public class Universe extends TickingElement {
     }
 
     /**
-     * Handles a {@link org.spoutcraft.client.network.message.play.JoinGameMessage}
+     * Handles a {@link org.spoutcraft.client.network.message.play.JoinGameMessage}.
      *
      * @param message See {@link org.spoutcraft.client.network.message.play.JoinGameMessage}
      */
     private void handleJoinGame(JoinGameMessage message) {
+        System.out.println("Server says join is successful...Woo!!");
         createWorld(message.getGameMode(), message.getDimension(), message.getDifficulty(), message.getLevelType(), true);
     }
 
+    private void handleSpawnPosition(SpawnPositionMessage message) {
+        if (getGame().getNetwork().isRunning()) {
+            //TODO Test code
+            getGame().getNetwork().getSession().send(new PositionLookMessage(message.getX(), message.getY(), message.getZ(), 0f, 0f, true, message.getY() + 1));
+        }
+    }
+
     /**
-     * Handles a {@link org.spoutcraft.client.network.message.play.RespawnMessage}
+     * Handles a {@link org.spoutcraft.client.network.message.play.RespawnMessage}.
      *
      * @param message See {@link org.spoutcraft.client.network.message.play.RespawnMessage}
      */
@@ -226,7 +242,7 @@ public class Universe extends TickingElement {
     }
 
     /**
-     * Handles a {@link org.spoutcraft.client.network.message.play.ChunkDataMessage}
+     * Handles a {@link org.spoutcraft.client.network.message.play.ChunkDataMessage}.
      *
      * @param message See {@link org.spoutcraft.client.network.message.play.ChunkDataMessage}
      */
@@ -262,7 +278,7 @@ public class Universe extends TickingElement {
     }
 
     /**
-     * Handles a {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}
+     * Handles a {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}.
      *
      * @param message See {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}
      */
@@ -313,7 +329,7 @@ public class Universe extends TickingElement {
      * @throws IOException If the chunk's data is corrupted during inflate or if all bytes are not decompressed
      */
     private void decompressChunkData(byte[][][] data, boolean groundUpContinuous, byte[] compressedData, int columnDataSize, boolean hasSkyLight) throws IOException {
-        // Step 3 - Decompress the data
+        // Step 1 - Decompress the data
         final byte[] decompressedData = new byte[columnDataSize];
         INFLATER.setInput(compressedData);
         INFLATER.getRemaining();
@@ -336,7 +352,7 @@ public class Universe extends TickingElement {
             INFLATER.end();
         }
 
-        // Step 4 - Build data array
+        // Step 2 - Build data array
         for (final byte[][] section : data) {
             if (section == null) {
                 continue;
@@ -344,32 +360,32 @@ public class Universe extends TickingElement {
 
             int index = 0;
 
-            // Step 4a. - Fill Block ids
+            // Step 2a. - Fill Block ids
             section[ChunkDataIndex.BLOCK_ID.value()] = new byte[Chunk.BLOCKS.VOLUME];
             System.arraycopy(decompressedData, 0, section[ChunkDataIndex.BLOCK_ID.value()], 0, Chunk.BLOCKS.VOLUME);
 
             index += Chunk.BLOCKS.VOLUME;
 
-            // Step 4b. - Fill Block metadata
+            // Step 2b. - Fill Block metadata
             section[ChunkDataIndex.BLOCK_METADATA.value()] = new byte[Chunk.BLOCKS.VOLUME];
             fillHalfByteDataArray(section, ChunkDataIndex.BLOCK_METADATA, decompressedData, index, Chunk.BLOCKS.HALF_VOLUME);
 
             index += Chunk.BLOCKS.HALF_VOLUME;
 
-            // Step 4c. - Fill Block light
+            // Step 2c. - Fill Block light
             section[ChunkDataIndex.BLOCK_LIGHT.value()] = new byte[Chunk.BLOCKS.VOLUME];
             fillHalfByteDataArray(section, ChunkDataIndex.BLOCK_LIGHT, decompressedData, index, Chunk.BLOCKS.HALF_VOLUME);
 
             index += Chunk.BLOCKS.HALF_VOLUME;
 
-            // Step 4d. - Fill Block additional data
+            // Step 2d. - Fill Block additional data
             //TODO Official Minecraft doesn't use this as it simply lets mods go past 256 block ids, should we support it?
             section[ChunkDataIndex.BLOCK_ADDITIONAL_DATA.value()] = new byte[Chunk.BLOCKS.VOLUME];
             Arrays.fill(section[ChunkDataIndex.BLOCK_ADDITIONAL_DATA.value()], (byte) 0);
 
             index += Chunk.BLOCKS.HALF_VOLUME;
 
-            // Step 4e. - Fill Block sky light
+            // Step 2e. - Fill Block sky light
             section[ChunkDataIndex.BLOCK_SKY_LIGHT.value()] = new byte[Chunk.BLOCKS.VOLUME];
 
             if (!hasSkyLight) {
@@ -383,7 +399,7 @@ public class Universe extends TickingElement {
     }
 
     /**
-     * Takes a byte array and splits each byte into two values
+     * Takes a byte array and splits each byte into two values.
      * <p/>
      * This is used in ChunkData to pull out the data provided for metadata, light, additional data, and skylight.
      *
@@ -405,7 +421,7 @@ public class Universe extends TickingElement {
     }
 
     /**
-     * Populates all non-air {@link Chunk}s in the column
+     * Populates all non-air {@link Chunk}s in the column.
      * <p/>
      * Any chunks that exist in the {@link org.spoutcraft.client.universe.World} will be replaced.
      *

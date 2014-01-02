@@ -31,36 +31,40 @@ import com.flowpowered.networking.session.Session;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.network.message.ChannelMessage;
-import org.spoutcraft.client.network.message.play.SpawnPositionMessage;
+import org.spoutcraft.client.network.message.play.PositionLookMessage;
 
-/**
- * The codec for the spawn position message. Also handles the spawn position message.
- */
-public class SpawnPositionCodec extends Codec<SpawnPositionMessage> implements MessageHandler<SpawnPositionMessage> {
-    private static final int OP_CODE = 5;
+public class PositionLookCodec extends Codec<PositionLookMessage> implements MessageHandler<PositionLookMessage> {
+    private static final int OP_CODE = 8;
 
-    /**
-     * Constructs a new spawn position message codec and handler.
-     */
-    public SpawnPositionCodec() {
-        super(SpawnPositionMessage.class, OP_CODE);
+    public PositionLookCodec() {
+        super(PositionLookMessage.class, OP_CODE);
     }
 
     @Override
-    public SpawnPositionMessage decode(ByteBuf buf) throws IOException {
-        final int x = buf.readInt();
-        final int y = buf.readInt();
-        final int z = buf.readInt();
-        return new SpawnPositionMessage(x, y, z);
+    public PositionLookMessage decode(ByteBuf buf) throws IOException {
+        final double x = buf.readInt();
+        final double y = buf.readInt();
+        final double z = buf.readInt();
+        final float yaw = buf.readFloat();
+        final float pitch = buf.readFloat();
+        final boolean onGround = buf.readBoolean();
+        return new PositionLookMessage(x, y, z, yaw, pitch, onGround);
     }
 
     @Override
-    public ByteBuf encode(ByteBuf buf, SpawnPositionMessage message) throws IOException {
-        throw new IOException("The client should not send a spawn position to the Minecraft server!");
+    public ByteBuf encode(ByteBuf buf, PositionLookMessage message) throws IOException {
+        buf.writeDouble(message.getX());
+        buf.writeDouble(message.getStance());
+        buf.writeDouble(message.getY());
+        buf.writeDouble(message.getZ());
+        buf.writeFloat(message.getYaw());
+        buf.writeFloat(message.getPitch());
+        buf.writeBoolean(message.isOnGround());
+        return buf;
     }
 
     @Override
-    public void handle(Session session, SpawnPositionMessage message) {
+    public void handle(Session session, PositionLookMessage message) {
         ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
     }
 }

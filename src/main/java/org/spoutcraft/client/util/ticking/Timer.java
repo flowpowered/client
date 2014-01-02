@@ -46,7 +46,7 @@ public class Timer {
     static {
         // Makes windows thread sleeping more accurate
         if (SystemUtils.IS_OS_WINDOWS) {
-            final Thread sleepingDeamon = new Thread() {
+            final Thread sleepingDaemon = new Thread() {
                 @Override
                 public void run() {
                     try {
@@ -55,9 +55,9 @@ public class Timer {
                     }
                 }
             };
-            sleepingDeamon.setName("Timer");
-            sleepingDeamon.setDaemon(true);
-            sleepingDeamon.start();
+            sleepingDaemon.setName("Timer");
+            sleepingDaemon.setDaemon(true);
+            sleepingDaemon.start();
         }
     }
 

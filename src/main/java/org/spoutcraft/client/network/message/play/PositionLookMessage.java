@@ -25,57 +25,64 @@ package org.spoutcraft.client.network.message.play;
 
 import org.spoutcraft.client.network.message.ChannelMessage;
 
-public class ChunkDataMessage extends ChannelMessage {
+public class PositionLookMessage extends ChannelMessage {
     private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
-    private final int columnX;
-    private final int columnZ;
-    private final boolean groundUpContinuous;
-    private final short primaryBitMap;
-    private final short additionalDataBitMap;
-    private final int compressedDataLength;
-    private final byte[] compressedData;
+    private final double x;
+    private final double y;
+    private final double z;
+    private final float yaw;
+    private final float pitch;
+    private final boolean onGround;
+    //Client -> Server only
+    private final double stance;
 
-    public ChunkDataMessage(int columnX, int columnZ, boolean groundUpContinuous, short primaryBitMap, short additionalDataBitMap, int compressedDataLength, byte[] compressedData) {
+    //Server -> Client
+    public PositionLookMessage(double x, double y, double z, float yaw, float pitch, boolean onGround) {
+        this(x, y, z, yaw, pitch, onGround, 0);
+    }
+
+    //Client -> Server
+    public PositionLookMessage(double x, double y, double z, float yaw, float pitch, boolean onGround, double stance) {
         super(REQUIRED_CHANNEL);
-        this.columnX = columnX;
-        this.columnZ = columnZ;
-        this.groundUpContinuous = groundUpContinuous;
-        this.primaryBitMap = primaryBitMap;
-        this.additionalDataBitMap = additionalDataBitMap;
-        this.compressedDataLength = compressedDataLength;
-        this.compressedData = compressedData;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.yaw = yaw;
+        this.pitch = pitch;
+        this.onGround = onGround;
+        this.stance = stance;
     }
 
-    public int getColumnX() {
-        return columnX;
+    public double getX() {
+        return x;
     }
 
-    public int getColumnZ() {
-        return columnZ;
+    public double getY() {
+        return y;
     }
 
-    public boolean isGroundUpContinuous() {
-        return groundUpContinuous;
+    public double getZ() {
+        return z;
     }
 
-    public short getPrimaryBitMap() {
-        return primaryBitMap;
+    public float getYaw() {
+        return yaw;
     }
 
-    public short getAdditionalDataBitMap() {
-        return additionalDataBitMap;
+    public float getPitch() {
+        return pitch;
     }
 
-    public int getCompressedDataLength() {
-        return compressedDataLength;
+    public boolean isOnGround() {
+        return onGround;
     }
 
-    public byte[] getCompressedData() {
-        return compressedData;
+    public double getStance() {
+        return stance;
     }
 
     @Override
     public boolean isAsync() {
-        return true;
+        return false;
     }
 }

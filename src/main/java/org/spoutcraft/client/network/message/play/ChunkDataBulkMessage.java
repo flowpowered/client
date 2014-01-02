@@ -26,6 +26,7 @@ package org.spoutcraft.client.network.message.play;
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 public class ChunkDataBulkMessage extends ChannelMessage {
+    private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
     private final short columnCount;
     private final int compressedDataLength;
     private final boolean hasSkyLightData;
@@ -36,7 +37,7 @@ public class ChunkDataBulkMessage extends ChannelMessage {
     private final short[] additionalDataBitMaps;
 
     public ChunkDataBulkMessage(short columnCount, int compressedDataLength, boolean hasSkyLightData, byte[] compressedData, int[] columnXs, int[] columnZs, short[] primaryBitMaps, short[] additionalDataBitMaps) {
-        super(Channel.UNIVERSE);
+        super(REQUIRED_CHANNEL);
 
         this.columnCount = columnCount;
         this.compressedDataLength = compressedDataLength;

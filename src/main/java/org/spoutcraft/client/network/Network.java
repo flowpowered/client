@@ -86,8 +86,6 @@ public class Network extends TickingElement {
                 }
             }
         }
-
-        // Pulse session for new messages
         client.getSession().pulse();
     }
 
