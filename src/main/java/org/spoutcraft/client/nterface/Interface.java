@@ -27,12 +27,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
 
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
 import org.spout.math.TrigMath;
@@ -44,6 +44,9 @@ import org.spout.renderer.GLVersioned.GLVersion;
 import org.spout.renderer.data.Color;
 
 import org.spoutcraft.client.Game;
+import org.spoutcraft.client.input.Input;
+import org.spoutcraft.client.input.event.KeyboardEvent;
+import org.spoutcraft.client.network.message.ChannelMessage.Channel;
 import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher;
 import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel;
 import org.spoutcraft.client.nterface.mesh.StandardChunkMesher;
@@ -57,12 +60,19 @@ import org.spoutcraft.client.util.ticking.TickingElement;
  */
 public class Interface extends TickingElement {
     public static final int TPS = 60;
-    public static final float SPOT_CUTOFF = (float) (TrigMath.atan(100 / 50) / 2);
+    public static final float SPOT_CUTOFF = (float) (TrigMath.atan(64 / 32) / 2);
+    private static final float MOUSE_SENSITIVITY = 0.08f;
+    private static final float CAMERA_SPEED = 0.2f;
     private final Game game;
     private final ParallelChunkMesher mesher = new ParallelChunkMesher(new StandardChunkMesher());
     private final Map<Vector3i, ChunkModel> chunkModels = new HashMap<>();
     private long worldLastUpdateNumber;
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
+    private float cameraPitch = 0;
+    private float cameraYaw = 0;
+    private int mouseX = 0;
+    private int mouseY = 0;
+    private boolean mouseGrabbed = false;
 
     /**
      * Constructs a new interface from the game.
@@ -82,10 +92,11 @@ public class Interface extends TickingElement {
         Renderer.setGLVersion(GLVersion.GL30);
         Renderer.init();
         Renderer.getCamera().setPosition(new org.spout.math.vector.Vector3f(0, 5, 10));
-        Renderer.setLightPosition(new org.spout.math.vector.Vector3f(0, 50, 50));
+        Renderer.setLightPosition(new org.spout.math.vector.Vector3f(0, 48, 32));
         Renderer.setLightDirection(new org.spout.math.vector.Vector3f(0, -TrigMath.cos(SPOT_CUTOFF), -TrigMath.sin(SPOT_CUTOFF)));
-        Renderer.setSolidColor(Color.BLUE);
-        Mouse.setGrabbed(true);
+        Renderer.setSolidColor(new Color(45, 255, 45));
+        // This will trigger the mouse to be grabbed properly
+        game.getInput().getKeyboardQueue(Channel.INTERFACE).add(new KeyboardEvent(' ', Keyboard.KEY_ESCAPE, true, 1));
     }
 
     @Override
@@ -94,7 +105,7 @@ public class Interface extends TickingElement {
             game.exit();
         }
         updateChunkModels(game.getUniverse().getActiveWorldSnapshot());
-        processInput(1f / 20);
+        handleInput(1f / 20);
         Renderer.render();
     }
 
@@ -183,29 +194,40 @@ public class Interface extends TickingElement {
         }
     }
 
-    /**
-     * Returns the game.
-     *
-     * @return The game
-     */
-    public Game getGame() {
-        return game;
+    private void handleInput(float dt) {
+        // Calculate the FPS correction factor
+        dt *= TPS;
+        // Store the old mouse grabbed state
+        final boolean mouseGrabbedBefore = mouseGrabbed;
+        // Handle keyboard events
+        handleKeyboardEvents();
+        // Handle the mouse and keyboard inputs, if the input is active
+        final Input input = game.getInput();
+        if (input.isActive()) {
+            // If the mouse grabbed state has changed from the keyboard events, update the mouse grabbed state
+            if (mouseGrabbed != mouseGrabbedBefore) {
+                input.setMouseGrabbed(mouseGrabbed);
+                // If the mouse has just been re-grabbed, ensure that movement when not grabbed will ignored
+                if (mouseGrabbed) {
+                    mouseX = input.getMouseX();
+                    mouseY = input.getMouseY();
+                }
+            }
+            // Handle the mouse input if it's been grabbed
+            if (mouseGrabbed) {
+                handleMouseInput(dt);
+            }
+            // Handle the keyboard input
+            handleKeyboardInput(dt);
+        }
     }
 
-    // TEST CODE
-    // TODO: properly handle user input
-    private static float cameraPitch = 0;
-    private static float cameraYaw = 0;
-    private static float mouseSensitivity = 0.08f;
-    private static float cameraSpeed = 0.2f;
-    private static boolean mouseGrabbed = true;
-
-    private static void processInput(float dt) {
-        dt /= (1f / TPS);
-        final boolean mouseGrabbedBefore = mouseGrabbed;
-        while (Keyboard.next()) {
-            if (Keyboard.getEventKeyState()) {
-                switch (Keyboard.getEventKey()) {
+    private void handleKeyboardEvents() {
+        final Queue<KeyboardEvent> keyboardEvents = game.getInput().getKeyboardQueue(Channel.INTERFACE);
+        while (!keyboardEvents.isEmpty()) {
+            final KeyboardEvent event = keyboardEvents.poll();
+            if (event.wasPressedDown()) {
+                switch (event.getKey()) {
                     case Keyboard.KEY_ESCAPE:
                         mouseGrabbed ^= true;
                         break;
@@ -214,45 +236,72 @@ public class Interface extends TickingElement {
                 }
             }
         }
+    }
+
+    private void handleMouseInput(float dt) {
+        // Get the input
+        final Input input = game.getInput();
+        // Calculate sensitivity adjusted to the FPS
+        final float sensitivity = MOUSE_SENSITIVITY * dt;
+        // Get the latest mouse x and y
+        final int mouseX = input.getMouseX();
+        final int mouseY = input.getMouseY();
+        // Rotate the camera by the difference from the old and new mouse coordinates
+        cameraPitch -= (mouseX - this.mouseX) * sensitivity;
+        cameraPitch %= 360;
+        final Quaternionf pitch = Quaternionf.fromAngleDegAxis(cameraPitch, 0, 1, 0);
+        cameraYaw += (mouseY - this.mouseY) * sensitivity;
+        cameraYaw %= 360;
+        final Quaternionf yaw = Quaternionf.fromAngleDegAxis(cameraYaw, 1, 0, 0);
+        // Set the new camera rotation
+        Renderer.getCamera().setRotation(pitch.mul(yaw));
+        // Update the last mouse x and y
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
+    }
+
+    private void handleKeyboardInput(float dt) {
+        // Get the input
+        final Input input = game.getInput();
+        // Get the camera
         final Camera camera = Renderer.getCamera();
-        if (Display.isActive()) {
-            if (mouseGrabbed != mouseGrabbedBefore) {
-                Mouse.setGrabbed(!mouseGrabbedBefore);
-            }
-            if (mouseGrabbed) {
-                final float sensitivity = mouseSensitivity * dt;
-                cameraPitch -= Mouse.getDX() * sensitivity;
-                cameraPitch %= 360;
-                final Quaternionf pitch = Quaternionf.fromAngleDegAxis(cameraPitch, 0, 1, 0);
-                cameraYaw += Mouse.getDY() * sensitivity;
-                cameraYaw %= 360;
-                final Quaternionf yaw = Quaternionf.fromAngleDegAxis(cameraYaw, 1, 0, 0);
-                camera.setRotation(pitch.mul(yaw));
-            }
-            final Vector3f right = camera.getRight();
-            final Vector3f up = camera.getUp();
-            final Vector3f forward = camera.getForward();
-            Vector3f position = camera.getPosition();
-            final float speed = cameraSpeed * dt;
-            if (Keyboard.isKeyDown(Keyboard.KEY_W)) {
-                position = position.add(forward.mul(speed));
-            }
-            if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
-                position = position.add(forward.mul(-speed));
-            }
-            if (Keyboard.isKeyDown(Keyboard.KEY_A)) {
-                position = position.add(right.mul(speed));
-            }
-            if (Keyboard.isKeyDown(Keyboard.KEY_D)) {
-                position = position.add(right.mul(-speed));
-            }
-            if (Keyboard.isKeyDown(Keyboard.KEY_SPACE)) {
-                position = position.add(up.mul(speed));
-            }
-            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
-                position = position.add(up.mul(-speed));
-            }
-            camera.setPosition(position);
+        // Get the camera direction vectors
+        final Vector3f right = camera.getRight();
+        final Vector3f up = camera.getUp();
+        final Vector3f forward = camera.getForward();
+        // Get the old camera position
+        Vector3f position = camera.getPosition();
+        // Adjust the camera speed to the FPS
+        final float speed = CAMERA_SPEED * dt;
+        // Calculate the new camera position
+        if (input.isKeyDown(Keyboard.KEY_W)) {
+            position = position.add(forward.mul(speed));
         }
+        if (input.isKeyDown(Keyboard.KEY_S)) {
+            position = position.add(forward.mul(-speed));
+        }
+        if (input.isKeyDown(Keyboard.KEY_A)) {
+            position = position.add(right.mul(speed));
+        }
+        if (input.isKeyDown(Keyboard.KEY_D)) {
+            position = position.add(right.mul(-speed));
+        }
+        if (input.isKeyDown(Keyboard.KEY_SPACE)) {
+            position = position.add(up.mul(speed));
+        }
+        if (input.isKeyDown(Keyboard.KEY_LSHIFT)) {
+            position = position.add(up.mul(-speed));
+        }
+        // Update the camera position
+        camera.setPosition(position);
+    }
+
+    /**
+     * Returns the game.
+     *
+     * @return The game
+     */
+    public Game getGame() {
+        return game;
     }
 }
