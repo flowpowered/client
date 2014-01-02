@@ -23,6 +23,8 @@
  */
 package org.spoutcraft.client.util.ticking;
 
+import org.lwjgl.Sys;
+
 /**
  * Represents a thread that runs at a specific TPS until terminated.
  */
@@ -41,8 +43,10 @@ public class TPSLimitedThread extends Thread {
     public void run() {
         element.onStart();
         timer.start();
+        long lastTime = getTime() - (long) (1f / timer.getTps() * 1000000000), currentTime;
         while (running) {
-            element.onTick();
+            element.onTick((currentTime = getTime()) - lastTime);
+            lastTime = currentTime;
             timer.sync();
         }
         element.onStop();
@@ -54,5 +58,9 @@ public class TPSLimitedThread extends Thread {
 
     public boolean isRunning() {
         return running;
+    }
+
+    private static long getTime() {
+        return Sys.getTime() * 1000000000 / Sys.getTimerResolution();
     }
 }

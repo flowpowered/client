@@ -69,7 +69,7 @@ public class Network extends TickingElement {
     }
 
     @Override
-    public void onTick() {
+    public void onTick(long dt) {
         if (!client.hasSession()) {
             return;
         }

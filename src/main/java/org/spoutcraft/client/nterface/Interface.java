@@ -100,12 +100,12 @@ public class Interface extends TickingElement {
     }
 
     @Override
-    public void onTick() {
+    public void onTick(long dt) {
         if (Display.isCloseRequested()) {
             game.exit();
         }
         updateChunkModels(game.getUniverse().getActiveWorldSnapshot());
-        handleInput(1f / 20);
+        handleInput(dt / 1000000000f);
         Renderer.render();
     }
 

@@ -45,7 +45,7 @@ public class Input extends TickingElement {
     }
 
     @Override
-    public void onTick() {
+    public void onTick(long dt) {
         // Tries to create the input, only does so if it already hasn't been created
         createInputIfNecessary();
         if (keyboardCreated) {
@@ -90,7 +90,7 @@ public class Input extends TickingElement {
                         Keyboard.create();
                         keyboardCreated = true;
                     } catch (LWJGLException ex) {
-                        throw new RuntimeException("Could not create keyboard");
+                        throw new RuntimeException("Could not create keyboard", ex);
                     }
                 } else {
                     keyboardCreated = true;
@@ -104,7 +104,7 @@ public class Input extends TickingElement {
                         Mouse.create();
                         mouseCreated = true;
                     } catch (LWJGLException ex) {
-                        throw new RuntimeException("Could not create mouse");
+                        throw new RuntimeException("Could not create mouse", ex);
                     }
                 } else {
                     mouseCreated = true;
@@ -141,6 +141,16 @@ public class Input extends TickingElement {
         keyboardCreated = false;
         Mouse.destroy();
         mouseCreated = false;
+        flushQueues();
+    }
+
+    private void flushQueues() {
+        for (Queue<KeyboardEvent> queue : keyboardQueues.values()) {
+            queue.clear();
+        }
+        for (Queue<MouseEvent> queue : mouseQueues.values()) {
+            queue.clear();
+        }
     }
 
     public Queue<KeyboardEvent> getKeyboardQueue(Channel channel) {

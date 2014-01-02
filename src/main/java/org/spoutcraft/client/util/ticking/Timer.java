@@ -62,12 +62,20 @@ public class Timer {
     }
 
     /**
-     * Constucts a new timer.
+     * Constructs a new timer.
      *
      * @param tps The target tps
      */
     public Timer(int tps) {
         this.tps = tps;
+    }
+
+    /**
+     * Returns the timer's target TPS.
+     * @return The tps
+     */
+    public int getTps() {
+        return tps;
     }
 
     /**

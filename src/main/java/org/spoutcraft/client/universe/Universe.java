@@ -94,7 +94,7 @@ public class Universe extends TickingElement {
     }
 
     @Override
-    public void onTick() {
+    public void onTick(long dt) {
         // TODO: Optimization needed here, process so many per tick?
         final Network network = game.getNetwork();
 

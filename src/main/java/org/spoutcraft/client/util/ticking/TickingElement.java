@@ -54,7 +54,7 @@ public abstract class TickingElement {
 
     public abstract void onStart();
 
-    public abstract void onTick();
+    public abstract void onTick(long dt);
 
     public abstract void onStop();
 }
