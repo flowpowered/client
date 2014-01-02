@@ -51,8 +51,10 @@ import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher;
 import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel;
 import org.spoutcraft.client.nterface.mesh.StandardChunkMesher;
 import org.spoutcraft.client.nterface.render.Renderer;
+import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
+import org.spoutcraft.client.util.ViewFrustum;
 import org.spoutcraft.client.util.ticking.TickingElement;
 
 /**
@@ -61,18 +63,32 @@ import org.spoutcraft.client.util.ticking.TickingElement;
 public class Interface extends TickingElement {
     public static final int TPS = 60;
     public static final float SPOT_CUTOFF = (float) (TrigMath.atan(64 / 32) / 2);
+    private static final Vector3f[] CHUNK_VERTICES;
     private static final float MOUSE_SENSITIVITY = 0.08f;
     private static final float CAMERA_SPEED = 0.2f;
     private final Game game;
-    private final ParallelChunkMesher mesher = new ParallelChunkMesher(new StandardChunkMesher());
+    private final ParallelChunkMesher mesher;
     private final Map<Vector3i, ChunkModel> chunkModels = new HashMap<>();
     private long worldLastUpdateNumber;
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
+    private final ViewFrustum frustum = new ViewFrustum();
     private float cameraPitch = 0;
     private float cameraYaw = 0;
     private int mouseX = 0;
     private int mouseY = 0;
     private boolean mouseGrabbed = false;
+
+    static {
+        CHUNK_VERTICES = new Vector3f[8];
+        CHUNK_VERTICES[0] = new Vector3f(0, 0, Chunk.BLOCKS.SIZE);
+        CHUNK_VERTICES[1] = new Vector3f(Chunk.BLOCKS.SIZE, 0, Chunk.BLOCKS.SIZE);
+        CHUNK_VERTICES[2] = new Vector3f(Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE);
+        CHUNK_VERTICES[3] = new Vector3f(0, Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE);
+        CHUNK_VERTICES[4] = new Vector3f(0, 0, 0);
+        CHUNK_VERTICES[5] = new Vector3f(Chunk.BLOCKS.SIZE, 0, 0);
+        CHUNK_VERTICES[6] = new Vector3f(Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE, 0);
+        CHUNK_VERTICES[7] = new Vector3f(0, Chunk.BLOCKS.SIZE, 0);
+    }
 
     /**
      * Constructs a new interface from the game.
@@ -82,6 +98,7 @@ public class Interface extends TickingElement {
     public Interface(Game game) {
         super("interface", TPS);
         this.game = game;
+        mesher = new ParallelChunkMesher(this, new StandardChunkMesher());
     }
 
     @Override
@@ -106,6 +123,8 @@ public class Interface extends TickingElement {
         }
         updateChunkModels(game.getUniverse().getActiveWorldSnapshot());
         handleInput(dt / 1000000000f);
+        final Camera camera = Renderer.getCamera();
+        frustum.update(camera.getProjectionMatrix(), camera.getViewMatrix());
         Renderer.render();
     }
 
@@ -161,6 +180,7 @@ public class Interface extends TickingElement {
                 if (previous != null) {
                     // Don't destroy the model, we'll keep it to render until the new chunk is ready
                     removeChunkModel(previous, false);
+                    // No need to remove from the collections, it will be replaced in the addChunkModel call
                 }
                 // Add the new model
                 addChunkModel(chunk, previous);
@@ -303,5 +323,15 @@ public class Interface extends TickingElement {
      */
     public Game getGame() {
         return game;
+    }
+
+    /**
+     * Returns true if the chunk is visible, using the default chunk size and the position in world coordinates.
+     *
+     * @param position The position, in world coordinates
+     * @return Whether or not the chunk is visible
+     */
+    public boolean isChunkVisible(Vector3f position) {
+        return frustum.intersectsCuboid(CHUNK_VERTICES, position);
     }
 }

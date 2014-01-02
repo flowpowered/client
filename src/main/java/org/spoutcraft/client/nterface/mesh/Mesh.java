@@ -109,6 +109,20 @@ public class Mesh {
     }
 
     /**
+     * Returns true if all the attribute data lists and the indices list are empty.
+     *
+     * @return Whether or not this mesh is empty (no data for the attributes or indices)
+     */
+    public boolean isEmpty() {
+        for (TFloatList list : attributes.values()) {
+            if (!list.isEmpty()) {
+                return false;
+            }
+        }
+        return indices.isEmpty();
+    }
+
+    /**
      * Builds the mesh into a {@link org.spout.renderer.data.VertexData} to be ready for rendering. If an attribute has no data, but can be automatically generated (see {@link
      * org.spoutcraft.client.nterface.mesh.Mesh.MeshAttribute#generateDataIfMissing()}, it will be generated for the build. The generated data will be stored in the attribute float list.
      *

@@ -31,26 +31,30 @@ import org.spout.renderer.data.VertexData;
 import org.spout.renderer.gl.VertexArray;
 import org.spout.renderer.model.Model;
 
+import org.spoutcraft.client.nterface.Interface;
 import org.spoutcraft.client.nterface.render.Renderer;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 
 /**
  * Meshes chunks in parallel. Returns chunk models which may not be rendered when {@link org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel#render()} is called, this is happens when
  * the meshing is in progress. Parallelism is achieved using a {@link java.util.concurrent.ForkJoinPool} with default thread count. Chunks are meshed using the provided {@link
- * org.spoutcraft.client.nterface.mesh.ChunkMesher}.
+ * org.spoutcraft.client.nterface.mesh.ChunkMesher}. An optional {@link org.spoutcraft.client.nterface.Interface} can be passed to the constructor for chunk culling.
  *
  * @see org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel
  */
 public class ParallelChunkMesher {
     private final ChunkMesher mesher;
+    private final Interface nterface;
     private final ForkJoinPool executor = new ForkJoinPool();
 
     /**
      * Constructs a new parallel chunk mesher from the actual mesher.
      *
      * @param mesher The chunk mesher
+     * @param nterface The interface, for culling chunk models (optional)
      */
-    public ParallelChunkMesher(ChunkMesher mesher) {
+    public ParallelChunkMesher(Interface nterface, ChunkMesher mesher) {
+        this.nterface = nterface;
         this.mesher = mesher;
     }
 
@@ -61,7 +65,7 @@ public class ParallelChunkMesher {
      * @return The chunk's model
      */
     public ChunkModel queue(ChunkSnapshot chunk) {
-        return new ChunkModel(executor.submit(new ChunkMeshTask(chunk)));
+        return new ChunkModel(nterface, executor.submit(new ChunkMeshTask(chunk)));
     }
 
     /**
@@ -80,7 +84,11 @@ public class ParallelChunkMesher {
 
         @Override
         public VertexData call() {
-            return mesher.mesh(new ChunkSnapshotGroup(toMesh)).build();
+            final Mesh mesh = mesher.mesh(new ChunkSnapshotGroup(toMesh));
+            if (mesh.isEmpty()) {
+                return null;
+            }
+            return mesh.build();
         }
     }
 
@@ -88,21 +96,25 @@ public class ParallelChunkMesher {
      * In the case that meshing is occurring and that the chunk is not renderable, a previous model can be rendered instead. To use this feature, set the previous model using {@link
      * org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel#setPrevious(org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel)}. This previous model will be used until the
      * mesh becomes available. At this point, the previous model will be destroyed, and the new one rendered. When a model isn't needed anymore, you must call {@link
-     * org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel#destroy()} to dispose of it completely. This will also cancel the meshing if it's in progress, and destroy the previous
-     * model.
+     * org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel#destroy()} to dispose of it completely. This will also cancel the meshing if it's in progress, and destroy the previous model.
+     * The chunk can also be automatically culled by passing an optional {@link org.spoutcraft.client.nterface.Interface} to the {@link org.spoutcraft.client.nterface.mesh.ParallelChunkMesher}
+     * constructor.
      */
     public static class ChunkModel extends Model {
         private Future<VertexData> mesh;
+        private final Interface nterface;
+        private boolean complete = false;
         private ChunkModel previous;
 
-        private ChunkModel(Future<VertexData> mesh) {
+        private ChunkModel(Interface nterface, Future<VertexData> mesh) {
             this.mesh = mesh;
+            this.nterface = nterface;
         }
 
         @Override
         public void render() {
-            // If we have no vertex array, but the mesh is done
-            if (getVertexArray() == null && mesh.isDone()) {
+            // If we have not received the mesh and it's done
+            if (!complete && mesh.isDone()) {
                 // Get the mesh
                 final VertexData vertexData;
                 try {
@@ -111,24 +123,48 @@ public class ParallelChunkMesher {
                     throw new RuntimeException(ex);
                 }
                 mesh = null;
-                // Create the vertex array from the mesh
-                final VertexArray vertexArray = Renderer.getGLFactory().createVertexArray();
-                vertexArray.setData(vertexData);
-                vertexArray.create();
-                setVertexArray(vertexArray);
+                // If the chunk mesher returned a mesh. It may not return one if the chunk has no mesh (completely invisible)
+                if (vertexData != null) {
+                    // Create the vertex array from the mesh
+                    final VertexArray vertexArray = Renderer.getGLFactory().createVertexArray();
+                    vertexArray.setData(vertexData);
+                    vertexArray.create();
+                    // Set it for rendering
+                    setVertexArray(vertexArray);
+                }
                 // Destroy and discard the previous model (if any), as it is now obsolete
                 if (previous != null) {
                     previous.destroy();
                     previous = null;
                 }
+                // Set the model as complete
+                complete = true;
+            }
+            // It's hard to look right
+            // at the world baby
+            // But here's my frustum
+            // so cull me maybe?
+            if (nterface != null && !nterface.isChunkVisible(getPosition())) {
+                return;
             }
             // If we have a vertex array, we can render
-            if (getVertexArray() != null) {
-                super.render();
-            } else if (previous != null) {
-                // Else, fall back on the previous model
+            if (complete) {
+                // Only render if the model has a vertex array and we're visible
+                if (getVertexArray() != null && isVisible()) {
+                    super.render();
+                }
+            } else if (previous != null && isVisible()) {
+                // Else, fall back on the previous model if we have one and we're visible
                 previous.render();
             }
+        }
+
+        private boolean isVisible() {
+            // It's hard to look right
+            // at the world baby
+            // But here's my frustum
+            // so cull me maybe?
+            return nterface != null && nterface.isChunkVisible(getPosition());
         }
 
         /**
@@ -145,14 +181,19 @@ public class ParallelChunkMesher {
          */
         public void destroy() {
             // If we have a vertex array, destroy it
-            if (getVertexArray() != null) {
-                getVertexArray().destroy();
+            if (complete) {
+                if (getVertexArray() != null) {
+                    getVertexArray().destroy();
+                }
+                complete = false;
             } else {
                 // Else, the mesh is still in progress, cancel that
                 mesh.cancel(false);
-                // Also destroy the previous model if we have one
+                mesh = null;
+                // Also destroy and discard the previous model if we have one
                 if (previous != null) {
                     previous.destroy();
+                    previous = null;
                 }
             }
         }
