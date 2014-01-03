@@ -46,7 +46,6 @@ import org.spout.renderer.data.Color;
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.input.Input;
 import org.spoutcraft.client.input.event.KeyboardEvent;
-import org.spoutcraft.client.network.message.ChannelMessage.Channel;
 import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher;
 import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel;
 import org.spoutcraft.client.nterface.mesh.StandardChunkMesher;
@@ -112,8 +111,11 @@ public class Interface extends TickingElement {
         Renderer.setLightPosition(new org.spout.math.vector.Vector3f(0, 48, 32));
         Renderer.setLightDirection(new org.spout.math.vector.Vector3f(0, -TrigMath.cos(SPOT_CUTOFF), -TrigMath.sin(SPOT_CUTOFF)));
         Renderer.setSolidColor(new Color(45, 255, 45));
+        // Subscribe to the keyboard input queue
+        final Input input = game.getInput();
+        input.subscribeToKeyboard();
         // This will trigger the mouse to be grabbed properly
-        game.getInput().getKeyboardQueue(Channel.INTERFACE).add(new KeyboardEvent(' ', Keyboard.KEY_ESCAPE, true, 1));
+        input.getKeyboardQueue().add(new KeyboardEvent(' ', Keyboard.KEY_ESCAPE, true, 1));
     }
 
     @Override
@@ -243,7 +245,7 @@ public class Interface extends TickingElement {
     }
 
     private void handleKeyboardEvents() {
-        final Queue<KeyboardEvent> keyboardEvents = game.getInput().getKeyboardQueue(Channel.INTERFACE);
+        final Queue<KeyboardEvent> keyboardEvents = game.getInput().getKeyboardQueue();
         while (!keyboardEvents.isEmpty()) {
             final KeyboardEvent event = keyboardEvents.poll();
             if (event.wasPressedDown()) {
