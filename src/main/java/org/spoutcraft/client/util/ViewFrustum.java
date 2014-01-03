@@ -110,13 +110,16 @@ public class ViewFrustum {
         if (vertices.length != 8) {
             throw new IllegalArgumentException("A cuboid has 8 vertices, not " + vertices.length);
         }
-        for (int ii = 0; ii < 8; ii++) {
-            final Vector3f vertex = vertices[ii];
-            if (contains(vertex.getX() + x, vertex.getY() + y, vertex.getZ() + z)) {
-                return true;
+        planes:
+        for (int i = 0; i < 6; i++) {
+            for (Vector3f vertex : vertices) {
+                if (distance(i, vertex.getX() + x, vertex.getY() + y, vertex.getZ() + z) > 0) {
+                    continue planes;
+                }
             }
+            return false;
         }
-        return false;
+        return true;
     }
 
     /**
