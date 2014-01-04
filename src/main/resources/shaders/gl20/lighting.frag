@@ -11,8 +11,7 @@
 
 varying vec2 textureUV;
 varying vec3 viewRay;
-varying vec3 lightPositionView;
-varying vec3 spotDirectionView;
+varying vec3 lightDirectionView;
 
 uniform sampler2D colors;
 uniform sampler2D normals;
@@ -24,10 +23,6 @@ uniform vec2 projection;
 uniform float lightAttenuation;
 uniform	float spotCutoff;
 
-float linearizeDepth(float depth) {
-    return projection.y / (depth - projection.x);
-}
-
 void main() {
     gl_FragColor = texture2D(colors, textureUV);
 
@@ -35,33 +30,23 @@ void main() {
     if (rawNormalView.a <= 0) {
         return;
     }
-    vec3 normalView = normalize(rawNormalView.xyz * 2 - 1);
-
-    vec3 positionView = viewRay * linearizeDepth(texture2D(depths, textureUV).r);
-
-    vec3 lightDifference = lightPositionView - positionView;
-    float lightDistance = length(lightDifference);
-    vec3 lightDirection = lightDifference / lightDistance;
-    float distanceIntensity = 1 / (1 + lightAttenuation * lightDistance);
-
-    float spotDotLight = dot(spotDirectionView, -lightDirection);
-    float normalDotLight = dot(normalView, lightDirection);
-
-    vec3 material = texture2D(materials, textureUV).rgb;
 
     float occlusion = texture2D(occlusions, textureUV).r;
-
     float shadow = texture2D(shadows, textureUV).r;
+    vec3 material = texture2D(materials, textureUV).rgb;
 
     float ambientTerm = material.z * occlusion;
     float diffuseTerm = 0;
     float specularTerm = 0;
-    if (spotDotLight > spotCutoff && shadow > 0) {
-        distanceIntensity *= (spotDotLight - spotCutoff) / (1 - spotCutoff);
-        normalDotLight = max(0, normalDotLight);
-        diffuseTerm = material.x * distanceIntensity * shadow * normalDotLight;
+
+    if (shadow > 0) {
+        vec3 normalView = normalize(rawNormalView.xyz * 2 - 1);
+        float normalDotLight = max(0, dot(normalView, -lightDirectionView));
+
+        diffuseTerm = material.x * shadow * normalDotLight;
+
         if (normalDotLight > 0) {
-            specularTerm = material.y * distanceIntensity * shadow * pow(max(0, dot(reflect(lightDirection, normalView), normalize(viewRay))), 20);
+            specularTerm = material.y * shadow * pow(max(0, dot(reflect(-lightDirectionView, normalView), normalize(viewRay))), 20);
         }
     }
 

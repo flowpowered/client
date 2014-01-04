@@ -6,10 +6,10 @@ layout(location = 0) in vec3 position;
 
 out vec2 textureUV;
 noperspective out vec3 viewRay;
-out vec3 lightPositionView;
+out vec3 lightDirectionView;
 
-uniform mat4 viewMatrix;
-uniform vec3 lightPosition;
+uniform mat4 normalMatrix;
+uniform vec3 lightDirection;
 uniform float tanHalfFOV;
 uniform float aspectRatio;
 
@@ -18,7 +18,7 @@ void main() {
 
     viewRay = vec3(position.x * tanHalfFOV * aspectRatio, position.y * tanHalfFOV, -1);
 
-    lightPositionView = (viewMatrix * vec4(lightPosition, 1)).xyz;
+    lightDirectionView = normalize((normalMatrix * vec4(lightDirection, 1)).xyz);
 
     gl_Position = vec4(position, 1);
 }

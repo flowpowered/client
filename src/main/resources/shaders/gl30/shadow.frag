@@ -11,7 +11,7 @@ const int MAX_KERNEL_SIZE = 32;
 
 in vec2 textureUV;
 noperspective in vec3 viewRay;
-in vec3 lightPositionView;
+in vec3 lightDirectionView;
 
 layout(location = 0) out float outputShadow;
 
@@ -42,11 +42,17 @@ void main() {
 
     vec3 positionView = viewRay * linearizeDepth(texture(depths, textureUV).r);
 
-    vec3 lightDirection = normalize(lightPositionView - positionView);
-    float normalDotLight = dot(normalView, lightDirection);
+    float normalDotLight = dot(normalView, -lightDirectionView);
 
     vec4 positionLightClip = lightProjectionMatrix * lightViewMatrix * inverseViewMatrix * vec4(positionView, 1);
     positionLightClip.xyz = positionLightClip.xyz / positionLightClip.w * 0.5 + 0.5;
+
+    if (positionLightClip.x < radius || positionLightClip.x > 1 - radius
+        || positionLightClip.y < radius || positionLightClip.y > 1 - radius
+        || positionLightClip.z < radius || positionLightClip.z > 1 - radius) {
+        outputShadow = 1;
+        return;
+    }
 
     float slopedBias = clamp(tan(acos(normalDotLight)) * bias, bias / 2, bias * 2);
 

@@ -1,0 +1,20 @@
+graphics:
+    version: GL30
+    resolution: 1200, 800
+    field_of_view: 60
+    shadows:
+        enabled: true
+        resolution: 2048, 2048
+        quality: 8
+    ambient_occlusion:
+        enabled: true
+        resolution: 1200, 800
+        quality: 8
+        intensity: 2
+    motion_blur:
+        enabled: true
+        strenght: 1
+    normal_mapping:
+        enabled: true
+    anti-aliasing:
+        enabled: true

@@ -61,7 +61,12 @@ import org.spoutcraft.client.util.ticking.TickingElement;
  */
 public class Interface extends TickingElement {
     public static final int TPS = 60;
-    public static final float SPOT_CUTOFF = (float) (TrigMath.atan(64 / 32) / 2);
+    private static final long MILLIS_IN_DAY = 1000 * 60 * 60 * 24;
+    private static final long GAME_DAY_IRL = 1000 * 60;
+    private static final float PI = (float) TrigMath.PI;
+    private static final float TWO_PI = 2 * PI;
+    private static final float LIGHT_ANGLE_LIMIT = PI / 64;
+    private static final Vector3f SHADOWED_CHUNKS = new Vector3f(Chunk.BLOCKS.SIZE * 4, 64, Chunk.BLOCKS.SIZE * 4);
     private static final Vector3f[] CHUNK_VERTICES;
     private static final float MOUSE_SENSITIVITY = 0.08f;
     private static final float CAMERA_SPEED = 0.2f;
@@ -76,6 +81,7 @@ public class Interface extends TickingElement {
     private int mouseX = 0;
     private int mouseY = 0;
     private boolean mouseGrabbed = false;
+    private long time = 0;
 
     static {
         CHUNK_VERTICES = new Vector3f[8];
@@ -107,10 +113,8 @@ public class Interface extends TickingElement {
         // TEST CODE
         Renderer.setGLVersion(GLVersion.GL30);
         Renderer.init();
-        Renderer.getCamera().setPosition(new org.spout.math.vector.Vector3f(0, 5, 10));
-        Renderer.setLightPosition(new org.spout.math.vector.Vector3f(0, 48, 32));
-        Renderer.setLightDirection(new org.spout.math.vector.Vector3f(0, -TrigMath.cos(SPOT_CUTOFF), -TrigMath.sin(SPOT_CUTOFF)));
-        Renderer.setSolidColor(new Color(45, 255, 45));
+        Renderer.getCamera().setPosition(new Vector3f(0, 5, 0));
+        Renderer.setSolidColor(new Color(0, 200, 0));
         // Subscribe to the keyboard input queue
         final Input input = game.getInput();
         input.subscribeToKeyboard();
@@ -125,6 +129,7 @@ public class Interface extends TickingElement {
         }
         updateChunkModels(game.getUniverse().getActiveWorldSnapshot());
         handleInput(dt / 1000000000f);
+        updateLight(time += ((double) dt / 1000000 * (MILLIS_IN_DAY / GAME_DAY_IRL)));
         final Camera camera = Renderer.getCamera();
         frustum.update(camera.getProjectionMatrix(), camera.getViewMatrix());
         Renderer.render();
@@ -138,6 +143,22 @@ public class Interface extends TickingElement {
         // Updating with a null world will clear all models
         updateChunkModels(null);
         Renderer.dispose();
+    }
+
+    private void updateLight(long time) {
+        time %= MILLIS_IN_DAY;
+        double lightAngle;
+        final double dayAngle = ((double) time / MILLIS_IN_DAY) * TWO_PI;
+        if (dayAngle < PI) {
+            lightAngle = dayAngle;
+        } else {
+            lightAngle = dayAngle - PI;
+        }
+        lightAngle = lightAngle / PI * (PI - 2 * LIGHT_ANGLE_LIMIT) + LIGHT_ANGLE_LIMIT;
+        final Vector3f direction = new Vector3f(0, -Math.sin(lightAngle), -Math.cos(lightAngle));
+        final Vector3f position = Renderer.getCamera().getPosition();
+        Renderer.updateLight(direction, new Vector3f(position.getX(), 0, position.getZ()), SHADOWED_CHUNKS);
+        // TODO: lower light intensity if night
     }
 
     private void updateChunkModels(WorldSnapshot world) {

@@ -42,9 +42,8 @@ import java.util.Map;
 
 import org.lwjgl.opengl.GLContext;
 
-import org.spout.math.GenericMath;
-import org.spout.math.TrigMath;
 import org.spout.math.imaginary.Quaternionf;
+import org.spout.math.matrix.Matrix3f;
 import org.spout.math.matrix.Matrix4f;
 import org.spout.math.vector.Vector2f;
 import org.spout.math.vector.Vector3f;
@@ -110,9 +109,7 @@ public class Renderer {
     private static Color backgroundColor = Color.DARK_GRAY;
     private static boolean cullBackFaces = true;
     // EFFECT UNIFORMS
-    private static final Vector3Uniform lightPositionUniform = new Vector3Uniform("lightPosition", Vector3f.ZERO);
-    private static final Vector3Uniform spotDirectionUniform = new Vector3Uniform("spotDirection", new Vector3f(0, 0, -1));
-    private static final FloatUniform lightAttenuationUniform = new FloatUniform("lightAttenuation", 0.03f);
+    private static final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.FORWARD);
     private static final Matrix4Uniform inverseViewMatrixUniform = new Matrix4Uniform("inverseViewMatrix", new Matrix4f());
     private static final Matrix4Uniform lightViewMatrixUniform = new Matrix4Uniform("lightViewMatrix", new Matrix4f());
     private static final Matrix4Uniform lightProjectionMatrixUniform = new Matrix4Uniform("lightProjectionMatrix", new Matrix4f());
@@ -121,7 +118,7 @@ public class Renderer {
     private static final FloatUniform blurStrengthUniform = new FloatUniform("blurStrength", 1);
     // CAMERAS
     private static final Camera modelCamera = Camera.createPerspective(FIELD_OF_VIEW, WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), NEAR_PLANE, FAR_PLANE);
-    private static final Camera lightCamera = Camera.createPerspective((float) TrigMath.RAD_TO_DEG * Interface.SPOT_CUTOFF * 2, 1, 1, 0.1f, (float) GenericMath.length(50d, 100d));
+    private static final Camera lightCamera = Camera.createOrthographic(50, -50, 50, -50, -50, 50);
     private static final Camera guiCamera = Camera.createOrthographic(1, 0, 1 / ASPECT_RATIO, 0, NEAR_PLANE, FAR_PLANE);
     // OPENGL VERSION AND FACTORY
     private static GLVersion glVersion = GLVersion.GL30;
@@ -218,7 +215,7 @@ public class Renderer {
         // SSAO
         ssaoEffect = new SSAOEffect(glFactory, WINDOW_SIZE, 8, blurSize, 0.5f, 0.15f, 2);
         // SHADOW MAPPING
-        shadowMappingEffect = new ShadowMappingEffect(glFactory, WINDOW_SIZE, 8, blurSize, 0.000006f, 0.0004f);
+        shadowMappingEffect = new ShadowMappingEffect(glFactory, WINDOW_SIZE, 8, blurSize, 0.005f, 0.0004f);
         // BLUR
         blurEffect = new BlurEffect(WINDOW_SIZE, blurSize);
     }
@@ -400,7 +397,7 @@ public class Renderer {
         uniforms.add(new Vector2Uniform("projection", PROJECTION));
         uniforms.add(new FloatUniform("tanHalfFOV", TAN_HALF_FOV));
         uniforms.add(new FloatUniform("aspectRatio", ASPECT_RATIO));
-        uniforms.add(lightPositionUniform);
+        uniforms.add(lightDirectionUniform);
         uniforms.add(inverseViewMatrixUniform);
         uniforms.add(lightViewMatrixUniform);
         uniforms.add(lightProjectionMatrixUniform);
@@ -420,13 +417,9 @@ public class Renderer {
         lightingMaterial.addTexture(4, ssaoTexture);
         lightingMaterial.addTexture(5, shadowTexture);
         uniforms = lightingMaterial.getUniforms();
-        uniforms.add(new Vector2Uniform("projection", PROJECTION));
         uniforms.add(new FloatUniform("tanHalfFOV", TAN_HALF_FOV));
         uniforms.add(new FloatUniform("aspectRatio", ASPECT_RATIO));
-        uniforms.add(lightPositionUniform);
-        uniforms.add(lightAttenuationUniform);
-        uniforms.add(new FloatUniform("spotCutoff", TrigMath.cos(Interface.SPOT_CUTOFF)));
-        uniforms.add(spotDirectionUniform);
+        uniforms.add(lightDirectionUniform);
         // MOTION BLUR
         motionBlurMaterial = createMaterial("motionBlur");
         motionBlurMaterial.addTexture(0, auxRGBATexture);
@@ -643,15 +636,6 @@ public class Renderer {
     }
 
     /**
-     * Sets the light distance attenuation factor.
-     *
-     * @param attenuation The light attenuation factor
-     */
-    public static void setLightAttenuation(float attenuation) {
-        lightAttenuationUniform.set(attenuation);
-    }
-
-    /**
      * Sets the color of solid untextured objects.
      *
      * @param color The solid color
@@ -670,24 +654,51 @@ public class Renderer {
     }
 
     /**
-     * Sets the light position.
-     *
-     * @param position The light position
-     */
-    public static void setLightPosition(Vector3f position) {
-        lightPositionUniform.set(position);
-        lightCamera.setPosition(position);
-    }
-
-    /**
-     * Sets the light direction.
+     * Updates the light direction and camera bounds to ensure that shadows are casted inside the cuboid defined by size.
      *
      * @param direction The light direction
+     * @param position The light camera position
+     * @param size The size of the cuboid that must have shadows
      */
-    public static void setLightDirection(Vector3f direction) {
+    public static void updateLight(Vector3f direction, Vector3f position, Vector3f size) {
+        // Set the direction uniform
         direction = direction.normalize();
-        spotDirectionUniform.set(direction);
-        lightCamera.setRotation(Quaternionf.fromRotationTo(Vector3f.FORWARD.negate(), direction));
+        lightDirectionUniform.set(direction);
+        // Set the camera position
+        lightCamera.setPosition(position);
+        // Calculate the camera rotation from the direction and set
+        final Quaternionf rotation = Quaternionf.fromRotationTo(Vector3f.FORWARD.negate(), direction);
+        lightCamera.setRotation(rotation);
+        // Calculate the transformation from the camera bounds rotation to the identity rotation (its axis aligned space)
+        final Matrix3f axisAlignTransform = Matrix3f.createRotation(rotation).invert();
+        // Calculate the points of the box to completely include inside the camera bounds
+        size = size.div(2);
+        Vector3f p6 = size;
+        Vector3f p0 = p6.negate();
+        Vector3f p7 = new Vector3f(-size.getX(), size.getY(), size.getZ());
+        Vector3f p1 = p7.negate();
+        Vector3f p4 = new Vector3f(-size.getX(), size.getY(), -size.getZ());
+        Vector3f p2 = p4.negate();
+        Vector3f p5 = new Vector3f(size.getX(), size.getY(), -size.getZ());
+        Vector3f p3 = p5.negate();
+        // Transform those points to the axis aligned space of the camera bounds
+        p0 = axisAlignTransform.transform(p0);
+        p1 = axisAlignTransform.transform(p1);
+        p2 = axisAlignTransform.transform(p2);
+        p3 = axisAlignTransform.transform(p3);
+        p4 = axisAlignTransform.transform(p4);
+        p5 = axisAlignTransform.transform(p5);
+        p6 = axisAlignTransform.transform(p6);
+        p7 = axisAlignTransform.transform(p7);
+        // Calculate the new camera bounds so that the box is fully included in those bounds
+        final Vector3f low = p0.min(p1).min(p2).min(p3)
+                .min(p4).min(p5).min(p6).min(p7);
+        final Vector3f high = p0.max(p1).max(p2).max(p3)
+                .max(p4).max(p5).max(p6).max(p7);
+        // Calculate the size of the new camera bounds
+        size = high.sub(low).div(2);
+        // Update the camera to the new bounds
+        lightCamera.setProjection(Matrix4f.createOrthographic(size.getX(), -size.getX(), size.getY(), -size.getY(), -size.getZ(), size.getZ()));
     }
 
     /**
