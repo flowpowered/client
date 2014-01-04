@@ -64,6 +64,7 @@ import org.spout.renderer.data.Uniform.Vector3Uniform;
 import org.spout.renderer.data.UniformHolder;
 import org.spout.renderer.data.VertexAttribute.DataType;
 import org.spout.renderer.gl.Context;
+import org.spout.renderer.gl.Context.BlendFunction;
 import org.spout.renderer.gl.Context.Capability;
 import org.spout.renderer.gl.FrameBuffer;
 import org.spout.renderer.gl.FrameBuffer.AttachmentPoint;
@@ -82,7 +83,6 @@ import org.spout.renderer.model.StringModel;
 import org.spout.renderer.util.Rectangle;
 
 import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel;
 import org.spoutcraft.client.nterface.render.effect.BlurEffect;
 import org.spoutcraft.client.nterface.render.effect.SSAOEffect;
 import org.spoutcraft.client.nterface.render.effect.ShadowMappingEffect;
@@ -127,6 +127,7 @@ public class Renderer {
     private static Context context;
     // RENDER LISTS
     private static final List<Model> modelRenderList = new ArrayList<>();
+    private static final List<Model> transparentModelList = new ArrayList<>();
     private static final List<Model> guiRenderList = new ArrayList<>();
     // PIPELINE
     private static Pipeline pipeline;
@@ -144,6 +145,8 @@ public class Renderer {
     private static Texture shadowTexture;
     private static Texture auxRTexture;
     private static Texture auxRGBATexture;
+    private static Texture weightedSumTexture;
+    private static Texture layerCountTexture;
     // MATERIALS
     private static Material solidMaterial;
     private static Material ssaoMaterial;
@@ -152,6 +155,8 @@ public class Renderer {
     private static Material lightingMaterial;
     private static Material motionBlurMaterial;
     private static Material antiAliasingMaterial;
+    private static Material transparencyMaterial;
+    private static Material transparencyBlendingMaterial;
     private static Material screenMaterial;
     // FRAME BUFFERS
     private static FrameBuffer modelFrameBuffer;
@@ -162,6 +167,7 @@ public class Renderer {
     private static FrameBuffer lightingFrameBuffer;
     private static FrameBuffer motionBlurFrameBuffer;
     private static FrameBuffer antiAliasingFrameBuffer;
+    private static FrameBuffer weightedSumFrameBuffer;
     // VERTEX ARRAYS
     private static VertexArray deferredStageScreenVertexArray;
     // EFFECTS
@@ -241,11 +247,18 @@ public class Renderer {
         // MOTION BLUR
         pipelineBuilder = pipelineBuilder.doAction(new DoDeferredStageAction(motionBlurFrameBuffer, deferredStageScreenVertexArray, motionBlurMaterial));
         // ANTI ALIASING
-        pipelineBuilder = pipelineBuilder.doAction(new DoDeferredStageAction(antiAliasingFrameBuffer, deferredStageScreenVertexArray, antiAliasingMaterial))
-                .unbindFrameBuffer(antiAliasingFrameBuffer).enableCapabilities(Capability.DEPTH_TEST);
+        pipelineBuilder = pipelineBuilder.doAction(new DoDeferredStageAction(antiAliasingFrameBuffer, deferredStageScreenVertexArray, antiAliasingMaterial)).enableCapabilities(Capability.DEPTH_TEST);
         if (glVersion == GLVersion.GL30 || GLContext.getCapabilities().GL_ARB_depth_clamp) {
             pipelineBuilder = pipelineBuilder.enableCapabilities(Capability.DEPTH_CLAMP);
         }
+        // WEIGHTED SUM
+        pipelineBuilder = pipelineBuilder.disableDepthMask().disableCapabilities(Capability.CULL_FACE).enableCapabilities(Capability.BLEND)
+                .setBlendingFunctions(BlendFunction.GL_ONE, BlendFunction.GL_ONE).bindFrameBuffer(weightedSumFrameBuffer).clearBuffer().renderModels(transparentModelList)
+                .enableCapabilities(Capability.CULL_FACE);
+        // TRANSPARENCY BLENDING
+        pipelineBuilder = pipelineBuilder.disableCapabilities(Capability.DEPTH_TEST).setBlendingFunctions(BlendFunction.GL_ONE_MINUS_SRC_ALPHA, BlendFunction.GL_SRC_ALPHA)
+                .doAction(new DoDeferredStageAction(antiAliasingFrameBuffer, deferredStageScreenVertexArray, transparencyBlendingMaterial)).unbindFrameBuffer(antiAliasingFrameBuffer)
+                .disableCapabilities(Capability.BLEND).enableCapabilities(Capability.DEPTH_TEST).enableDepthMask();
         // GUI
         pipelineBuilder = pipelineBuilder.useCamera(guiCamera).clearBuffer().renderModels(guiRenderList).useCamera(modelCamera).updateDisplay();
         pipeline = pipelineBuilder.build();
@@ -270,6 +283,10 @@ public class Renderer {
         loadProgram("motionBlur");
         // ANTI ALIASING
         loadProgram("edaa");
+        // WEIGHTED SUM
+        loadProgram("weightedSum");
+        // TRANSPARENCY BLENDING
+        loadProgram("transparencyBlending");
         // SCREEN
         loadProgram("screen");
     }
@@ -367,6 +384,18 @@ public class Renderer {
         auxRGBATexture.setMagFilter(FilterMode.LINEAR);
         auxRGBATexture.setMinFilter(FilterMode.LINEAR);
         auxRGBATexture.create();
+        // WEIGHTED SUM
+        weightedSumTexture = glFactory.createTexture();
+        weightedSumTexture.setFormat(Format.RGBA);
+        weightedSumTexture.setInternalFormat(InternalFormat.RGBA16F);
+        weightedSumTexture.setImageData(null, WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY());
+        weightedSumTexture.create();
+        // LAYER COUNT
+        layerCountTexture = glFactory.createTexture();
+        layerCountTexture.setFormat(Format.RED);
+        layerCountTexture.setInternalFormat(InternalFormat.R16F);
+        layerCountTexture.setImageData(null, WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY());
+        layerCountTexture.create();
     }
 
     private static void initMaterials() {
@@ -440,6 +469,17 @@ public class Renderer {
         uniforms.add(new Vector2Uniform("barriers", new Vector2f(0.8f, 0.5f)));
         uniforms.add(new Vector2Uniform("weights", new Vector2f(0.25f, 0.6f)));
         uniforms.add(new FloatUniform("kernel", 0.75f));
+        // TRANSPARENCY
+        transparencyMaterial = createMaterial("weightedSum");
+        uniforms = transparencyMaterial.getUniforms();
+        uniforms.add(lightDirectionUniform);
+        uniforms.add(new FloatUniform("diffuseIntensity", 0.8f));
+        uniforms.add(new FloatUniform("specularIntensity", 1));
+        uniforms.add(new FloatUniform("ambientIntensity", 0.2f));
+        // TRANSPARENCY BLENDING
+        transparencyBlendingMaterial = createMaterial("transparencyBlending");
+        transparencyBlendingMaterial.addTexture(0, weightedSumTexture);
+        transparencyBlendingMaterial.addTexture(1, layerCountTexture);
         // SCREEN
         screenMaterial = createMaterial("screen");
         screenMaterial.addTexture(0, auxRGBATexture);
@@ -488,6 +528,12 @@ public class Renderer {
         antiAliasingFrameBuffer = glFactory.createFrameBuffer();
         antiAliasingFrameBuffer.attach(AttachmentPoint.COLOR0, auxRGBATexture);
         antiAliasingFrameBuffer.create();
+        // WEIGHTED SUM
+        weightedSumFrameBuffer = glFactory.createFrameBuffer();
+        weightedSumFrameBuffer.attach(AttachmentPoint.COLOR0, weightedSumTexture);
+        weightedSumFrameBuffer.attach(AttachmentPoint.COLOR1, layerCountTexture);
+        weightedSumFrameBuffer.attach(AttachmentPoint.DEPTH, depthsTexture);
+        weightedSumFrameBuffer.create();
     }
 
     private static void initVertexArrays() {
@@ -563,6 +609,10 @@ public class Renderer {
         auxRTexture.destroy();
         // AUX RGB
         auxRGBATexture.destroy();
+        // WEIGHTED SUM
+        weightedSumTexture.destroy();
+        // LAYER COUNT
+        layerCountTexture.destroy();
     }
 
     private static void disposeFrameBuffers() {
@@ -582,6 +632,8 @@ public class Renderer {
         motionBlurFrameBuffer.destroy();
         // ANTI ALIASING
         antiAliasingFrameBuffer.destroy();
+        // WEIGHTED SUM
+        weightedSumFrameBuffer.destroy();
     }
 
     private static void disposeVertexArrays() {
@@ -706,10 +758,21 @@ public class Renderer {
      *
      * @param model The model
      */
-    public static void addSolidModel(ChunkModel model) {
+    public static void addSolidModel(Model model) {
         model.setMaterial(solidMaterial);
         model.getUniforms().add(new ColorUniform("modelColor", solidModelColor));
         addModel(model);
+    }
+
+    /**
+     * Adds a model to be rendered as partially transparent.
+     *
+     * @param model The transparent model
+     */
+    public static void addTransparentModel(Model model) {
+        model.setMaterial(transparencyMaterial);
+        model.getUniforms().add(new ColorUniform("modelColor", new Color(200, 10, 10, 122)));
+        transparentModelList.add(model);
     }
 
     /**
@@ -749,6 +812,20 @@ public class Renderer {
 
     private static void addScreen() {
         guiRenderList.add(new Model(deferredStageScreenVertexArray, screenMaterial));
+
+        // TEST CODE
+        final VertexArray vertexArray = glFactory.createVertexArray();
+        vertexArray.setData(MeshGenerator.generateCone(null, 10, 10));
+        vertexArray.create();
+        final Model model = new Model(vertexArray, transparencyMaterial);
+        model.getUniforms().add(new ColorUniform("modelColor", new Color(200, 10, 10, 200)));
+        model.setPosition(new Vector3f(0, 22, 0));
+        transparentModelList.add(model);
+        final Model model2 = model.getInstance();
+        model2.getUniforms().add(new ColorUniform("modelColor", new Color(10, 10, 200, 120)));
+        model2.setPosition(new Vector3f(0, 22, 0));
+        model2.setRotation(Quaternionf.fromAngleDegAxis(180, 1, 0, 0));
+        transparentModelList.add(model2);
     }
 
     private static void addFPSMonitor() {
