@@ -26,6 +26,9 @@ package org.spoutcraft.client.nterface.mesh;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.spout.renderer.data.VertexData;
 import org.spout.renderer.gl.VertexArray;
@@ -45,7 +48,7 @@ import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 public class ParallelChunkMesher {
     private final ChunkMesher mesher;
     private final Interface nterface;
-    private final ForkJoinPool executor = new ForkJoinPool();
+    private final ThreadPoolExecutor executor;
 
     /**
      * Constructs a new parallel chunk mesher from the actual mesher.
@@ -56,6 +59,10 @@ public class ParallelChunkMesher {
     public ParallelChunkMesher(Interface nterface, ChunkMesher mesher) {
         this.nterface = nterface;
         this.mesher = mesher;
+        this.executor = new ThreadPoolExecutor(4, 4,
+                                      60L, TimeUnit.SECONDS,
+                                      new LinkedBlockingQueue<Runnable>());
+        executor.allowCoreThreadTimeOut(true);
     }
 
     /**
