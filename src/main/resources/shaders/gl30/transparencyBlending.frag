@@ -1,26 +1,31 @@
 // $shader_type: fragment
 
-// $texture_layout: weightedSum = 0
-// $texture_layout: layerCount = 1
+// $texture_layout: weightedColor = 0
+// $texture_layout: weightedVelocity = 1
+// $texture_layout: layerCount = 2
 
 #version 330
 
 in vec2 textureUV;
 
 layout(location = 0) out vec4 outputColor;
+layout(location = 1) out vec4 outputVelocity;
 
-uniform sampler2D weightedSum;
+uniform sampler2D weightedColor;
+uniform sampler2D weightedVelocity;
 uniform sampler2D layerCount;
 
 void main() {
-    vec4 sum = texture(weightedSum, textureUV);
+    vec4 colorSum = texture(weightedColor, textureUV);
+    vec2 velocitySum = texture(weightedVelocity, textureUV).rg;
     float count = texture(layerCount, textureUV).r;
 
-    if (count < 0.00001 || sum.a < 0.00001) {
+    if (count < 0.00001 || colorSum.a < 0.00001) {
         discard;
     }
 
-    vec4 averageColor = vec4(sum.rgb / sum.a, sum.a / count);
-    float destinationAlpha = pow(max(0, 1 - averageColor.a), count);
-    outputColor = vec4(averageColor.rgb, destinationAlpha);
+    float destinationAlpha = pow(max(0, 1 - colorSum.a / count), count);
+
+    outputColor = vec4(colorSum.rgb / colorSum.a, destinationAlpha);
+    outputVelocity = vec4(velocitySum.rg / colorSum.a, 0, destinationAlpha);
 }

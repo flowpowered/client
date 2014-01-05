@@ -125,6 +125,7 @@ public class Interface extends TickingElement {
     @Override
     public void onTick(long dt) {
         if (Display.isCloseRequested()) {
+            // TODO: move to input thread
             game.exit();
         }
         updateChunkModels(game.getUniverse().getActiveWorldSnapshot());
