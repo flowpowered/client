@@ -24,24 +24,26 @@
 package org.spoutcraft.client.nterface.render.effect;
 
 import org.spout.math.vector.Vector2f;
+import org.spout.renderer.data.Uniform;
 import org.spout.renderer.data.Uniform.IntUniform;
 import org.spout.renderer.data.Uniform.Vector2Uniform;
-import org.spout.renderer.data.UniformHolder;
 
 public class BlurEffect {
-	private final int blurSize;
-	private final Vector2f texelSize;
+    private final int blurSize;
+    private final Vector2f texelSize;
 
-	public BlurEffect(Vector2f resolution, int blurSize) {
-		this.blurSize = blurSize;
-		this.texelSize = Vector2f.ONE.div(resolution);
-	}
+    public BlurEffect(Vector2f resolution, int blurSize) {
+        this.blurSize = blurSize;
+        this.texelSize = Vector2f.ONE.div(resolution);
+    }
 
-	public void dispose() {
-	}
+    public void dispose() {
+    }
 
-	public void addUniforms(UniformHolder destination) {
-		destination.add(new IntUniform("blurSize", blurSize));
-		destination.add(new Vector2Uniform("texelSize", texelSize));
-	}
+    public Uniform[] getUniforms() {
+        return new Uniform[]{
+                new IntUniform("blurSize", blurSize),
+                new Vector2Uniform("texelSize", texelSize)
+        };
+    }
 }

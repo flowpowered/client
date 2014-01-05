@@ -23,6 +23,7 @@
  */
 package org.spoutcraft.client.nterface;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -271,7 +272,7 @@ public class Interface extends TickingElement {
                         mouseGrabbed ^= true;
                         break;
                     case Keyboard.KEY_F2:
-                        Renderer.saveScreenshot();
+                        Renderer.saveScreenshot(new File(""));
                 }
             }
         }
