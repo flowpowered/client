@@ -63,10 +63,10 @@ public class Game {
     }
 
     private void stop() {
-        input.stop();
         nterface.stop();
         universe.stop();
         network.stop();
+        input.stop();
         running = false;
     }
 
