@@ -33,7 +33,6 @@ import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
 
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.Display;
 
 import org.spout.math.TrigMath;
 import org.spout.math.imaginary.Quaternionf;
@@ -124,10 +123,6 @@ public class Interface extends TickingElement {
 
     @Override
     public void onTick(long dt) {
-        if (Display.isCloseRequested()) {
-            // TODO: move to input thread
-            game.exit();
-        }
         updateChunkModels(game.getUniverse().getActiveWorldSnapshot());
         handleInput(dt / 1000000000f);
         updateLight(time += ((double) dt / 1000000 * (MILLIS_IN_DAY / GAME_DAY_IRL)));

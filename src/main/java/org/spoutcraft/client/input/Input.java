@@ -61,6 +61,10 @@ public class Input extends TickingElement {
 
     @Override
     public void onTick(long dt) {
+        // Exit game if we're asked to
+        if (isCloseRequested()) {
+            game.exit();
+        }
         // Tries to create the input, only does so if it already hasn't been created
         createInputIfNecessary();
         if (keyboardCreated) {
@@ -166,7 +170,11 @@ public class Input extends TickingElement {
     }
 
     public boolean isActive() {
-        return Display.isActive();
+        return Display.isCreated() && Display.isActive();
+    }
+
+    public boolean isCloseRequested() {
+        return Display.isCreated() && Display.isCloseRequested();
     }
 
     public void setMouseGrabbed(boolean grabbed) {
