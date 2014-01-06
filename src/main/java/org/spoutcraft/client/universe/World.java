@@ -38,6 +38,14 @@ import org.spoutcraft.client.game.LevelType;
  *
  */
 public class World {
+    /**
+     * Number of milliseconds in a day.
+     */
+    public static final long MILLIS_IN_DAY = 1000 * 60 * 60 * 24;
+    /**
+     * The duration of a day in the game, in real life, in milliseconds.
+     */
+    public static final long GAME_DAY_IRL = 1000 * 60;
     //Storage
     private final Map<Vector3i, Chunk> chunks = new ConcurrentHashMap<>();
     private final UUID id;
@@ -48,6 +56,7 @@ public class World {
     private Dimension dimension;
     private Difficulty difficulty;
     private LevelType levelType;
+    private long time;
 
     public World(String name) {
         this(UUID.randomUUID(), name);
@@ -160,6 +169,14 @@ public class World {
 
     public void setLevelType(LevelType levelType) {
         this.levelType = levelType;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void updateTime(long dt) {
+        time += (dt / 1000000d * (MILLIS_IN_DAY / GAME_DAY_IRL));
     }
 
     @Override

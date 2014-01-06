@@ -51,6 +51,7 @@ import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel;
 import org.spoutcraft.client.nterface.mesh.StandardChunkMesher;
 import org.spoutcraft.client.nterface.render.Renderer;
 import org.spoutcraft.client.universe.Chunk;
+import org.spoutcraft.client.universe.World;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.util.ViewFrustum;
@@ -61,8 +62,6 @@ import org.spoutcraft.client.util.ticking.TickingElement;
  */
 public class Interface extends TickingElement {
     public static final int TPS = 60;
-    private static final long MILLIS_IN_DAY = 1000 * 60 * 60 * 24;
-    private static final long GAME_DAY_IRL = 1000 * 60;
     private static final float PI = (float) TrigMath.PI;
     private static final float TWO_PI = 2 * PI;
     private static final float LIGHT_ANGLE_LIMIT = PI / 64;
@@ -81,7 +80,6 @@ public class Interface extends TickingElement {
     private int mouseX = 0;
     private int mouseY = 0;
     private boolean mouseGrabbed = false;
-    private long time = 0;
 
     static {
         CHUNK_VERTICES = new Vector3f[8];
@@ -124,9 +122,10 @@ public class Interface extends TickingElement {
 
     @Override
     public void onTick(long dt) {
-        updateChunkModels(game.getUniverse().getActiveWorldSnapshot());
+        final WorldSnapshot world = game.getUniverse().getActiveWorldSnapshot();
+        updateChunkModels(world);
         handleInput(dt / 1000000000f);
-        updateLight(time += ((double) dt / 1000000 * (MILLIS_IN_DAY / GAME_DAY_IRL)));
+        updateLight(world.getTime());
         final Camera camera = Renderer.getCamera();
         frustum.update(camera.getProjectionMatrix(), camera.getViewMatrix());
         Renderer.render();
@@ -143,9 +142,9 @@ public class Interface extends TickingElement {
     }
 
     private void updateLight(long time) {
-        time %= MILLIS_IN_DAY;
+        time %= World.MILLIS_IN_DAY;
         double lightAngle;
-        final double dayAngle = ((double) time / MILLIS_IN_DAY) * TWO_PI;
+        final double dayAngle = ((double) time / World.MILLIS_IN_DAY) * TWO_PI;
         if (dayAngle < PI) {
             lightAngle = dayAngle;
         } else {

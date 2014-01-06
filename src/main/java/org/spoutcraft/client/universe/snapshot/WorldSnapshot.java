@@ -48,11 +48,13 @@ public class WorldSnapshot {
     private final UUID id;
     private final String name;
     private long updateNumber = 0;
+    private long time;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
     public WorldSnapshot(World world) {
         this.id = world.getID();
         this.name = world.getName();
+        this.time = world.getTime();
     }
 
     public UUID getID() {
@@ -105,6 +107,10 @@ public class WorldSnapshot {
         }
     }
 
+    public long getTime() {
+        return time;
+    }
+
     public long getUpdateNumber() {
         return updateNumber;
     }
@@ -113,10 +119,10 @@ public class WorldSnapshot {
         if (!current.getID().equals(id)) {
             throw new IllegalArgumentException("Cannot update from a world with another ID");
         }
-        final Set<Vector3i> validChunks = new HashSet<>();
         final Lock lock = this.lock.writeLock();
         lock.lock();
         try {
+            final Set<Vector3i> validChunks = new HashSet<>();
             boolean changed = false;
             for (Chunk chunk : current.getChunks().values()) {
                 final Vector3i position = chunk.getPosition();
@@ -137,6 +143,7 @@ public class WorldSnapshot {
                     changed = true;
                 }
             }
+            time = current.getTime();
             if (changed) {
                 updateNumber++;
             }

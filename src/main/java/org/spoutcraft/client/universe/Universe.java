@@ -121,6 +121,7 @@ public class Universe extends TickingElement {
             }
         }
 
+        updateWorldTimes(dt);
         updateSnapshots();
     }
 
@@ -158,6 +159,12 @@ public class Universe extends TickingElement {
         worldIDsByName.put(world.getName(), world.getID());
         if (setActive) {
             activeWorld.set(world);
+        }
+    }
+
+    private void updateWorldTimes(long dt) {
+        for (World world : worlds.values()) {
+            world.updateTime(dt);
         }
     }
 
