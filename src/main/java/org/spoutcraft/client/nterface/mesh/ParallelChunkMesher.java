@@ -167,10 +167,6 @@ public class ParallelChunkMesher {
         }
 
         private boolean isVisible() {
-            // It's hard to look right
-            // at the world baby
-            // But here's my frustum
-            // so cull me maybe?
             return nterface != null && nterface.isChunkVisible(getPosition());
         }
 
