@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.networking.session.PulsingSession.State;
 
 import org.spoutcraft.client.Game;
@@ -37,7 +38,6 @@ import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.ChannelMessage.Channel;
 import org.spoutcraft.client.network.message.login.LoginSuccessMessage;
 import org.spoutcraft.client.network.protocol.PlayProtocol;
-import org.spoutcraft.client.util.ticking.TickingElement;
 
 /**
  * The main network component and thread. Ticks at 20 TPS.

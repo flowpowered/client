@@ -25,6 +25,9 @@ package org.spoutcraft.client.input;
 
 import java.util.Queue;
 
+import com.flowpowered.commons.queue.SubscribableQueue;
+import com.flowpowered.commons.ticking.TickingElement;
+
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -33,8 +36,6 @@ import org.lwjgl.opengl.Display;
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.input.event.KeyboardEvent;
 import org.spoutcraft.client.input.event.MouseEvent;
-import org.spoutcraft.client.util.queue.SubscribableQueue;
-import org.spoutcraft.client.util.ticking.TickingElement;
 
 /**
  *

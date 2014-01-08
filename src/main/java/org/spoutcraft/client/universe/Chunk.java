@@ -23,14 +23,15 @@
  */
 package org.spoutcraft.client.universe;
 
+import com.flowpowered.commons.BitSize;
+import com.flowpowered.commons.store.block.AtomicBlockStore;
+import com.flowpowered.commons.store.block.AtomicBlockStore.DataMask;
+import com.flowpowered.commons.store.block.impl.AtomicPaletteBlockStore;
+
 import org.spout.math.vector.Vector3i;
 
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
-import org.spoutcraft.client.universe.store.AtomicBlockStore;
-import org.spoutcraft.client.universe.store.AtomicBlockStore.DataMask;
-import org.spoutcraft.client.universe.store.impl.AtomicPaletteBlockStore;
-import org.spoutcraft.client.util.BitSize;
 
 /**
  *

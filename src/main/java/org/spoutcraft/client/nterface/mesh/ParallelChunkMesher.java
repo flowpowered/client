@@ -24,7 +24,6 @@
 package org.spoutcraft.client.nterface.mesh;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;

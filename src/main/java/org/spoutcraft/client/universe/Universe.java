@@ -35,6 +35,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
+import com.flowpowered.commons.ticking.TickingElement;
+
 import org.spout.math.vector.Vector3i;
 
 import org.spoutcraft.client.Game;
@@ -54,7 +56,6 @@ import org.spoutcraft.client.network.message.play.RespawnMessage;
 import org.spoutcraft.client.network.message.play.SpawnPositionMessage;
 import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
-import org.spoutcraft.client.util.ticking.TickingElement;
 
 /**
  * Contains and manages all the voxel worlds.

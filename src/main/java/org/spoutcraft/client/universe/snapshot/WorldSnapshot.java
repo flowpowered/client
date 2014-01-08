@@ -33,12 +33,13 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import com.flowpowered.commons.map.TripleIntObjectMap;
+import com.flowpowered.commons.map.impl.TTripleInt21ObjectHashMap;
+
 import org.spout.math.vector.Vector3i;
 
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.World;
-import org.spoutcraft.client.util.map.TripleIntObjectMap;
-import org.spoutcraft.client.util.map.impl.TTripleInt21ObjectHashMap;
 
 /**
  *

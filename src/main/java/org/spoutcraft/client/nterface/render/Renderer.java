@@ -42,6 +42,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.flowpowered.commons.MeshGenerator;
+import com.flowpowered.commons.TPSMonitor;
+
 import org.lwjgl.opengl.GLContext;
 
 import org.spout.math.imaginary.Quaternionf;
@@ -89,8 +92,6 @@ import org.spoutcraft.client.nterface.Interface;
 import org.spoutcraft.client.nterface.render.effect.BlurEffect;
 import org.spoutcraft.client.nterface.render.effect.SSAOEffect;
 import org.spoutcraft.client.nterface.render.effect.ShadowMappingEffect;
-import org.spoutcraft.client.util.MeshGenerator;
-import org.spoutcraft.client.util.TPSMonitor;
 
 /**
  * The default renderer. Support OpenGL 2.1 and 3.2. Can render fully textured models with normal and specular mapping, ambient occlusion (SSAO), shadow mapping, Phong shading, motion blur and edge

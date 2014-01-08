@@ -30,6 +30,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 
+import com.flowpowered.commons.ViewFrustum;
+import com.flowpowered.commons.ticking.TickingElement;
+
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
 
@@ -54,8 +57,6 @@ import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.World;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
-import org.spoutcraft.client.util.ViewFrustum;
-import org.spoutcraft.client.util.ticking.TickingElement;
 
 /**
  * Contains and manages the renderer, GUI and it's input and camera input. Meshes and renders chunks and entities.
