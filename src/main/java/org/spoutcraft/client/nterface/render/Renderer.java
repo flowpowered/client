@@ -42,7 +42,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.flowpowered.commons.MeshGenerator;
 import com.flowpowered.commons.TPSMonitor;
 
 import org.lwjgl.opengl.GLContext;
@@ -86,6 +85,7 @@ import org.spout.renderer.gl.Texture.WrapMode;
 import org.spout.renderer.gl.VertexArray;
 import org.spout.renderer.model.Model;
 import org.spout.renderer.model.StringModel;
+import org.spout.renderer.util.MeshGenerator;
 import org.spout.renderer.util.Rectangle;
 
 import org.spoutcraft.client.nterface.Interface;
