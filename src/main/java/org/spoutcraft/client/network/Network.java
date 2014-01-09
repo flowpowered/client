@@ -33,6 +33,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.networking.session.PulsingSession.State;
 
+import io.netty.channel.ChannelOption;
+
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.ChannelMessage.Channel;
@@ -86,6 +88,8 @@ public class Network extends TickingElement {
                 }
             }
         }
+        // TODO: it *might* be good to only call this when NOT in PlayProtocol
+        client.getSession().getChannel().read();
         client.getSession().pulse();
     }
 
@@ -112,6 +116,7 @@ public class Network extends TickingElement {
         if (!isRunning()) {
             throw new RuntimeException("Attempt made to issue a connection but the Network thread isn't running!");
         }
+        client.preConnectOption(ChannelOption.AUTO_READ, false);
         client.connect(address);
     }
 
@@ -168,6 +173,7 @@ public class Network extends TickingElement {
             session.setUUID(loginSuccessMessage.getUUID());
             session.setUsername(loginSuccessMessage.getUsername());
             session.setState(State.OPEN);
+            session.setOption(ChannelOption.AUTO_READ, true);
             message.markChannelRead(Channel.NETWORK);
         }
     }
