@@ -28,21 +28,21 @@ import org.spoutcraft.client.network.message.ChannelMessage;
 public class ChunkDataBulkMessage extends ChannelMessage {
     private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
     private final short columnCount;
-    private final int compressedDataLength;
+    private final int[] compressedDataLengths;
     private final boolean hasSkyLightData;
-    private final byte[] compressedData;
+    private final byte[][] compressedDatas;
     private final int[] columnXs;
     private final int[] columnZs;
     private final short[] primaryBitMaps;
     private final short[] additionalDataBitMaps;
 
-    public ChunkDataBulkMessage(short columnCount, int compressedDataLength, boolean hasSkyLightData, byte[] compressedData, int[] columnXs, int[] columnZs, short[] primaryBitMaps, short[] additionalDataBitMaps) {
+    public ChunkDataBulkMessage(short columnCount, int[] compressedDataLengths, boolean hasSkyLightData, byte[][] compressedDatas, int[] columnXs, int[] columnZs, short[] primaryBitMaps, short[] additionalDataBitMaps) {
         super(REQUIRED_CHANNEL);
 
         this.columnCount = columnCount;
-        this.compressedDataLength = compressedDataLength;
+        this.compressedDataLengths = compressedDataLengths;
         this.hasSkyLightData = hasSkyLightData;
-        this.compressedData = compressedData;
+        this.compressedDatas = compressedDatas;
         this.columnXs = columnXs;
         this.columnZs = columnZs;
         this.primaryBitMaps = primaryBitMaps;
@@ -53,16 +53,16 @@ public class ChunkDataBulkMessage extends ChannelMessage {
         return columnCount;
     }
 
-    public int getCompressedDataLength() {
-        return compressedDataLength;
+    public int[] getCompressedDataLengths() {
+        return compressedDataLengths;
     }
 
     public boolean hasSkyLightData() {
         return hasSkyLightData;
     }
 
-    public byte[] getCompressedData() {
-        return compressedData;
+    public byte[][] getCompressedDatas() {
+        return compressedDatas;
     }
 
     public int[] getColumnXs() {

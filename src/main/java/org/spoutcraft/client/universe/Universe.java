@@ -80,18 +80,6 @@ public class Universe extends TickingElement {
     @Override
     public void onStart() {
         System.out.println("Universe start");
-
-        // TEST CODE
-        final short[] chunkIDs = new short[Chunk.BLOCKS.VOLUME];
-        Arrays.fill(chunkIDs, Materials.SOLID.getID());
-        final short[] chunkSubIDs = new short[Chunk.BLOCKS.VOLUME];
-        final World world = new World("test");
-        for (int xx = -2; xx < 2; xx++) {
-            for (int zz = -2; zz < 2; zz++) {
-                world.setChunk(new Chunk(world, new Vector3i(xx, 0, zz), chunkIDs, chunkSubIDs));
-            }
-        }
-        addWorld(world, true);
     }
 
     @Override
@@ -102,24 +90,15 @@ public class Universe extends TickingElement {
         final Iterator<ChannelMessage> messages = network.getChannel(Channel.UNIVERSE);
         while (messages.hasNext()) {
             final ChannelMessage message = messages.next();
-            handleMessage(message);
+            processMessage(message);
+
+            if (message.isFullyRead()) {
+                messages.remove();
+            }
         }
 
         if (network.getSession() != null) {
             network.getSession().send(new PlayerMessage(true));
-        }
-
-        // TEST CODE
-        final Random random = new Random();
-        final World world = activeWorld.get();
-        int x = random.nextInt(64) - 32;
-        int z = random.nextInt(64) - 32;
-        final Chunk chunk = world.getChunk(x >> Chunk.BLOCKS.BITS, 0, z >> Chunk.BLOCKS.BITS);
-        for (int y = 15; y >= 0; y--) {
-            if (chunk.getMaterial(x, y, z) != Materials.AIR) {
-                chunk.setMaterial(x, y, z, Materials.AIR);
-                break;
-            }
         }
 
         updateWorldTimes(dt);
@@ -129,7 +108,6 @@ public class Universe extends TickingElement {
     @Override
     public void onStop() {
         System.out.println("Universe stop");
-
         worlds.clear();
         worldSnapshots.clear();
     }
@@ -187,7 +165,7 @@ public class Universe extends TickingElement {
      * @return The constructed {@link org.spoutcraft.client.universe.World}
      */
     private World createWorld(GameMode gameMode, Dimension dimension, Difficulty difficulty, LevelType levelType, boolean isActive) {
-        final World world = new World("world-" + dimension.name(), gameMode, dimension, difficulty, levelType);
+        final World world = new World("world-" + dimension.name().toLowerCase(), gameMode, dimension, difficulty, levelType);
         addWorld(world, isActive);
         return world;
     }
@@ -197,7 +175,7 @@ public class Universe extends TickingElement {
      *
      * @param message See {@link org.spoutcraft.client.network.message.ChannelMessage}
      */
-    private void handleMessage(ChannelMessage message) {
+    private void processMessage(ChannelMessage message) {
         if (message.getClass() == JoinGameMessage.class) {
             handleJoinGame((JoinGameMessage) message);
         } else if (message.getClass() == SpawnPositionMessage.class) {
@@ -291,7 +269,6 @@ public class Universe extends TickingElement {
      * @param message See {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}
      */
     public void handleChunkDataBulk(ChunkDataBulkMessage message) {
-        int index = 0;
         for (int i = 0; i < message.getColumnCount(); i++) {
             byte[][][] data = new byte[MAX_CHUNK_COLUMN_SECTIONS][][];
             final short primaryBitMap = message.getPrimaryBitMaps()[i];
@@ -309,15 +286,11 @@ public class Universe extends TickingElement {
             //ChunkDataBulk always sends biome data
             columnDataSize += Chunk.BLOCKS.AREA;
 
-            byte[] compressedDataSection = new byte[columnDataSize];
-            System.arraycopy(message.getCompressedData(), index, compressedDataSection, 0, columnDataSize);
-            index += columnDataSize;
-
-            if (Arrays.equals(UNLOAD_CHUNKS_IN_COLUMN, compressedDataSection)) {
+            if (Arrays.equals(UNLOAD_CHUNKS_IN_COLUMN, message.getCompressedDatas()[i])) {
                 activeWorld.get().removeChunkColumn(message.getColumnXs()[i], message.getColumnZs()[i], 0, MAX_CHUNK_COLUMN_SECTIONS);
             } else {
                 try {
-                    decompressChunkData(data, true, compressedDataSection, columnDataSize, message.hasSkyLightData());
+                    decompressChunkData(data, true, message.getCompressedDatas()[i], columnDataSize, message.hasSkyLightData());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

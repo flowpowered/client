@@ -72,9 +72,6 @@ public class Network extends TickingElement {
 
     @Override
     public void onTick(long dt) {
-        if (!client.hasSession()) {
-            return;
-        }
         for (Map.Entry<Channel, ConcurrentLinkedQueue<ChannelMessage>> entry : messageQueue.entrySet()) {
             final Iterator<ChannelMessage> messages = entry.getValue().iterator();
             while (messages.hasNext()) {
@@ -88,9 +85,12 @@ public class Network extends TickingElement {
                 }
             }
         }
-        // TODO: it *might* be good to only call this when NOT in PlayProtocol
-        client.getSession().getChannel().read();
-        client.getSession().pulse();
+        if (!client.hasSession()) {
+            return;
+        }
+        if (client.getSession().getProtocol().getClass() != PlayProtocol.class) {
+            client.getSession().getChannel().read();
+        }
     }
 
     @Override
@@ -170,11 +170,10 @@ public class Network extends TickingElement {
 
             ClientSession session = getSession();
             session.setProtocol(new PlayProtocol());
+            session.setOption(ChannelOption.AUTO_READ, true);
             session.setUUID(loginSuccessMessage.getUUID());
             session.setUsername(loginSuccessMessage.getUsername());
-            session.setState(State.OPEN);
-            session.setOption(ChannelOption.AUTO_READ, true);
-            message.markChannelRead(Channel.NETWORK);
         }
+        message.markChannelRead(Channel.NETWORK);
     }
 }

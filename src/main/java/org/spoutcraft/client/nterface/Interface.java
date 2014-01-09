@@ -124,9 +124,13 @@ public class Interface extends TickingElement {
     @Override
     public void onTick(long dt) {
         final WorldSnapshot world = game.getUniverse().getActiveWorldSnapshot();
-        updateChunkModels(world);
+        if (world != null) {
+            updateChunkModels(world);
+        }
         handleInput(dt / 1000000000f);
-        updateLight(world.getTime());
+        if (world != null) {
+            updateLight(world.getTime());
+        }
         final Camera camera = Renderer.getCamera();
         frustum.update(camera.getProjectionMatrix(), camera.getViewMatrix());
         Renderer.render();

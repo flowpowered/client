@@ -24,6 +24,7 @@
 package org.spoutcraft.client.network;
 
 import com.flowpowered.networking.protocol.Protocol;
+import com.flowpowered.networking.session.BasicSession;
 import com.flowpowered.networking.session.PulsingSession;
 import io.netty.channel.Channel;
 import org.spoutcraft.client.Game;
@@ -35,7 +36,7 @@ import org.spoutcraft.client.network.protocol.LoginProtocol;
 /**
  * Represents an open connection to the server. All {@link com.flowpowered.networking.Message}s are sent through the session.
  */
-public class ClientSession extends PulsingSession {
+public class ClientSession extends BasicSession {
     private final Game game;
     private String uuid;
     private String username;
@@ -95,9 +96,9 @@ public class ClientSession extends PulsingSession {
 
     @Override
     public void onReady() {
-        send(SendType.FORCE, new HandshakeMessage("localhost", ClientProtocol.DEFAULT_PORT, HandshakeMessage.HandshakeState.LOGIN));
+        send(new HandshakeMessage("localhost", ClientProtocol.DEFAULT_PORT, HandshakeMessage.HandshakeState.LOGIN));
         setProtocol(new LoginProtocol());
-        send(SendType.FORCE, new LoginStartMessage("Spoutcrafty"));
+        send(new LoginStartMessage("Spoutcrafty"));
     }
 
     /**

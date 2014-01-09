@@ -34,7 +34,7 @@ import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.PositionLookMessage;
 
 public class PositionLookCodec extends Codec<PositionLookMessage> implements MessageHandler<PositionLookMessage> {
-    private static final int OP_CODE = 8;
+    private static final int OP_CODE = 6;
 
     public PositionLookCodec() {
         super(PositionLookMessage.class, OP_CODE);
