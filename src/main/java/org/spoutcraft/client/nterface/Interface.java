@@ -136,7 +136,7 @@ public class Interface extends TickingElement {
     public void onStop() {
         System.out.println("Interface stop");
 
-        // Ww make sure to stop the input because it relies on the display
+        // We make sure to stop the input because it relies on the display
         game.getInput().stop();
         mesher.shutdown();
         // Updating with a null world will clear all models
