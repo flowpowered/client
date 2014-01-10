@@ -138,6 +138,8 @@ public class Input extends TickingElement {
     public void onStop() {
         System.out.println("Input stop");
 
+        // We make sure to end of the game, else there's no way to stop it normally (no input!)
+        game.exit();
         Keyboard.destroy();
         keyboardCreated = false;
         keyboardQueue.unsubscribeAll();
