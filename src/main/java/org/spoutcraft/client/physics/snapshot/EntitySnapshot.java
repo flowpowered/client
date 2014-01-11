@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.physics.entity.snapshot;
+package org.spoutcraft.client.physics.snapshot;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -36,17 +36,15 @@ import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
  *
  */
 public class EntitySnapshot {
+    protected static final String UNNAMED = "unnamed";
     private final int id;
-    private String displayName;
-    private WorldSnapshot world;
-    private Vector3f position;
+    private String displayName = UNNAMED;
+    private WorldSnapshot world = null;
+    private Vector3f position = Vector3f.ZERO;
     protected final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public EntitySnapshot(Entity entity) {
         id = entity.getId();
-        displayName = entity.getDisplayName();
-        world = entity.getWorld();
-        position = entity.getPosition();
     }
 
     public int getId() {

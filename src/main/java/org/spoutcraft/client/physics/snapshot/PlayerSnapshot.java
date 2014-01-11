@@ -21,12 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.physics.entity.snapshot;
+package org.spoutcraft.client.physics.snapshot;
 
 import java.util.UUID;
 import java.util.concurrent.locks.Lock;
-
-import org.spout.math.imaginary.Quaternionf;
 
 import org.spoutcraft.client.physics.entity.Player;
 
@@ -34,25 +32,11 @@ import org.spoutcraft.client.physics.entity.Player;
  *
  */
 public class PlayerSnapshot extends EntitySnapshot {
-    private Quaternionf headRotation;
-    private UUID uuid;
-    private String username;
+    private UUID uuid = null;
+    private String username = UNNAMED;
 
     public PlayerSnapshot(Player player) {
         super(player);
-        headRotation = player.getHeadRotation();
-        uuid = player.getUUID();
-        username = player.getUsername();
-    }
-
-    public Quaternionf getHeadRotation() {
-        final Lock lock = this.lock.readLock();
-        lock.lock();
-        try {
-            return headRotation;
-        } finally {
-            lock.unlock();
-        }
     }
 
     public UUID getUUID() {
@@ -80,7 +64,6 @@ public class PlayerSnapshot extends EntitySnapshot {
         final Lock lock = this.lock.writeLock();
         lock.lock();
         try {
-            headRotation = current.getHeadRotation();
             uuid = current.getUUID();
             username = current.getUsername();
         } finally {

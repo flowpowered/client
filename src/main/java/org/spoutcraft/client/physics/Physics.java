@@ -37,10 +37,11 @@ import org.spout.math.vector.Vector3f;
 
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.input.Input;
+import org.spoutcraft.client.nterface.snapshot.CameraSnapshot;
 import org.spoutcraft.client.physics.entity.Entity;
 import org.spoutcraft.client.physics.entity.Player;
-import org.spoutcraft.client.physics.entity.snapshot.EntitySnapshot;
-import org.spoutcraft.client.physics.entity.snapshot.PlayerSnapshot;
+import org.spoutcraft.client.physics.snapshot.EntitySnapshot;
+import org.spoutcraft.client.physics.snapshot.PlayerSnapshot;
 
 /**
  *
@@ -114,18 +115,18 @@ public class Physics extends TickingElement {
         if (player == null) {
             return;
         }
-        // Update the player head rotation
-        player.setHeadRotation(game.getInterface().getCameraRotation());
         // Get the input
         final Input input = game.getInput();
         // Only use the input if active
         if (!input.isActive()) {
             return;
         }
+        // Get the camera snapshot
+        final CameraSnapshot camera = game.getInterface().getCameraSnapshot();
         // Get the direction vectors
-        final Vector3f right = player.getRight();
-        final Vector3f up = player.getUp();
-        final Vector3f forward = player.getForward();
+        final Vector3f right = camera.getRight();
+        final Vector3f up = camera.getUp();
+        final Vector3f forward = camera.getForward();
         // Get the old player position
         Vector3f position = player.getPosition();
         // Adjust the player speed to the FPS

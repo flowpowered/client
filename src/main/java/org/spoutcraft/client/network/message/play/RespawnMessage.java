@@ -30,7 +30,7 @@ import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 /**
- * Client-bound {@link com.flowpowered.networking.Message} that instructs the client to respawn, updating the active {@link org.spoutcraft.client.universe.World}'s characteristics.
+ * Client-bound {@link com.flowpowered.networking.Message} that instructs the client to respawn, updating the active {@link org.spoutcraft.client.universe.world.World}'s characteristics.
  */
 public class RespawnMessage extends ChannelMessage {
     private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
@@ -42,10 +42,10 @@ public class RespawnMessage extends ChannelMessage {
     /**
      * Constructs a new respawn
      *
-     * @param gameMode The {@link org.spoutcraft.client.game.GameMode} the active {@link org.spoutcraft.client.universe.World} should be
-     * @param dimension The {@link org.spoutcraft.client.game.Dimension} the active {@link org.spoutcraft.client.universe.World} should be
-     * @param difficulty The {@link org.spoutcraft.client.game.Difficulty} the active {@link org.spoutcraft.client.universe.World} should be
-     * @param levelType The {@link org.spoutcraft.client.game.LevelType} the active {@link org.spoutcraft.client.universe.World} should be
+     * @param gameMode The {@link org.spoutcraft.client.game.GameMode} the active {@link org.spoutcraft.client.universe.world.World} should be
+     * @param dimension The {@link org.spoutcraft.client.game.Dimension} the active {@link org.spoutcraft.client.universe.world.World} should be
+     * @param difficulty The {@link org.spoutcraft.client.game.Difficulty} the active {@link org.spoutcraft.client.universe.world.World} should be
+     * @param levelType The {@link org.spoutcraft.client.game.LevelType} the active {@link org.spoutcraft.client.universe.world.World} should be
      */
     public RespawnMessage(Dimension dimension, Difficulty difficulty, GameMode gameMode, LevelType levelType) {
         super(REQUIRED_CHANNEL);

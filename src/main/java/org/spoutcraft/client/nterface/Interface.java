@@ -53,11 +53,12 @@ import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher;
 import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel;
 import org.spoutcraft.client.nterface.mesh.StandardChunkMesher;
 import org.spoutcraft.client.nterface.render.Renderer;
-import org.spoutcraft.client.physics.entity.snapshot.PlayerSnapshot;
-import org.spoutcraft.client.universe.Chunk;
-import org.spoutcraft.client.universe.World;
+import org.spoutcraft.client.nterface.snapshot.CameraSnapshot;
+import org.spoutcraft.client.physics.snapshot.PlayerSnapshot;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
+import org.spoutcraft.client.universe.world.Chunk;
+import org.spoutcraft.client.universe.world.World;
 
 /**
  * Contains and manages the renderer, GUI and it's input and camera input. Meshes and renders chunks and entities.
@@ -81,6 +82,7 @@ public class Interface extends TickingElement {
     private int mouseX = 0;
     private int mouseY = 0;
     private boolean mouseGrabbed = false;
+    private final CameraSnapshot cameraSnapshot = new CameraSnapshot();
 
     static {
         CHUNK_VERTICES = new Vector3f[8];
@@ -129,6 +131,7 @@ public class Interface extends TickingElement {
         final Camera camera = Renderer.getCamera();
         frustum.update(camera.getProjectionMatrix(), camera.getViewMatrix());
         Renderer.render();
+        updateSnapshots();
     }
 
     @Override
@@ -304,14 +307,12 @@ public class Interface extends TickingElement {
         this.mouseY = mouseY;
     }
 
-    // TODO: needs to be moved to snapshot
-    public Vector3f getCameraPosition() {
-        return Renderer.getCamera().getPosition();
+    private void updateSnapshots() {
+        cameraSnapshot.update(Renderer.getCamera());
     }
 
-    // TODO: needs to be moved to snapshot
-    public Quaternionf getCameraRotation() {
-        return Renderer.getCamera().getRotation();
+    public CameraSnapshot getCameraSnapshot() {
+        return cameraSnapshot;
     }
 
     /**

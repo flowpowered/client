@@ -56,6 +56,8 @@ import org.spoutcraft.client.network.message.play.RespawnMessage;
 import org.spoutcraft.client.network.message.play.SpawnPositionMessage;
 import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
+import org.spoutcraft.client.universe.world.Chunk;
+import org.spoutcraft.client.universe.world.World;
 
 /**
  * Contains and manages all the voxel worlds.
@@ -187,14 +189,14 @@ public class Universe extends TickingElement {
     }
 
     /**
-     * Creates a {@link org.spoutcraft.client.universe.World} from a variety of characteristics.
+     * Creates a {@link org.spoutcraft.client.universe.world.World} from a variety of characteristics.
      *
      * @param gameMode See {@link org.spoutcraft.client.game.GameMode}
      * @param dimension See {@link org.spoutcraft.client.game.Dimension}
      * @param difficulty See {@link org.spoutcraft.client.game.Difficulty}
      * @param levelType See {@link org.spoutcraft.client.game.LevelType}
-     * @param isActive True if the created {@link org.spoutcraft.client.universe.World} should be made active (receives {@link org.spoutcraft.client.universe.Chunk}s)
-     * @return The constructed {@link org.spoutcraft.client.universe.World}
+     * @param isActive True if the created {@link org.spoutcraft.client.universe.world.World} should be made active (receives {@link org.spoutcraft.client.universe.world.Chunk}s)
+     * @return The constructed {@link org.spoutcraft.client.universe.world.World}
      */
     private World createWorld(GameMode gameMode, Dimension dimension, Difficulty difficulty, LevelType levelType, boolean isActive) {
         final World world = new World("world-" + dimension.name(), gameMode, dimension, difficulty, levelType);
@@ -441,7 +443,7 @@ public class Universe extends TickingElement {
     /**
      * Populates all non-air {@link Chunk}s in the column.
      * <p/>
-     * Any chunks that exist in the {@link org.spoutcraft.client.universe.World} will be replaced.
+     * Any chunks that exist in the {@link org.spoutcraft.client.universe.world.World} will be replaced.
      *
      * @param columnX The column's x coordinate
      * @param columnZ The column's z coordinate
