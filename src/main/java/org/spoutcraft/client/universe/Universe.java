@@ -39,6 +39,8 @@ import com.flowpowered.commons.ticking.TickingElement;
 
 import org.spout.math.vector.Vector3i;
 
+import org.spoutcraft.client.util.AnnotatedMessageHandler;
+import org.spoutcraft.client.util.AnnotatedMessageHandler.Handle;
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
@@ -73,10 +75,12 @@ public class Universe extends TickingElement {
     private final Map<UUID, WorldSnapshot> worldSnapshots = new ConcurrentHashMap<>();
     private final Map<String, UUID> worldIDsByName = new ConcurrentHashMap<>();
     private final AtomicReference<World> activeWorld = new AtomicReference<>(null);
+    private final AnnotatedMessageHandler messageHandler;
 
     public Universe(Game game) {
         super("universe", TPS);
         this.game = game;
+        messageHandler = new AnnotatedMessageHandler(this);
     }
 
     @Override
@@ -117,10 +121,12 @@ public class Universe extends TickingElement {
         int x = random.nextInt(64) - 32;
         int z = random.nextInt(64) - 32;
         final Chunk chunk = world.getChunk(x >> Chunk.BLOCKS.BITS, 0, z >> Chunk.BLOCKS.BITS);
-        for (int y = 15; y >= 0; y--) {
-            if (chunk.getMaterial(x, y, z) != Materials.AIR) {
-                chunk.setMaterial(x, y, z, Materials.AIR);
-                break;
+        if (chunk != null) {
+            for (int y = 15; y >= 0; y--) {
+                if (chunk.getMaterial(x, y, z) != Materials.AIR) {
+                    chunk.setMaterial(x, y, z, Materials.AIR);
+                    break;
+                }
             }
         }
 
@@ -210,30 +216,24 @@ public class Universe extends TickingElement {
      * @param message See {@link org.spoutcraft.client.network.message.ChannelMessage}
      */
     private void handleMessage(ChannelMessage message) {
-        if (message.getClass() == JoinGameMessage.class) {
-            handleJoinGame((JoinGameMessage) message);
-        } else if (message.getClass() == SpawnPositionMessage.class) {
-            handleSpawnPosition((SpawnPositionMessage) message);
-        } else if (message.getClass() == RespawnMessage.class) {
-            handleRespawn((RespawnMessage) message);
-        } else if (message.getClass() == ChunkDataMessage.class) {
-            handleChunkData((ChunkDataMessage) message);
-        } else if (message.getClass() == ChunkDataBulkMessage.class) {
-            handleChunkDataBulk((ChunkDataBulkMessage) message);
-        }
+        messageHandler.handle(message);
         message.markChannelRead(Channel.UNIVERSE);
     }
+
+    // TODO: move the message handle methods to another class?
 
     /**
      * Handles a {@link org.spoutcraft.client.network.message.play.JoinGameMessage}.
      *
      * @param message See {@link org.spoutcraft.client.network.message.play.JoinGameMessage}
      */
+    @Handle
     private void handleJoinGame(JoinGameMessage message) {
         System.out.println("Server says join is successful...Woo!!");
         createWorld(message.getGameMode(), message.getDimension(), message.getDifficulty(), message.getLevelType(), true);
     }
 
+    @Handle
     private void handleSpawnPosition(SpawnPositionMessage message) {
         if (getGame().getNetwork().isRunning()) {
             //TODO Test code
@@ -246,6 +246,7 @@ public class Universe extends TickingElement {
      *
      * @param message See {@link org.spoutcraft.client.network.message.play.RespawnMessage}
      */
+    @Handle
     private void handleRespawn(RespawnMessage message) {
         final World world;
         if (message.getDimension() == activeWorld.get().getDimension()) {
@@ -266,7 +267,8 @@ public class Universe extends TickingElement {
      *
      * @param message See {@link org.spoutcraft.client.network.message.play.ChunkDataMessage}
      */
-    public void handleChunkData(ChunkDataMessage message) {
+    @Handle
+    private void handleChunkData(ChunkDataMessage message) {
         // Check if we should remove a column of chunks
         if (Arrays.equals(UNLOAD_CHUNKS_IN_COLUMN, message.getCompressedData())) {
             activeWorld.get().removeChunkColumn(message.getColumnX(), message.getColumnZ(), 0, MAX_CHUNK_COLUMN_SECTIONS);
@@ -302,7 +304,8 @@ public class Universe extends TickingElement {
      *
      * @param message See {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}
      */
-    public void handleChunkDataBulk(ChunkDataBulkMessage message) {
+    @Handle
+    private void handleChunkDataBulk(ChunkDataBulkMessage message) {
         int index = 0;
         for (int i = 0; i < message.getColumnCount(); i++) {
             byte[][][] data = new byte[MAX_CHUNK_COLUMN_SECTIONS][][];

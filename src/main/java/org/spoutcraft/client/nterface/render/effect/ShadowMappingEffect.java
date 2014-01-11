@@ -79,7 +79,9 @@ public class ShadowMappingEffect {
     }
 
     public void dispose() {
-        noiseTexture.destroy();
+        if (noiseTexture.isCreated()) {
+            noiseTexture.destroy();
+        }
     }
 
     public Texture getNoiseTexture() {
