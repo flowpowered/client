@@ -23,6 +23,8 @@
  */
 package org.spoutcraft.client.network.message.login;
 
+import java.util.UUID;
+
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 /**
@@ -31,7 +33,7 @@ import org.spoutcraft.client.network.message.ChannelMessage;
  */
 public class LoginSuccessMessage extends ChannelMessage {
     private static final Channel REQUIRED_CHANNEL = Channel.NETWORK;
-    private final String uuid;
+    private final UUID uuid;
     private final String username;
 
     /**
@@ -40,7 +42,7 @@ public class LoginSuccessMessage extends ChannelMessage {
      * @param uuid The unique identifier of this session
      * @param username The username of this session
      */
-    public LoginSuccessMessage(String uuid, String username) {
+    public LoginSuccessMessage(UUID uuid, String username) {
         super(REQUIRED_CHANNEL);
         this.uuid = uuid;
         this.username = username;
@@ -51,7 +53,7 @@ public class LoginSuccessMessage extends ChannelMessage {
      *
      * @return The session ID
      */
-    public String getUUID() {
+    public UUID getUUID() {
         return uuid;
     }
 

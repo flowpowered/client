@@ -53,6 +53,7 @@ import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher;
 import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel;
 import org.spoutcraft.client.nterface.mesh.StandardChunkMesher;
 import org.spoutcraft.client.nterface.render.Renderer;
+import org.spoutcraft.client.physics.entity.snapshot.PlayerSnapshot;
 import org.spoutcraft.client.universe.Chunk;
 import org.spoutcraft.client.universe.World;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
@@ -69,7 +70,6 @@ public class Interface extends TickingElement {
     private static final Vector3f SHADOWED_CHUNKS = new Vector3f(Chunk.BLOCKS.SIZE * 4, 64, Chunk.BLOCKS.SIZE * 4);
     private static final Vector3f[] CHUNK_VERTICES;
     private static final float MOUSE_SENSITIVITY = 0.08f;
-    private static final float CAMERA_SPEED = 0.2f;
     private final Game game;
     private final ParallelChunkMesher mesher;
     private final Map<Vector3i, ChunkModel> chunkModels = new HashMap<>();
@@ -112,7 +112,6 @@ public class Interface extends TickingElement {
         // TEST CODE
         Renderer.setGLVersion(GLVersion.GL30);
         Renderer.init();
-        Renderer.getCamera().setPosition(new Vector3f(0, 5, 0));
         Renderer.setSolidColor(new Color(0, 200, 0));
         // Subscribe to the keyboard input queue
         final Input input = game.getInput();
@@ -157,7 +156,7 @@ public class Interface extends TickingElement {
         final Vector3f direction = new Vector3f(0, -Math.sin(lightAngle), -Math.cos(lightAngle));
         final Vector3f position = Renderer.getCamera().getPosition();
         Renderer.updateLight(direction, new Vector3f(position.getX(), 0, position.getZ()), SHADOWED_CHUNKS);
-        // TODO: lower light intensity if night
+        // TODO: lower light intensity at night
     }
 
     private void updateChunkModels(WorldSnapshot world) {
@@ -259,8 +258,11 @@ public class Interface extends TickingElement {
             if (mouseGrabbed) {
                 handleMouseInput(dt);
             }
-            // Handle the keyboard input
-            handleKeyboardInput(dt);
+            // Update the camera position to match the player
+            final PlayerSnapshot player = game.getPhysics().getPlayerSnapshot();
+            if (player != null) {
+                Renderer.getCamera().setPosition(player.getPosition());
+            }
         }
     }
 
@@ -302,40 +304,14 @@ public class Interface extends TickingElement {
         this.mouseY = mouseY;
     }
 
-    private void handleKeyboardInput(float dt) {
-        // Get the input
-        final Input input = game.getInput();
-        // Get the camera
-        final Camera camera = Renderer.getCamera();
-        // Get the camera direction vectors
-        final Vector3f right = camera.getRight();
-        final Vector3f up = camera.getUp();
-        final Vector3f forward = camera.getForward();
-        // Get the old camera position
-        Vector3f position = camera.getPosition();
-        // Adjust the camera speed to the FPS
-        final float speed = CAMERA_SPEED * dt;
-        // Calculate the new camera position
-        if (input.isKeyDown(Keyboard.KEY_W)) {
-            position = position.add(forward.mul(speed));
-        }
-        if (input.isKeyDown(Keyboard.KEY_S)) {
-            position = position.add(forward.mul(-speed));
-        }
-        if (input.isKeyDown(Keyboard.KEY_A)) {
-            position = position.add(right.mul(speed));
-        }
-        if (input.isKeyDown(Keyboard.KEY_D)) {
-            position = position.add(right.mul(-speed));
-        }
-        if (input.isKeyDown(Keyboard.KEY_SPACE)) {
-            position = position.add(up.mul(speed));
-        }
-        if (input.isKeyDown(Keyboard.KEY_LSHIFT)) {
-            position = position.add(up.mul(-speed));
-        }
-        // Update the camera position
-        camera.setPosition(position);
+    // TODO: needs to be moved to snapshot
+    public Vector3f getCameraPosition() {
+        return Renderer.getCamera().getPosition();
+    }
+
+    // TODO: needs to be moved to snapshot
+    public Quaternionf getCameraRotation() {
+        return Renderer.getCamera().getRotation();
     }
 
     /**

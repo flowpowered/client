@@ -140,10 +140,14 @@ public class Input extends TickingElement {
 
         // We make sure to end of the game, else there's no way to stop it normally (no input!)
         game.exit();
-        Keyboard.destroy();
+        if (Keyboard.isCreated()) {
+            Keyboard.destroy();
+        }
         keyboardCreated = false;
         keyboardQueue.unsubscribeAll();
-        Mouse.destroy();
+        if (Mouse.isCreated()) {
+            Mouse.destroy();
+        }
         mouseCreated = false;
         mouseQueue.unsubscribeAll();
     }
@@ -181,23 +185,31 @@ public class Input extends TickingElement {
     }
 
     public void setMouseGrabbed(boolean grabbed) {
-        Mouse.setGrabbed(grabbed);
+        if (Mouse.isCreated()) {
+            Mouse.setGrabbed(grabbed);
+        }
     }
 
     public int getMouseX() {
-        return Mouse.getX();
+        if (Mouse.isCreated()) {
+            return Mouse.getX();
+        }
+        return 0;
     }
 
     public int getMouseY() {
-        return Mouse.getY();
+        if (Mouse.isCreated()) {
+            return Mouse.getY();
+        }
+        return 0;
     }
 
     public boolean isKeyDown(int key) {
-        return Keyboard.isKeyDown(key);
+        return Keyboard.isCreated() && Keyboard.isKeyDown(key);
     }
 
     public boolean isButtonDown(int button) {
-        return Mouse.isButtonDown(button);
+        return Mouse.isCreated() && Mouse.isButtonDown(button);
     }
 
     public Game getGame() {

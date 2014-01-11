@@ -24,11 +24,14 @@
 package org.spoutcraft.client.network.codec.login;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
 import com.flowpowered.networking.session.Session;
+
 import io.netty.buffer.ByteBuf;
+
 import org.spoutcraft.client.network.ByteBufUtils;
 import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.network.message.ChannelMessage;
@@ -49,7 +52,7 @@ public class LoginSuccessCodec extends Codec<LoginSuccessMessage> implements Mes
 
     @Override
     public LoginSuccessMessage decode(ByteBuf buf) throws IOException {
-        final String uuid = ByteBufUtils.readUTF8(buf);
+        final UUID uuid = UUID.fromString(ByteBufUtils.readUTF8(buf));
         final String username = ByteBufUtils.readUTF8(buf);
         return new LoginSuccessMessage(uuid, username);
     }

@@ -131,7 +131,7 @@ public class Universe extends TickingElement {
         System.out.println("Universe stop");
 
         worlds.clear();
-        worldSnapshots.clear();
+        updateSnapshots();
     }
 
     public Game getGame() {
@@ -156,7 +156,6 @@ public class Universe extends TickingElement {
 
     private void addWorld(World world, boolean setActive) {
         worlds.put(world.getID(), world);
-        worldSnapshots.put(world.getID(), new WorldSnapshot(world));
         worldIDsByName.put(world.getName(), world.getID());
         if (setActive) {
             activeWorld.set(world);
@@ -170,9 +169,20 @@ public class Universe extends TickingElement {
     }
 
     private void updateSnapshots() {
+        for (Iterator<WorldSnapshot> iterator = worldSnapshots.values().iterator(); iterator.hasNext(); ) {
+            if (!worlds.containsKey(iterator.next().getID())) {
+                iterator.remove();
+            }
+        }
         for (Entry<UUID, World> entry : worlds.entrySet()) {
             final UUID id = entry.getKey();
-            worldSnapshots.get(id).update(worlds.get(id));
+            final World world = entry.getValue();
+            WorldSnapshot worldSnapshot = worldSnapshots.get(id);
+            if (worldSnapshot == null) {
+                worldSnapshot = new WorldSnapshot(world);
+                worldSnapshots.put(id, worldSnapshot);
+            }
+            worldSnapshot.update(world);
         }
     }
 
