@@ -245,21 +245,22 @@ public class Universe extends TickingElement {
             try {
 
                 // Find out how many non-air chunks we have in the column and add on a data segment for it
-                int columnDataSize = 0;
+                int nonEmptyColumns = 0;
                 for (int i = 0; i < MAX_CHUNK_COLUMN_SECTIONS; i++) {
-                    boolean hasData = ((message.getPrimaryBitMap() & 1 << i) != 0);
-                    if (hasData) {
-                        data[i] = new byte[ChunkDataIndex.values().length][];
-                        //Blocks + (Metadata + Light + Skylight)
-                        columnDataSize += Chunk.BLOCKS.VOLUME + (Chunk.BLOCKS.HALF_VOLUME * 3);
+                    if ((message.getPrimaryBitMap() >> i & 1) != 0) {
+                        data[i] = new byte[5][];
+                        nonEmptyColumns++;
                     }
                 }
+                // Length = nonEmptyColumns * (Blocks + (Metadata + Additional Data + Light + Skylight))
+                int actualCompressedDataLength = nonEmptyColumns * (Chunk.BLOCKS.VOLUME + (Chunk.BLOCKS.HALF_VOLUME * 4));
+
                 // If ground up continuous, biome data is sent per column. We need to add on to the data size for this.
                 if (message.isGroundUpContinuous()) {
-                    columnDataSize += Chunk.BLOCKS.AREA;
+                    actualCompressedDataLength += Chunk.BLOCKS.AREA;
                 }
 
-                decompressChunkData(data, message.isGroundUpContinuous(), message.getCompressedData(), columnDataSize, true);
+                decompressChunkData(data, message.isGroundUpContinuous(), true, actualCompressedDataLength, message.getCompressedData());
             } catch (IOException e) {
                 System.out.println(e);
             }
@@ -274,65 +275,57 @@ public class Universe extends TickingElement {
      */
     @Handle
     private void handleChunkDataBulk(ChunkDataBulkMessage message) {
-        int index = 0;
+        int position = 0;
+
         for (int i = 0; i < message.getColumnCount(); i++) {
             byte[][][] data = new byte[MAX_CHUNK_COLUMN_SECTIONS][][];
-            final short primaryBitMap = message.getPrimaryBitMaps()[i];
 
             // Find out how many non-air chunks we have in the column and add on a data segment for it
-            int columnDataSize = 0;
-            for (int j = 0; j < MAX_CHUNK_COLUMN_SECTIONS; j++) {
-                boolean hasData = ((primaryBitMap & 1 << j) != 0);
-                if (hasData) {
-                    data[j] = new byte[ChunkDataIndex.values().length][];
-                    //Blocks + (Metadata + Light + Skylight)
-                    columnDataSize += Chunk.BLOCKS.VOLUME + (Chunk.BLOCKS.HALF_VOLUME * (message.hasSkyLightData() ? 3 : 2));
+            int nonEmptyPrimaryColumns = 0;
+            int nonEmptyAdditionalColumns = 0;
+            for (int j = 0; i < MAX_CHUNK_COLUMN_SECTIONS; j++) {
+                if ((message.getPrimaryBitMaps()[i] >> j & 1) != 0) {
+                    nonEmptyAdditionalColumns++;
+                    data[j] = new byte[5][];
                 }
+                nonEmptyAdditionalColumns += message.getAdditionalDataBitMaps()[i] >> j & 1;
             }
-            //ChunkDataBulk always sends biome data
-            columnDataSize += Chunk.BLOCKS.AREA;
 
-            if (Arrays.equals(UNLOAD_CHUNKS_IN_COLUMN, message.getCompressedDatas()[i])) {
-                activeWorld.get().removeChunkColumn(message.getColumnXs()[i], message.getColumnZs()[i], 0, MAX_CHUNK_COLUMN_SECTIONS);
-            } else {
-                try {
-                    decompressChunkData(data, true, message.getCompressedDatas()[i], columnDataSize, message.hasSkyLightData());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                populateChunks(message.getColumnXs()[i], message.getColumnZs()[i], data);
+            // Length = nonEmptyPrimaryColumns * (Blocks + (Metadata + Light + (optionally) SkyLight)) + Biome + (nonEmptyAdditionalDataColumns)
+            int actualCompressedDataLength = nonEmptyPrimaryColumns * (Chunk.BLOCKS.VOLUME + (Chunk.BLOCKS.HALF_VOLUME * (message.hasSkyLight() ? 3 : 2))) + Chunk.BLOCKS.AREA + (nonEmptyAdditionalColumns * Chunk.BLOCKS.HALF_VOLUME);
+
+            try {
+                decompressChunkData(data, true, message.hasSkyLight(), position, actualCompressedDataLength, message.getCompressedData());
+                position += actualCompressedDataLength;
+            } catch (IOException e) {
+                System.out.println(e);
             }
+            populateChunks(message.getColumnXs()[i], message.getColumnZs()[i], data);
         }
+    }
+
+    private void decompressChunkData(byte[][][] toFill, boolean groundUpContinuous, boolean hasSkyLight, int length, byte[] compressedData) throws IOException {
+        decompressChunkData(toFill, groundUpContinuous, hasSkyLight, 0, length, compressedData);
     }
 
     /**
      * Decompresses the raw compressed data from the server into the provided 3D array that comprises:
      * <p/>
-     * Section        - The section of the column, ground up ChunkDataIndex - See {@link org.spoutcraft.client.universe.Universe.ChunkDataIndex} data           - decompressed data as a byte
-     *
+     * Section        - The section of the column, ground up
+     * ChunkDataIndex - See {@link org.spoutcraft.client.universe.Universe.ChunkDataIndex}
+     * data           - decompressed data as a byte
      * @param groundUpContinuous True if this is the entire column, false if not. Used to determine if biome data is included
      * @param compressedData Compressed data from the server
      * @param hasSkyLight True if the compressed data has sky light, only {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}s can not provide this
      * @throws IOException If the chunk's data is corrupted during inflate or if all bytes are not decompressed
      */
-    private void decompressChunkData(byte[][][] data, boolean groundUpContinuous, byte[] compressedData, int columnDataSize, boolean hasSkyLight) throws IOException {
+    private void decompressChunkData(byte[][][] toFill, boolean groundUpContinuous, boolean hasSkyLight, int offset, int length, byte[] compressedData) throws IOException {
         // Step 1 - Decompress the data
-        final byte[] decompressedData = new byte[columnDataSize];
-        INFLATER.setInput(compressedData);
-        INFLATER.getRemaining();
-        int decompressIndex = 0;
+        final byte[] decompressedData = new byte[length];
+        INFLATER.setInput(compressedData, offset, length);
 
         try {
-            while (decompressIndex < decompressedData.length) {
-                int decompressedAmount = INFLATER.inflate(decompressedData, decompressIndex, decompressedData.length - decompressIndex);
-                decompressIndex += decompressedAmount;
-                if (decompressedAmount == 0) {
-                    break;
-                }
-            }
-            if (!INFLATER.needsInput()) {
-                throw new IOException("Chunk data should be entirely decompressed but some bytes are still compressed!");
-            }
+            INFLATER.inflate(decompressedData);
         } catch (DataFormatException e) {
             throw new IOException("Chunk data is corrupted!", e);
         } finally {
@@ -340,7 +333,7 @@ public class Universe extends TickingElement {
         }
 
         // Step 2 - Build data array
-        for (final byte[][] section : data) {
+        for (final byte[][] section : toFill) {
             if (section == null) {
                 continue;
             }
@@ -375,13 +368,16 @@ public class Universe extends TickingElement {
             // Step 2e. - Fill Block sky light
             section[ChunkDataIndex.BLOCK_SKY_LIGHT.value()] = new byte[Chunk.BLOCKS.VOLUME];
 
-            if (!hasSkyLight) {
-                Arrays.fill(section[ChunkDataIndex.BLOCK_SKY_LIGHT.value()], (byte) 0);
-            } else {
+            if (hasSkyLight) {
                 fillHalfByteDataArray(section, ChunkDataIndex.BLOCK_SKY_LIGHT, decompressedData, index, Chunk.BLOCKS.HALF_VOLUME);
+            } else {
+                Arrays.fill(section[ChunkDataIndex.BLOCK_SKY_LIGHT.value()], (byte) 0);
             }
 
-            //TODO Handle Biomes later as they are unique
+            if (groundUpContinuous) {
+                index += Chunk.BLOCKS.HALF_VOLUME;
+                //TODO Handle Biomes later as they are unique
+            }
         }
     }
 

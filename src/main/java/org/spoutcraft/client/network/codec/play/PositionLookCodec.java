@@ -47,7 +47,7 @@ public class PositionLookCodec extends Codec<PositionLookMessage> implements Mes
         final double z = buf.readInt();
         final float yaw = buf.readFloat();
         final float pitch = buf.readFloat();
-        final boolean onGround = buf.readBoolean();
+        final boolean onGround = buf.readByte() == 1;
         return new PositionLookMessage(x, y, z, yaw, pitch, onGround);
     }
 
