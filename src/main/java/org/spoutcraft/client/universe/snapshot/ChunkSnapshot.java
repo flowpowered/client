@@ -31,9 +31,9 @@ import com.flowpowered.commons.store.block.AtomicBlockStore;
 
 import org.spout.math.vector.Vector3i;
 
-import org.spoutcraft.client.universe.world.Chunk;
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
+import org.spoutcraft.client.universe.world.Chunk;
 
 /**
  *
@@ -122,7 +122,13 @@ public class ChunkSnapshot {
     }
 
     public long getUpdateNumber() {
-        return updateNumber;
+        final Lock lock = this.lock.readLock();
+        lock.lock();
+        try {
+            return updateNumber;
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**

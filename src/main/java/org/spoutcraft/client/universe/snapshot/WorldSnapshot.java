@@ -109,11 +109,23 @@ public class WorldSnapshot {
     }
 
     public long getTime() {
-        return time;
+        final Lock lock = this.lock.readLock();
+        lock.lock();
+        try {
+            return time;
+        } finally {
+            lock.unlock();
+        }
     }
 
     public long getUpdateNumber() {
-        return updateNumber;
+        final Lock lock = this.lock.readLock();
+        lock.lock();
+        try {
+            return updateNumber;
+        } finally {
+            lock.unlock();
+        }
     }
 
     public void update(World current) {
