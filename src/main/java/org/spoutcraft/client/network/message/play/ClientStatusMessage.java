@@ -49,11 +49,6 @@ public class ClientStatusMessage extends ChannelMessage {
         return state;
     }
 
-    @Override
-    public boolean isAsync() {
-        return true;
-    }
-
     /**
      * An enum of the client states.
      */

@@ -99,7 +99,7 @@ public class Universe extends TickingElement {
             messages.remove();
         }
 
-        if (network.getSession() != null) {
+        if (network.getSession() != null && network.getSession().isActive()) {
             network.getSession().send(new PlayerMessage(true));
         }
     }

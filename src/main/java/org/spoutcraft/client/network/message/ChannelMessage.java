@@ -51,6 +51,11 @@ public abstract class ChannelMessage implements Message {
         requiredMask = requiredRead.getMask();
     }
 
+    @Override
+    public boolean isAsync() {
+        return true;
+    }
+
     /**
      * Constructs a new message that requires multiple channels to have read it.
      *

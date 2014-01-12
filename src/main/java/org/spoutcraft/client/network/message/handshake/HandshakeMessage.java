@@ -85,11 +85,6 @@ public class HandshakeMessage extends ChannelMessage {
         return state;
     }
 
-    @Override
-    public boolean isAsync() {
-        return true;
-    }
-
     /**
      * An enum of the handshake states.
      */

@@ -80,9 +80,4 @@ public class PositionLookMessage extends ChannelMessage {
     public double getStance() {
         return stance;
     }
-
-    @Override
-    public boolean isAsync() {
-        return false;
-    }
 }

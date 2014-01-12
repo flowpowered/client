@@ -53,9 +53,4 @@ public class PlayerMessage extends ChannelMessage {
     public boolean isOnGround() {
         return onGround;
     }
-
-    @Override
-    public boolean isAsync() {
-        return true;
-    }
 }

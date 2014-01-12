@@ -75,14 +75,14 @@ public class Network extends TickingElement {
 
     @Override
     public void onTick(long dt) {
-        if (!client.hasSession()) {
-            return;
-        }
         final Iterator<ChannelMessage> messages = game.getNetwork().getChannel(Channel.NETWORK);
         while (messages.hasNext()) {
             final ChannelMessage message = messages.next();
             handleMessage(message);
             messages.remove();
+        }
+        if (!client.hasSession()) {
+            return;
         }
         if (!client.getSession().getChannel().config().isAutoRead()) {
             client.getSession().getChannel().read();

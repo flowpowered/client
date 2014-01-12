@@ -73,9 +73,4 @@ public class ChunkDataMessage extends ChannelMessage {
     public byte[] getCompressedData() {
         return compressedData;
     }
-
-    @Override
-    public boolean isAsync() {
-        return true;
-    }
 }

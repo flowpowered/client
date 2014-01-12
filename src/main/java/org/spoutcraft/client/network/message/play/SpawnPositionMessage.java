@@ -90,9 +90,4 @@ public class SpawnPositionMessage extends ChannelMessage {
     public Vector3i getPosition() {
         return position;
     }
-
-    @Override
-    public boolean isAsync() {
-        return true;
-    }
 }

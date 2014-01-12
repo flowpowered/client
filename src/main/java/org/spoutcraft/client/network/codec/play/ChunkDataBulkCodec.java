@@ -34,7 +34,7 @@ import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.ChunkDataBulkMessage;
 
 public class ChunkDataBulkCodec extends Codec<ChunkDataBulkMessage> implements MessageHandler<ChunkDataBulkMessage> {
-    private static final int OP_CODE = 38;
+    private static final int OP_CODE = 26;
 
     public ChunkDataBulkCodec() {
         super(ChunkDataBulkMessage.class, OP_CODE);
@@ -43,22 +43,21 @@ public class ChunkDataBulkCodec extends Codec<ChunkDataBulkMessage> implements M
     @Override
     public ChunkDataBulkMessage decode(ByteBuf buf) throws IOException {
         final short columnCount = buf.readShort();
+        final int compressedDataLength = buf.readInt();
+        final boolean hasSkyLight = buf.readBoolean();
+        final byte[] compressedData = new byte[compressedDataLength];
+        buf.readBytes(compressedData, 0, compressedData.length);
         final int[] columnXs = new int[columnCount];
         final int[] columnZs = new int[columnCount];
         final short[] primaryBitMaps = new short[columnCount];
         final short[] additionalDataBitMaps = new short[columnCount];
-        final int[] compressedDataLengths = new int[columnCount];
-        final byte[][] compressedDatas = new byte[columnCount][];
         for (int i = 0; i < columnCount; i++) {
             columnXs[i] = buf.readInt();
             columnZs[i] = buf.readInt();
             primaryBitMaps[i] = (short) buf.readUnsignedShort();
             additionalDataBitMaps[i] = (short) buf.readUnsignedShort();
-            compressedDataLengths[i] = buf.readInt();
-            compressedDatas[i] = new byte[compressedDataLengths[i]];
-            buf.readBytes(compressedDatas[i], 0, compressedDataLengths[i]);
         }
-        return new ChunkDataBulkMessage(columnCount, compressedDataLengths, false, compressedDatas, columnXs, columnZs, primaryBitMaps, additionalDataBitMaps);
+        return new ChunkDataBulkMessage(columnCount, compressedDataLength, hasSkyLight, compressedData, columnXs, columnZs, primaryBitMaps, additionalDataBitMaps);
     }
 
     @Override

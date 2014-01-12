@@ -28,21 +28,20 @@ import org.spoutcraft.client.network.message.ChannelMessage;
 public class ChunkDataBulkMessage extends ChannelMessage {
     private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
     private final short columnCount;
-    private final int[] compressedDataLengths;
-    private final boolean hasSkyLightData;
-    private final byte[][] compressedDatas;
+    private final int compressedDataLength;
+    private final boolean hasSkyLight;
+    private final byte[] compressedData;
     private final int[] columnXs;
     private final int[] columnZs;
     private final short[] primaryBitMaps;
     private final short[] additionalDataBitMaps;
 
-    public ChunkDataBulkMessage(short columnCount, int[] compressedDataLengths, boolean hasSkyLightData, byte[][] compressedDatas, int[] columnXs, int[] columnZs, short[] primaryBitMaps, short[] additionalDataBitMaps) {
+    public ChunkDataBulkMessage(short columnCount, int compressedDataLength, boolean hasSkyLight, byte[] compressedData, int[] columnXs, int[] columnZs, short[] primaryBitMaps, short[] additionalDataBitMaps) {
         super(REQUIRED_CHANNEL);
-
         this.columnCount = columnCount;
-        this.compressedDataLengths = compressedDataLengths;
-        this.hasSkyLightData = hasSkyLightData;
-        this.compressedDatas = compressedDatas;
+        this.compressedDataLength = compressedDataLength;
+        this.hasSkyLight = hasSkyLight;
+        this.compressedData = compressedData;
         this.columnXs = columnXs;
         this.columnZs = columnZs;
         this.primaryBitMaps = primaryBitMaps;
@@ -53,16 +52,16 @@ public class ChunkDataBulkMessage extends ChannelMessage {
         return columnCount;
     }
 
-    public int[] getCompressedDataLengths() {
-        return compressedDataLengths;
+    public int getCompressedDataLength() {
+        return compressedDataLength;
     }
 
-    public boolean hasSkyLightData() {
-        return hasSkyLightData;
+    public byte[] getCompressedData() {
+        return compressedData;
     }
 
-    public byte[][] getCompressedDatas() {
-        return compressedDatas;
+    public boolean hasSkyLight() {
+        return hasSkyLight;
     }
 
     public int[] getColumnXs() {
@@ -79,10 +78,5 @@ public class ChunkDataBulkMessage extends ChannelMessage {
 
     public short[] getAdditionalDataBitMaps() {
         return additionalDataBitMaps;
-    }
-
-    @Override
-    public boolean isAsync() {
-        return true;
     }
 }

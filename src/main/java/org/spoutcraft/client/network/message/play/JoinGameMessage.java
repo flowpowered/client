@@ -126,9 +126,4 @@ public class JoinGameMessage extends ChannelMessage {
     public LevelType getLevelType() {
         return levelType;
     }
-
-    @Override
-    public boolean isAsync() {
-        return true;
-    }
 }

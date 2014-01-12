@@ -90,9 +90,4 @@ public class RespawnMessage extends ChannelMessage {
     public LevelType getLevelType() {
         return levelType;
     }
-
-    @Override
-    public boolean isAsync() {
-        return true;
-    }
 }

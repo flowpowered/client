@@ -51,9 +51,4 @@ public class KeepAliveMessage extends ChannelMessage {
     public int getRandom() {
         return random;
     }
-
-    @Override
-    public boolean isAsync() {
-        return true;
-    }
 }
