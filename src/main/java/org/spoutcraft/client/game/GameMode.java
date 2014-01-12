@@ -31,7 +31,6 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 public enum GameMode {
     ADVENTURE(2),
     CREATIVE(1),
-    HARDCORE(3),
     SURVIVAL(0);
     private final int value;
     private static final TIntObjectHashMap<GameMode> map = new TIntObjectHashMap<>();

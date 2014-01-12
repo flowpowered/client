@@ -32,4 +32,8 @@ public enum LevelType {
     LARGE_BIOMES,
     AMPLIFIED,
     DEFAULT_1_1;
+
+    public static LevelType get(String name) {
+        return valueOf(name.toUpperCase());
+    }
 }

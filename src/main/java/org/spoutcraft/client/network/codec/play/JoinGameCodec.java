@@ -54,12 +54,13 @@ public class JoinGameCodec extends Codec<JoinGameMessage> implements MessageHand
     @Override
     public JoinGameMessage decode(ByteBuf buf) throws IOException {
         final int playerID = buf.readInt();
-        final GameMode gameMode = GameMode.get(buf.readUnsignedByte());
+        final short modePacked = buf.readUnsignedByte();
+        final boolean hardcore = (modePacked & 8) == 8;
+        final GameMode gameMode = GameMode.get(modePacked & -9);
         final Dimension dimension = Dimension.get(buf.readByte());
         final Difficulty difficulty = Difficulty.get(buf.readUnsignedByte());
         final short maxPlayers = buf.readUnsignedByte();
-        final String temp = ByteBufUtils.readUTF8(buf);
-        final LevelType levelType = LevelType.valueOf(temp.toUpperCase());
+        final LevelType levelType = LevelType.get(ByteBufUtils.readUTF8(buf));
         return new JoinGameMessage(playerID, gameMode, dimension, difficulty, maxPlayers, levelType);
     }
 
