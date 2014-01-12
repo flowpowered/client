@@ -23,13 +23,13 @@
  */
 package org.spoutcraft.client.nterface.mesh;
 
-import org.spout.math.vector.Vector3i;
-
-import org.spoutcraft.client.universe.world.Chunk;
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
+import org.spoutcraft.client.universe.world.Chunk;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  * A chunk and it's immediate neighbours (BTNESW), used for meshing the chunk including it's edge blocks with proper occlusion.

@@ -23,7 +23,6 @@
  */
 package org.spoutcraft.client.nterface.render;
 
-import javax.imageio.ImageIO;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.image.BufferedImage;
@@ -41,10 +40,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
 
 import com.flowpowered.commons.TPSMonitor;
-
-import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.*;
+import org.spoutcraft.client.nterface.Interface;
+import org.spoutcraft.client.nterface.render.effect.BlurEffect;
+import org.spoutcraft.client.nterface.render.effect.SSAOEffect;
+import org.spoutcraft.client.nterface.render.effect.ShadowMappingEffect;
 
 import org.spout.math.imaginary.Quaternionf;
 import org.spout.math.matrix.Matrix3f;
@@ -87,11 +90,6 @@ import org.spout.renderer.model.Model;
 import org.spout.renderer.model.StringModel;
 import org.spout.renderer.util.MeshGenerator;
 import org.spout.renderer.util.Rectangle;
-
-import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.nterface.render.effect.BlurEffect;
-import org.spoutcraft.client.nterface.render.effect.SSAOEffect;
-import org.spoutcraft.client.nterface.render.effect.ShadowMappingEffect;
 
 /**
  * The default renderer. Support OpenGL 2.1 and 3.2. Can render fully textured models with normal and specular mapping, ambient occlusion (SSAO), shadow mapping, Phong shading, motion blur and edge

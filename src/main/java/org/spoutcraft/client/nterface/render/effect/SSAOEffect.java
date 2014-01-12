@@ -96,7 +96,7 @@ public class SSAOEffect {
     }
 
     public Uniform[] getUniforms() {
-        return new Uniform[]{
+        return new Uniform[] {
                 new IntUniform("kernelSize", kernelSize),
                 new Vector3ArrayUniform("kernel", kernel),
                 new FloatUniform("radius", radius),

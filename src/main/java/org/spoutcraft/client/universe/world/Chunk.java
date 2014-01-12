@@ -27,11 +27,10 @@ import com.flowpowered.commons.BitSize;
 import com.flowpowered.commons.store.block.AtomicBlockStore;
 import com.flowpowered.commons.store.block.AtomicBlockStore.DataMask;
 import com.flowpowered.commons.store.block.impl.AtomicPaletteBlockStore;
-
-import org.spout.math.vector.Vector3i;
-
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  *

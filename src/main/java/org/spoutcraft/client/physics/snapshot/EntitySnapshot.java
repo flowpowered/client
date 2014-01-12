@@ -27,10 +27,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.spout.math.vector.Vector3f;
-
 import org.spoutcraft.client.physics.entity.Entity;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
+
+import org.spout.math.vector.Vector3f;
 
 /**
  *

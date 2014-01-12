@@ -30,18 +30,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.flowpowered.commons.ticking.TickingElement;
-
-import org.lwjgl.input.Keyboard;
-
-import org.spout.math.vector.Vector3f;
-
+import org.lwjgl.input.*;
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.input.Input;
+import org.spoutcraft.client.network.message.ChannelMessage;
+import org.spoutcraft.client.network.message.play.JoinGameMessage;
+import org.spoutcraft.client.network.message.play.PositionLookMessage;
+import org.spoutcraft.client.network.message.play.SpawnPositionMessage;
 import org.spoutcraft.client.nterface.snapshot.CameraSnapshot;
 import org.spoutcraft.client.physics.entity.Entity;
 import org.spoutcraft.client.physics.entity.Player;
 import org.spoutcraft.client.physics.snapshot.EntitySnapshot;
 import org.spoutcraft.client.physics.snapshot.PlayerSnapshot;
+import org.spoutcraft.client.util.AnnotatedMessageHandler;
+import org.spoutcraft.client.util.AnnotatedMessageHandler.Handle;
+
+import org.spout.math.vector.Vector3f;
 
 /**
  *
@@ -57,18 +61,17 @@ public class Physics extends TickingElement {
     private final AtomicReference<PlayerSnapshot> playerSnapshot = new AtomicReference<>(null);
     private final Map<Integer, Entity> entities = new ConcurrentHashMap<>();
     private final Map<Integer, EntitySnapshot> entitySnapshots = new ConcurrentHashMap<>();
+    private final AnnotatedMessageHandler handler;
 
     public Physics(Game game) {
         super("physics", TPS);
         this.game = game;
+        handler = new AnnotatedMessageHandler(this);
     }
 
     @Override
     public void onStart() {
         System.out.println("Physics start");
-
-        // TEST CODE
-        player.set(new Player(0, "Spoutcrafty", null, new Vector3f(0, 18, 0), null));
     }
 
     @Override
@@ -76,8 +79,39 @@ public class Physics extends TickingElement {
         updatePlayer(dt / 1000000000f);
         updateSnapshots();
 
+        final Iterator<ChannelMessage> messages = game.getNetwork().getChannel(ChannelMessage.Channel.PHYSICS);
+        while (messages.hasNext()) {
+            final ChannelMessage message = messages.next();
+            handleMessage(message);
+            messages.remove();
+        }
         // TODO: process messages that spawn the player to create and set the field
         // TODO: process messages that set player position, head rotation, and other data
+    }
+
+    private void handleMessage(ChannelMessage message) {
+        handler.handle(message);
+        message.markChannelRead(ChannelMessage.Channel.PHYSICS);
+    }
+
+    @Handle
+    public void handleJoinGame(JoinGameMessage message) {
+        player.set(new Player(message.getPlayerId(), game.getNetwork().getSession().getUsername(), game.getUniverse().getActiveWorldSnapshot(), new Vector3f(0, 18, 0), game.getNetwork().getSession()));
+    }
+
+    @Handle
+    public void handleSpawnPosition(SpawnPositionMessage message) {
+        if (game.getNetwork().isRunning()) {
+            // TODO Might be wrong spot
+            // TODO Spout Math Quaternion should have a getYaw/Pitch/Roll()?
+            // TODO DDoS you'll need to create the yaw/pitch correctly per Mojang's strange strange trig math
+            game.getNetwork().getSession().send(new PositionLookMessage(message.getX(), message.getY(), message.getZ(), 0f, 0f, true, message.getY() + 1));
+        }
+    }
+
+    @Handle
+    public void handlePositionLook(PositionLookMessage message) {
+        player.get().setPosition(new Vector3f(message.getX(), message.getY(), message.getZ()));
     }
 
     private void updateSnapshots() {

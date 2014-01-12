@@ -70,5 +70,6 @@ public class JoinGameCodec extends Codec<JoinGameMessage> implements MessageHand
     @Override
     public void handle(Session session, JoinGameMessage message) {
         ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
+        ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.PHYSICS, message);
     }
 }

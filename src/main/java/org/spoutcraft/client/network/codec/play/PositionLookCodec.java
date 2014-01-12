@@ -65,6 +65,8 @@ public class PositionLookCodec extends Codec<PositionLookMessage> implements Mes
 
     @Override
     public void handle(Session session, PositionLookMessage message) {
+        ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.INTERFACE, message);
         ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
+        ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.PHYSICS, message);
     }
 }

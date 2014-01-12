@@ -25,9 +25,9 @@ package org.spoutcraft.client.physics.entity;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.spout.math.vector.Vector3f;
-
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
+
+import org.spout.math.vector.Vector3f;
 
 /**
  * Entities are objects which are dynamic unlike their static {@link org.spoutcraft.client.universe.block.Block} brethren.

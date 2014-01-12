@@ -62,5 +62,6 @@ public class SpawnPositionCodec extends Codec<SpawnPositionMessage> implements M
     @Override
     public void handle(Session session, SpawnPositionMessage message) {
         ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
+        ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.PHYSICS, message);
     }
 }

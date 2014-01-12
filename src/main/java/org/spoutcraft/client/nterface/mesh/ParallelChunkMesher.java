@@ -29,13 +29,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.spout.renderer.data.VertexData;
-import org.spout.renderer.gl.VertexArray;
-import org.spout.renderer.model.Model;
-
 import org.spoutcraft.client.nterface.Interface;
 import org.spoutcraft.client.nterface.render.Renderer;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
+
+import org.spout.renderer.data.VertexData;
+import org.spout.renderer.gl.VertexArray;
+import org.spout.renderer.model.Model;
 
 /**
  * Meshes chunks in parallel. Returns chunk models which may not be rendered when {@link org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel#render()} is called, this is happens when
@@ -59,8 +59,8 @@ public class ParallelChunkMesher {
         this.nterface = nterface;
         this.mesher = mesher;
         this.executor = new ThreadPoolExecutor(4, 4,
-                                      60L, TimeUnit.SECONDS,
-                                      new LinkedBlockingQueue<Runnable>());
+                60L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>());
         executor.allowCoreThreadTimeOut(true);
     }
 

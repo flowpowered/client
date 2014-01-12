@@ -32,23 +32,14 @@ import java.util.Queue;
 
 import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.commons.ticking.TickingElement;
-
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
-
-import org.lwjgl.input.Keyboard;
-
-import org.spout.math.TrigMath;
-import org.spout.math.imaginary.Quaternionf;
-import org.spout.math.vector.Vector3f;
-import org.spout.math.vector.Vector3i;
-import org.spout.renderer.Camera;
-import org.spout.renderer.GLVersioned.GLVersion;
-import org.spout.renderer.data.Color;
-
+import org.lwjgl.input.*;
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.input.Input;
 import org.spoutcraft.client.input.event.KeyboardEvent;
+import org.spoutcraft.client.network.message.ChannelMessage;
+import org.spoutcraft.client.network.message.play.PositionLookMessage;
 import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher;
 import org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel;
 import org.spoutcraft.client.nterface.mesh.StandardChunkMesher;
@@ -59,6 +50,16 @@ import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.universe.world.Chunk;
 import org.spoutcraft.client.universe.world.World;
+import org.spoutcraft.client.util.AnnotatedMessageHandler;
+import org.spoutcraft.client.util.AnnotatedMessageHandler.Handle;
+
+import org.spout.math.TrigMath;
+import org.spout.math.imaginary.Quaternionf;
+import org.spout.math.vector.Vector3f;
+import org.spout.math.vector.Vector3i;
+import org.spout.renderer.Camera;
+import org.spout.renderer.GLVersioned.GLVersion;
+import org.spout.renderer.data.Color;
 
 /**
  * Contains and manages the renderer, GUI and it's input and camera input. Meshes and renders chunks and entities.
@@ -74,6 +75,7 @@ public class Interface extends TickingElement {
     private final Game game;
     private final ParallelChunkMesher mesher;
     private final Map<Vector3i, ChunkModel> chunkModels = new HashMap<>();
+    private final AnnotatedMessageHandler handler;
     private long worldLastUpdateNumber;
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
     private final ViewFrustum frustum = new ViewFrustum();
@@ -105,6 +107,7 @@ public class Interface extends TickingElement {
         super("interface", TPS);
         this.game = game;
         mesher = new ParallelChunkMesher(this, new StandardChunkMesher());
+        handler = new AnnotatedMessageHandler(this);
     }
 
     @Override
@@ -132,6 +135,13 @@ public class Interface extends TickingElement {
         if (world != null) {
             updateLight(world.getTime());
         }
+        // TODO DDoS, is this the right spot to iterate network updates in Interface?
+        final Iterator<ChannelMessage> messages = game.getNetwork().getChannel(ChannelMessage.Channel.INTERFACE);
+        while (messages.hasNext()) {
+            final ChannelMessage message = messages.next();
+            handleMessage(message);
+            messages.remove();
+        }
         final Camera camera = Renderer.getCamera();
         frustum.update(camera.getProjectionMatrix(), camera.getViewMatrix());
         Renderer.render();
@@ -148,6 +158,19 @@ public class Interface extends TickingElement {
         // Updating with a null world will clear all models
         updateChunkModels(null);
         Renderer.dispose();
+    }
+
+    private void handleMessage(ChannelMessage message) {
+        handler.handle(message);
+        message.markChannelRead(ChannelMessage.Channel.INTERFACE);
+    }
+
+    @Handle
+    private void handlePositionLook(PositionLookMessage message) {
+        // TODO DDoS, do I set camera directly?
+        // TODO DDoS, you'll need to decipher Mojang's strange strange trig math here...
+        cameraPitch = message.getPitch();
+        cameraYaw = message.getYaw();
     }
 
     private void updateLight(long time) {

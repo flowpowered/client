@@ -29,9 +29,7 @@ import java.util.UUID;
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
 import com.flowpowered.networking.session.Session;
-
 import io.netty.buffer.ByteBuf;
-
 import org.spoutcraft.client.network.ByteBufUtils;
 import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.network.message.ChannelMessage;

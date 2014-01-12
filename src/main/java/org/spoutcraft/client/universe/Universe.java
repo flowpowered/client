@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -36,11 +35,6 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 import com.flowpowered.commons.ticking.TickingElement;
-
-import org.spout.math.vector.Vector3i;
-
-import org.spoutcraft.client.util.AnnotatedMessageHandler;
-import org.spoutcraft.client.util.AnnotatedMessageHandler.Handle;
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
@@ -53,13 +47,16 @@ import org.spoutcraft.client.network.message.play.ChunkDataBulkMessage;
 import org.spoutcraft.client.network.message.play.ChunkDataMessage;
 import org.spoutcraft.client.network.message.play.JoinGameMessage;
 import org.spoutcraft.client.network.message.play.PlayerMessage;
-import org.spoutcraft.client.network.message.play.PositionLookMessage;
 import org.spoutcraft.client.network.message.play.RespawnMessage;
 import org.spoutcraft.client.network.message.play.SpawnPositionMessage;
 import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.universe.world.Chunk;
 import org.spoutcraft.client.universe.world.World;
+import org.spoutcraft.client.util.AnnotatedMessageHandler;
+import org.spoutcraft.client.util.AnnotatedMessageHandler.Handle;
+
+import org.spout.math.vector.Vector3i;
 
 /**
  * Contains and manages all the voxel worlds.
@@ -75,12 +72,12 @@ public class Universe extends TickingElement {
     private final Map<UUID, WorldSnapshot> worldSnapshots = new ConcurrentHashMap<>();
     private final Map<String, UUID> worldIDsByName = new ConcurrentHashMap<>();
     private final AtomicReference<World> activeWorld = new AtomicReference<>(null);
-    private final AnnotatedMessageHandler messageHandler;
+    private final AnnotatedMessageHandler handler;
 
     public Universe(Game game) {
         super("universe", TPS);
         this.game = game;
-        messageHandler = new AnnotatedMessageHandler(this);
+        handler = new AnnotatedMessageHandler(this);
     }
 
     @Override
@@ -90,25 +87,21 @@ public class Universe extends TickingElement {
 
     @Override
     public void onTick(long dt) {
-        // TODO: Optimization needed here, process so many per tick?
+        updateWorldTimes(dt);
+        updateSnapshots();
+
         final Network network = game.getNetwork();
 
         final Iterator<ChannelMessage> messages = network.getChannel(Channel.UNIVERSE);
         while (messages.hasNext()) {
             final ChannelMessage message = messages.next();
             handleMessage(message);
-
-            if (message.isFullyRead()) {
-                messages.remove();
-            }
+            messages.remove();
         }
 
         if (network.getSession() != null) {
             network.getSession().send(new PlayerMessage(true));
         }
-
-        updateWorldTimes(dt);
-        updateSnapshots();
     }
 
     @Override
@@ -192,7 +185,7 @@ public class Universe extends TickingElement {
      * @param message See {@link org.spoutcraft.client.network.message.ChannelMessage}
      */
     private void handleMessage(ChannelMessage message) {
-        messageHandler.handle(message);
+        handler.handle(message);
         message.markChannelRead(Channel.UNIVERSE);
     }
 
@@ -212,8 +205,7 @@ public class Universe extends TickingElement {
     @Handle
     private void handleSpawnPosition(SpawnPositionMessage message) {
         if (getGame().getNetwork().isRunning()) {
-            //TODO Test code
-            getGame().getNetwork().getSession().send(new PositionLookMessage(message.getX(), message.getY(), message.getZ(), 0f, 0f, true, message.getY() + 1));
+            activeWorld.get().setSpawnPosition(message.getPosition());
         }
     }
 
