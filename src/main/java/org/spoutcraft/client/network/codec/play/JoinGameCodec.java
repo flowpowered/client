@@ -58,7 +58,8 @@ public class JoinGameCodec extends Codec<JoinGameMessage> implements MessageHand
         final Dimension dimension = Dimension.get(buf.readByte());
         final Difficulty difficulty = Difficulty.get(buf.readUnsignedByte());
         final short maxPlayers = buf.readUnsignedByte();
-        final LevelType levelType = LevelType.get(ByteBufUtils.readUTF8(buf));
+        final String temp = ByteBufUtils.readUTF8(buf);
+        final LevelType levelType = LevelType.valueOf(temp.toUpperCase());
         return new JoinGameMessage(playerID, gameMode, dimension, difficulty, maxPlayers, levelType);
     }
 

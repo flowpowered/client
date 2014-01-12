@@ -23,8 +23,6 @@
  */
 package org.spoutcraft.client.physics.entity;
 
-import java.util.UUID;
-
 import com.flowpowered.networking.session.Session;
 import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
@@ -42,7 +40,7 @@ public class Player extends Entity {
         this.session = session;
     }
 
-    public UUID getUUID() {
+    public String getUUID() {
         return session != null ? session.getUUID() : null;
     }
 

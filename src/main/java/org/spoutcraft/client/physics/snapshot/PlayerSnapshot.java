@@ -23,7 +23,6 @@
  */
 package org.spoutcraft.client.physics.snapshot;
 
-import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 
 import org.spoutcraft.client.physics.entity.Player;
@@ -32,14 +31,14 @@ import org.spoutcraft.client.physics.entity.Player;
  *
  */
 public class PlayerSnapshot extends EntitySnapshot {
-    private UUID uuid = null;
+    private String uuid = null;
     private String username = UNNAMED;
 
     public PlayerSnapshot(Player player) {
         super(player);
     }
 
-    public UUID getUUID() {
+    public String getUUID() {
         final Lock lock = this.lock.readLock();
         lock.lock();
         try {

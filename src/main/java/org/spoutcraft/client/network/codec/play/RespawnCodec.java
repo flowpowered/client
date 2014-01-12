@@ -56,7 +56,7 @@ public class RespawnCodec extends Codec<RespawnMessage> implements MessageHandle
         final Dimension dimension = Dimension.get(buf.readInt());
         final Difficulty difficulty = Difficulty.get(buf.readUnsignedByte());
         final GameMode gameMode = GameMode.get(buf.readUnsignedByte());
-        final LevelType levelType = LevelType.get(ByteBufUtils.readUTF8(buf));
+        final LevelType levelType = LevelType.valueOf(ByteBufUtils.readUTF8(buf));
         return new RespawnMessage(dimension, difficulty, gameMode, levelType);
     }
 

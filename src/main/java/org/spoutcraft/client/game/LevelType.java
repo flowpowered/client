@@ -32,14 +32,4 @@ public enum LevelType {
     LARGE_BIOMES,
     AMPLIFIED,
     DEFAULT_1_1;
-
-    /**
-     * Returns the level type of the given name.
-     *
-     * @param name The name to lookup
-     * @return The associated level type
-     */
-    public static LevelType get(String name) {
-        return valueOf(name.toUpperCase());
-    }
 }

@@ -23,8 +23,7 @@
  */
 package org.spoutcraft.client.network;
 
-import java.util.UUID;
-
+import com.flowpowered.networking.exception.IllegalOpcodeException;
 import com.flowpowered.networking.protocol.Protocol;
 import com.flowpowered.networking.session.BasicSession;
 import io.netty.channel.Channel;
@@ -39,7 +38,7 @@ import org.spoutcraft.client.network.protocol.LoginProtocol;
  */
 public class ClientSession extends BasicSession {
     private final Game game;
-    private UUID uuid;
+    private String uuid;
     private String username;
 
     /**
@@ -59,7 +58,7 @@ public class ClientSession extends BasicSession {
      *
      * @return The session's ID
      */
-    public UUID getUUID() {
+    public String getUUID() {
         return uuid;
     }
 
@@ -68,7 +67,7 @@ public class ClientSession extends BasicSession {
      *
      * @param uuid The session ID
      */
-    public void setUUID(UUID uuid) {
+    public void setUUID(String uuid) {
         this.uuid = uuid;
     }
 
@@ -100,6 +99,13 @@ public class ClientSession extends BasicSession {
         send(new HandshakeMessage("localhost", ClientProtocol.DEFAULT_PORT, HandshakeMessage.HandshakeState.LOGIN));
         setProtocol(new LoginProtocol());
         send(new LoginStartMessage("Spoutcrafty"));
+    }
+
+    @Override
+    public void onThrowable(Throwable t) {
+        if (!(t.getCause() instanceof IllegalOpcodeException)) {
+            t.printStackTrace();
+        }
     }
 
     /**
