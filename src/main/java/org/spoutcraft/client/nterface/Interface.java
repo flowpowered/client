@@ -42,9 +42,9 @@ import org.spout.math.TrigMath;
 import org.spout.math.imaginary.Quaternionf;
 import org.spout.math.vector.Vector3f;
 import org.spout.math.vector.Vector3i;
-import org.spout.renderer.Camera;
-import org.spout.renderer.GLVersioned.GLVersion;
-import org.spout.renderer.data.Color;
+import org.spout.renderer.api.Camera;
+import org.spout.renderer.api.GLVersioned.GLVersion;
+import org.spout.renderer.api.data.Color;
 
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.input.Input;
@@ -112,7 +112,7 @@ public class Interface extends TickingElement {
         System.out.println("Interface start");
 
         // TEST CODE
-        Renderer.setGLVersion(GLVersion.GL30);
+        Renderer.setGLVersion(GLVersion.GL32);
         Renderer.init();
         Renderer.setSolidColor(new Color(0, 200, 0));
         // Subscribe to the keyboard input queue

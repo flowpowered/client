@@ -32,13 +32,13 @@ import gnu.trove.list.TIntList;
 import gnu.trove.list.array.TFloatArrayList;
 import gnu.trove.list.array.TIntArrayList;
 
-import org.spout.renderer.data.VertexAttribute;
-import org.spout.renderer.data.VertexAttribute.DataType;
-import org.spout.renderer.data.VertexData;
-import org.spout.renderer.util.CausticUtil;
+import org.spout.renderer.api.data.VertexAttribute;
+import org.spout.renderer.api.data.VertexAttribute.DataType;
+import org.spout.renderer.api.data.VertexData;
+import org.spout.renderer.api.util.CausticUtil;
 
 /**
- * Represents a standard mesh, with various attributes (positions, normals, texture coordinates and/or tangents). This mesh can be converted into {@link org.spout.renderer.data.VertexData for
+ * Represents a standard mesh, with various attributes (positions, normals, texture coordinates and/or tangents). This mesh can be converted into {@link org.spout.renderer.api.data.VertexData for
  * rendering}.
  *
  * @see org.spoutcraft.client.nterface.mesh.Mesh.MeshAttribute
@@ -123,7 +123,7 @@ public class Mesh {
     }
 
     /**
-     * Builds the mesh into a {@link org.spout.renderer.data.VertexData} to be ready for rendering. If an attribute has no data, but can be automatically generated (see {@link
+     * Builds the mesh into a {@link org.spout.renderer.api.data.VertexData} to be ready for rendering. If an attribute has no data, but can be automatically generated (see {@link
      * org.spoutcraft.client.nterface.mesh.Mesh.MeshAttribute#generateDataIfMissing()}, it will be generated for the build. The generated data will be stored in the attribute float list.
      *
      * @return The vertex data for the built mesh

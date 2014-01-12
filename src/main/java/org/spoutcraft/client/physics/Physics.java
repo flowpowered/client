@@ -139,10 +139,10 @@ public class Physics extends TickingElement {
             position = position.add(forward.mul(-speed));
         }
         if (input.isKeyDown(Keyboard.KEY_A)) {
-            position = position.add(right.mul(speed));
+            position = position.add(right.mul(-speed));
         }
         if (input.isKeyDown(Keyboard.KEY_D)) {
-            position = position.add(right.mul(-speed));
+            position = position.add(right.mul(speed));
         }
         if (input.isKeyDown(Keyboard.KEY_SPACE)) {
             position = position.add(up.mul(speed));

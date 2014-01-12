@@ -29,9 +29,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.spout.renderer.data.VertexData;
-import org.spout.renderer.gl.VertexArray;
-import org.spout.renderer.model.Model;
+import org.spout.renderer.api.data.VertexData;
+import org.spout.renderer.api.gl.VertexArray;
+import org.spout.renderer.api.model.Model;
 
 import org.spoutcraft.client.nterface.Interface;
 import org.spoutcraft.client.nterface.render.Renderer;
