@@ -23,29 +23,30 @@
  */
 package org.spoutcraft.client.physics.entity;
 
-import org.spoutcraft.client.universe.World;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.spout.math.vector.Vector3f;
+
+import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 
 /**
  * Entities are objects which are dynamic unlike their static {@link org.spoutcraft.client.universe.block.Block} brethren.
  * <p/>
- * TODO Make other players just entities (should be easily done)?
- * TODO Component system so entities don't store logic?
+ * TODO Make other players just entities (should be easily done)? TODO Component system so entities don't store logic?
  */
 public class Entity {
-    //Unique
     private final int id;
-    private String displayName;
-    private World world;
-    private Vector3f position;
+    private AtomicReference<String> displayName = new AtomicReference<>(null);
+    private AtomicReference<WorldSnapshot> world = new AtomicReference<>(null);
+    private AtomicReference<Vector3f> position = new AtomicReference<>(null);
 
     //TODO Transform?
-    public Entity(int id, String displayName, World world, Vector3f position) {
+    //TODO Auto assign ID from AtomicInteger counter?
+    public Entity(int id, String displayName, WorldSnapshot world, Vector3f position) {
         this.id = id;
-        this.displayName = displayName;
-        this.world = world;
-        this.position = position;
+        this.displayName.set(displayName);
+        this.world.set(world);
+        this.position.set(position);
     }
 
     public int getId() {
@@ -53,14 +54,18 @@ public class Entity {
     }
 
     public String getDisplayName() {
-        return displayName;
+        return displayName.get();
     }
 
-    public World getWorld() {
-        return world;
+    public WorldSnapshot getWorld() {
+        return world.get();
     }
 
     public Vector3f getPosition() {
-        return position;
+        return position.get();
+    }
+
+    public void setPosition(Vector3f position) {
+        this.position.set(position);
     }
 }

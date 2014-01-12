@@ -31,7 +31,7 @@ import com.flowpowered.commons.store.block.AtomicBlockStore;
 
 import org.spout.math.vector.Vector3i;
 
-import org.spoutcraft.client.universe.Chunk;
+import org.spoutcraft.client.universe.world.Chunk;
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
 

@@ -33,7 +33,7 @@ import com.flowpowered.networking.Message;
  */
 public abstract class ChannelMessage implements Message {
     private AtomicInteger read = new AtomicInteger(0);
-    private final short requiredMask;
+    private final int requiredMask;
 
     /**
      * Constructs a new channel message that required no channels to have read it.
@@ -101,12 +101,13 @@ public abstract class ChannelMessage implements Message {
      * An enum of all the message channels.
      */
     public static enum Channel {
-        UNIVERSE((short) 0x1),
-        INTERFACE((short) 0x2),
-        NETWORK((short) 0x4);
-        private final short mask;
+        UNIVERSE(0x1),
+        INTERFACE(0x2),
+        NETWORK(0x4),
+        PHYSICS(0x8);
+        private final int mask;
 
-        private Channel(short mask) {
+        private Channel(int mask) {
             this.mask = mask;
         }
 
@@ -115,7 +116,7 @@ public abstract class ChannelMessage implements Message {
          *
          * @return The channel's mask
          */
-        public short getMask() {
+        public int getMask() {
             return mask;
         }
     }

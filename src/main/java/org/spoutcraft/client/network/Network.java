@@ -61,6 +61,7 @@ public class Network extends TickingElement {
         client = new GameNetworkClient(game);
         messageQueue.put(Channel.UNIVERSE, new ConcurrentLinkedQueue<ChannelMessage>());
         messageQueue.put(Channel.NETWORK, new ConcurrentLinkedQueue<ChannelMessage>());
+        messageQueue.put(Channel.PHYSICS, new ConcurrentLinkedQueue<ChannelMessage>());
     }
 
     @Override

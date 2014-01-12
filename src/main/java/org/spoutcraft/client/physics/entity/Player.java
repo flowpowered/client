@@ -23,11 +23,14 @@
  */
 package org.spoutcraft.client.physics.entity;
 
+import java.util.UUID;
+
 import com.flowpowered.networking.session.Session;
-import org.spoutcraft.client.network.ClientSession;
-import org.spoutcraft.client.universe.World;
 
 import org.spout.math.vector.Vector3f;
+
+import org.spoutcraft.client.network.ClientSession;
+import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 
 /**
  * The local client player which has the {@link com.flowpowered.networking.session.Session} tied to it.
@@ -35,17 +38,17 @@ import org.spout.math.vector.Vector3f;
 public class Player extends Entity {
     private final ClientSession session;
 
-    public Player(int id, String displayName, World world, Vector3f position, ClientSession session) {
+    public Player(int id, String displayName, WorldSnapshot world, Vector3f position, ClientSession session) {
         super(id, displayName, world, position);
         this.session = session;
     }
 
-    public String getUUID() {
-        return session.getUUID();
+    public UUID getUUID() {
+        return session != null ? session.getUUID() : null;
     }
 
     public String getUsername() {
-        return session.getUsername();
+        return session != null ? session.getUsername() : null;
     }
 
     public Session getSession() {

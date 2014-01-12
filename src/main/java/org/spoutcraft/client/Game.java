@@ -26,6 +26,7 @@ package org.spoutcraft.client;
 import org.spoutcraft.client.input.Input;
 import org.spoutcraft.client.network.Network;
 import org.spoutcraft.client.nterface.Interface;
+import org.spoutcraft.client.physics.Physics;
 import org.spoutcraft.client.universe.Universe;
 
 /**
@@ -35,6 +36,7 @@ public class Game {
     private final Object wait = new Object();
     private volatile boolean running = false;
     private final Universe universe;
+    private final Physics physics;
     private final Interface nterface;
     private final Network network;
     private final Input input;
@@ -49,6 +51,7 @@ public class Game {
 
     public Game() {
         universe = new Universe(this);
+        physics = new Physics(this);
         nterface = new Interface(this);
         network = new Network(this);
         input = new Input(this);
@@ -56,6 +59,7 @@ public class Game {
 
     public void start() {
         universe.start();
+        physics.start();
         nterface.start();
         input.start();
         network.start();
@@ -64,6 +68,7 @@ public class Game {
 
     private void stop() {
         nterface.stop();
+        physics.stop();
         universe.stop();
         network.stop();
         input.stop();
@@ -72,6 +77,10 @@ public class Game {
 
     public Universe getUniverse() {
         return universe;
+    }
+
+    public Physics getPhysics() {
+        return physics;
     }
 
     public Interface getInterface() {

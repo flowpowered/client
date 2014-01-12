@@ -711,20 +711,6 @@ public class Renderer {
 
     private static void addScreen() {
         guiRenderList.add(new Model(deferredStageScreenVertexArray, materials.get("screen")));
-
-        // TEST CODE
-        final VertexArray vertexArray = glFactory.createVertexArray();
-        vertexArray.setData(MeshGenerator.generateCone(null, 10, 10));
-        vertexArray.create();
-        final Model model = new Model(vertexArray, materials.get("transparency"));
-        model.getUniforms().add(new ColorUniform("modelColor", new Color(200, 10, 10, 200)));
-        model.setPosition(new Vector3f(0, 22, 0));
-        addTransparentModel(model);
-        final Model model2 = model.getInstance();
-        model2.getUniforms().add(new ColorUniform("modelColor", new Color(10, 10, 200, 120)));
-        model2.setPosition(new Vector3f(0, 22, 0));
-        model2.setRotation(Quaternionf.fromAngleDegAxis(180, 1, 0, 0));
-        addTransparentModel(model2);
     }
 
     private static void addFPSMonitor() {

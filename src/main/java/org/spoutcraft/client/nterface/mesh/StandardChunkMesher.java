@@ -27,7 +27,7 @@ import gnu.trove.list.TFloatList;
 import gnu.trove.list.TIntList;
 
 import org.spoutcraft.client.nterface.mesh.Mesh.MeshAttribute;
-import org.spoutcraft.client.universe.Chunk;
+import org.spoutcraft.client.universe.world.Chunk;
 import org.spoutcraft.client.universe.block.BlockFace;
 import org.spoutcraft.client.universe.block.BlockFaces;
 import org.spoutcraft.client.universe.block.material.Material;

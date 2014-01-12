@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.universe;
+package org.spoutcraft.client.universe.world;
 
 import com.flowpowered.commons.BitSize;
 import com.flowpowered.commons.store.block.AtomicBlockStore;

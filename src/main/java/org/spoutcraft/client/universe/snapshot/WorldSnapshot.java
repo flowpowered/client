@@ -38,8 +38,8 @@ import com.flowpowered.commons.map.impl.TTripleInt21ObjectHashMap;
 
 import org.spout.math.vector.Vector3i;
 
-import org.spoutcraft.client.universe.Chunk;
-import org.spoutcraft.client.universe.World;
+import org.spoutcraft.client.universe.world.Chunk;
+import org.spoutcraft.client.universe.world.World;
 
 /**
  *
@@ -48,8 +48,8 @@ public class WorldSnapshot {
     private final TripleIntObjectMap<ChunkSnapshot> chunks = new TTripleInt21ObjectHashMap<>();
     private final UUID id;
     private final String name;
-    private long updateNumber = 0;
     private long time;
+    private long updateNumber = 0;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
     public WorldSnapshot(World world) {

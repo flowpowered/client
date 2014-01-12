@@ -21,53 +21,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.network.message.login;
+package org.spoutcraft.client.physics.snapshot;
 
 import java.util.UUID;
+import java.util.concurrent.locks.Lock;
 
-import org.spoutcraft.client.network.message.ChannelMessage;
+import org.spoutcraft.client.physics.entity.Player;
 
 /**
- * Client bound message that instructs the client that login was successful to the server. </p> If the server is in online mode, this occurs after encryption. Otherwise, this occurs after {@link
- * LoginStartMessage} is sent.
+ *
  */
-public class LoginSuccessMessage extends ChannelMessage {
-    private static final Channel REQUIRED_CHANNEL = Channel.NETWORK;
-    private final UUID uuid;
-    private final String username;
+public class PlayerSnapshot extends EntitySnapshot {
+    private UUID uuid = null;
+    private String username = UNNAMED;
 
-    /**
-     * Constructs a new login success
-     *
-     * @param uuid The unique identifier of this session
-     * @param username The username of this session
-     */
-    public LoginSuccessMessage(UUID uuid, String username) {
-        super(REQUIRED_CHANNEL);
-        this.uuid = uuid;
-        this.username = username;
+    public PlayerSnapshot(Player player) {
+        super(player);
     }
 
-    /**
-     * Returns the session ID.
-     *
-     * @return The session ID
-     */
     public UUID getUUID() {
-        return uuid;
+        final Lock lock = this.lock.readLock();
+        lock.lock();
+        try {
+            return uuid;
+        } finally {
+            lock.unlock();
+        }
     }
 
-    /**
-     * Returns the session username for the player.
-     *
-     * @return The session username
-     */
     public String getUsername() {
-        return username;
+        final Lock lock = this.lock.readLock();
+        lock.lock();
+        try {
+            return username;
+        } finally {
+            lock.unlock();
+        }
     }
 
-    @Override
-    public boolean isAsync() {
-        return true;
+    public void update(Player current) {
+        super.update(current);
+        final Lock lock = this.lock.writeLock();
+        lock.lock();
+        try {
+            uuid = current.getUUID();
+            username = current.getUsername();
+        } finally {
+            lock.unlock();
+        }
     }
 }

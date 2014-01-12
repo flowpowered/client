@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.universe;
+package org.spoutcraft.client.universe.world;
 
 import java.util.Map;
 import java.util.UUID;
@@ -124,7 +124,7 @@ public class World {
     }
 
     /**
-     * Removes an entire column of {@link org.spoutcraft.client.universe.Chunk} from the world, between the the chunk Y coordinates, (start inclusive, end exclusive).
+     * Removes an entire column of {@link org.spoutcraft.client.universe.world.Chunk} from the world, between the the chunk Y coordinates, (start inclusive, end exclusive).
      *
      * @param columnX The x-axis chunk coordinate of the column
      * @param columnZ The z-axis chunk coordinate of the column

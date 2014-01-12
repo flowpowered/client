@@ -45,11 +45,11 @@ public class JoinGameMessage extends ChannelMessage {
      * Constructs a new join game
      *
      * @param playerId The entity id for the {@link org.spoutcraft.client.physics.entity.Player}
-     * @param gameMode The {@link org.spoutcraft.client.game.GameMode} the {@link org.spoutcraft.client.universe.World} should be
-     * @param dimension The {@link org.spoutcraft.client.game.Dimension} the {@link org.spoutcraft.client.universe.World} should be
-     * @param difficulty The {@link org.spoutcraft.client.game.Difficulty} the {@link org.spoutcraft.client.universe.World} should be
+     * @param gameMode The {@link org.spoutcraft.client.game.GameMode} the {@link org.spoutcraft.client.universe.world.World} should be
+     * @param dimension The {@link org.spoutcraft.client.game.Dimension} the {@link org.spoutcraft.client.universe.world.World} should be
+     * @param difficulty The {@link org.spoutcraft.client.game.Difficulty} the {@link org.spoutcraft.client.universe.world.World} should be
      * @param maxPlayers The max players the server supports, used when rendering the player list
-     * @param levelType The {@link org.spoutcraft.client.game.LevelType} the {@link org.spoutcraft.client.universe.World} should be
+     * @param levelType The {@link org.spoutcraft.client.game.LevelType} the {@link org.spoutcraft.client.universe.world.World} should be
      */
     public JoinGameMessage(int playerId, GameMode gameMode, Dimension dimension, Difficulty difficulty, short maxPlayers, LevelType levelType) {
         super(REQUIRED_CHANNEL);

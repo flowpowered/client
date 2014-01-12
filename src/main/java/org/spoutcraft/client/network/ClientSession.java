@@ -23,10 +23,14 @@
  */
 package org.spoutcraft.client.network;
 
+import java.util.UUID;
+
 import com.flowpowered.networking.protocol.Protocol;
 import com.flowpowered.networking.session.BasicSession;
 import com.flowpowered.networking.session.PulsingSession;
+
 import io.netty.channel.Channel;
+
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.network.message.handshake.HandshakeMessage;
 import org.spoutcraft.client.network.message.login.LoginStartMessage;
@@ -38,7 +42,7 @@ import org.spoutcraft.client.network.protocol.LoginProtocol;
  */
 public class ClientSession extends BasicSession {
     private final Game game;
-    private String uuid;
+    private UUID uuid;
     private String username;
 
     /**
@@ -58,7 +62,7 @@ public class ClientSession extends BasicSession {
      *
      * @return The session's ID
      */
-    public String getUUID() {
+    public UUID getUUID() {
         return uuid;
     }
 
@@ -67,7 +71,7 @@ public class ClientSession extends BasicSession {
      *
      * @param uuid The session ID
      */
-    public void setUUID(String uuid) {
+    public void setUUID(UUID uuid) {
         this.uuid = uuid;
     }
 
@@ -103,6 +107,7 @@ public class ClientSession extends BasicSession {
 
     /**
      * Returns the game for the session.
+     *
      * @return The game
      */
     public Game getGame() {
