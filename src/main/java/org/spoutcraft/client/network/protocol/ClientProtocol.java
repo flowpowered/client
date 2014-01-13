@@ -26,8 +26,12 @@ package org.spoutcraft.client.network.protocol;
 import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
+import com.flowpowered.networking.Message;
+import com.flowpowered.networking.MessageHandler;
+import com.flowpowered.networking.exception.IllegalOpcodeException;
 import com.flowpowered.networking.exception.UnknownPacketException;
 import com.flowpowered.networking.protocol.Protocol;
+import com.flowpowered.networking.protocol.simple.SimpleProtocol;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.spoutcraft.client.network.ByteBufUtils;
@@ -35,7 +39,7 @@ import org.spoutcraft.client.network.ByteBufUtils;
 /**
  * The protocol used for client communication.
  */
-public abstract class ClientProtocol extends Protocol {
+public abstract class ClientProtocol extends SimpleProtocol {
     /**
      * The client's default port.
      */
@@ -63,14 +67,14 @@ public abstract class ClientProtocol extends Protocol {
             length = ByteBufUtils.readVarInt(buf);
             opCode = ByteBufUtils.readVarInt(buf);
         } catch (IOException e) {
-            throw new UnknownPacketException(length, opCode);
+            throw new UnknownPacketException("Unkown packet!", length, opCode);
         }
 
-        final Codec<?> codec = getCodecLookupService().find(opCode);
-        if (codec == null) {
-            throw new UnknownPacketException(length, opCode);
+        try {
+            return getCodecLookupService().find(opCode);
+        } catch (IllegalOpcodeException e) {
+            throw new UnknownPacketException("Unknown packet!", length, opCode);
         }
-        return codec;
     }
 
     @Override

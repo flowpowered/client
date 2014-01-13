@@ -64,8 +64,6 @@ public class Chunk {
         this.world = world;
         this.position = position;
         this.blocks = new AtomicPaletteBlockStore(BLOCKS.BITS, true, false, DIRTY_ARRAY_SIZE, blocks, data);
-        // Set the chunk as dirty for the first snapshot
-        this.blocks.touchBlock(0, 0, 0);
     }
 
     public World getWorld() {

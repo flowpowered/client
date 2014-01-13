@@ -25,6 +25,7 @@ package org.spoutcraft.client.network;
 
 import java.util.UUID;
 
+import com.flowpowered.networking.protocol.AbstractProtocol;
 import com.flowpowered.networking.protocol.Protocol;
 import com.flowpowered.networking.session.PulsingSession;
 
@@ -51,7 +52,7 @@ public class ClientSession extends PulsingSession {
      * @param channel The network channel
      * @param protocol The client protocol
      */
-    public ClientSession(Game game, Channel channel, Protocol protocol) {
+    public ClientSession(Game game, Channel channel, ClientProtocol protocol) {
         super(channel, protocol);
         this.game = game;
     }
@@ -93,7 +94,7 @@ public class ClientSession extends PulsingSession {
     }
 
     @Override
-    public void setProtocol(Protocol protocol) {
+    protected void setProtocol(AbstractProtocol protocol) {
         super.setProtocol(protocol);
     }
 
