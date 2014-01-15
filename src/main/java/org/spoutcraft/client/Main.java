@@ -31,9 +31,7 @@ import org.apache.commons.lang3.SystemUtils;
 public class Main {
     public static void main(String[] args) throws Exception {
         deploy();
-        final Game game = new Game();
-        game.start();
-        game.waitForExit();
+        new Game().open();
     }
 
     private static void deploy() throws Exception {

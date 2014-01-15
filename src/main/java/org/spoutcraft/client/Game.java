@@ -57,13 +57,12 @@ public class Game {
         input = new Input(this);
     }
 
-    public void start() {
+    private void start() {
         universe.start();
         physics.start();
         nterface.start();
         input.start();
         network.start();
-        running = true;
     }
 
     private void stop() {
@@ -72,7 +71,6 @@ public class Game {
         universe.stop();
         network.stop();
         input.stop();
-        running = false;
     }
 
     public Universe getUniverse() {
@@ -96,10 +94,28 @@ public class Game {
     }
 
     /**
-     * Stops the game and allows any thread waiting on exit (by having called {@link #waitForExit()}) to resume it's activity.
+     * Starts the game and causes the current thread to wait until the {@link #exit()} method is called. When this happens, the thread resumes and the game is stopped. Interrupting the thread will not
+     * cause it to exit, only calling {@link #exit()} will.
+     */
+    public void open() {
+        start();
+        running = true;
+        synchronized (wait) {
+            while (isRunning()) {
+                try {
+                    wait.wait();
+                } catch (InterruptedException ignored) {
+                }
+            }
+        }
+        stop();
+    }
+
+    /**
+     * Wakes up the thread waiting for the game to exit (by having called {@link #open()}) and allows it to resume it's activity to trigger the end of the game.
      */
     public void exit() {
-        stop();
+        running = false;
         synchronized (wait) {
             wait.notifyAll();
         }
@@ -112,18 +128,5 @@ public class Game {
      */
     public boolean isRunning() {
         return running;
-    }
-
-    /**
-     * Causes the current thread to wait until the {@link #exit()} method is called.
-     *
-     * @throws InterruptedException If the thread is interrupted while waiting
-     */
-    public void waitForExit() throws InterruptedException {
-        synchronized (wait) {
-            while (isRunning()) {
-                wait.wait();
-            }
-        }
     }
 }
