@@ -28,7 +28,9 @@ import java.io.IOException;
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
 import com.flowpowered.networking.session.Session;
+
 import io.netty.buffer.ByteBuf;
+
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;

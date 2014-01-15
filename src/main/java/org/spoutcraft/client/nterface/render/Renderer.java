@@ -43,14 +43,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.flowpowered.commons.TPSMonitor;
+import com.flowpowered.math.imaginary.Quaternionf;
+import com.flowpowered.math.matrix.Matrix3f;
+import com.flowpowered.math.matrix.Matrix4f;
+import com.flowpowered.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector3f;
 
 import org.lwjgl.opengl.GLContext;
 
-import org.spout.math.imaginary.Quaternionf;
-import org.spout.math.matrix.Matrix3f;
-import org.spout.math.matrix.Matrix4f;
-import org.spout.math.vector.Vector2f;
-import org.spout.math.vector.Vector3f;
 import org.spout.renderer.api.Action.RenderModelsAction;
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLImplementation;

@@ -25,9 +25,8 @@ package org.spoutcraft.client.physics.entity;
 
 import java.util.UUID;
 
+import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.networking.session.Session;
-
-import org.spout.math.vector.Vector3f;
 
 import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;

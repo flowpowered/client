@@ -25,7 +25,7 @@ package org.spoutcraft.client.physics.entity;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3f;
 
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 

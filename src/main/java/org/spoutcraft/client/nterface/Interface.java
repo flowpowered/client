@@ -32,16 +32,16 @@ import java.util.Queue;
 
 import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.commons.ticking.TickingElement;
+import com.flowpowered.math.TrigMath;
+import com.flowpowered.math.imaginary.Quaternionf;
+import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3i;
 
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
 
 import org.lwjgl.input.Keyboard;
 
-import org.spout.math.TrigMath;
-import org.spout.math.imaginary.Quaternionf;
-import org.spout.math.vector.Vector3f;
-import org.spout.math.vector.Vector3i;
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLVersioned.GLVersion;
 import org.spout.renderer.api.data.Color;

@@ -23,11 +23,11 @@
  */
 package org.spoutcraft.client.universe.block;
 
-import gnu.trove.map.hash.TIntObjectHashMap;
+import com.flowpowered.math.imaginary.Quaternionf;
+import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3i;
 
-import org.spout.math.imaginary.Quaternionf;
-import org.spout.math.vector.Vector3f;
-import org.spout.math.vector.Vector3i;
+import gnu.trove.map.hash.TIntObjectHashMap;
 
 /**
  * Indicates the facing of a Block

@@ -25,7 +25,7 @@ package org.spoutcraft.client.network.message.play;
 
 import org.spoutcraft.client.network.message.ChannelMessage;
 
-import org.spout.math.vector.Vector3i;
+import com.flowpowered.math.vector.Vector3i;
 
 /**
  * Client bound message that instructs the client to update the compass position to the new spawn position.
@@ -48,7 +48,7 @@ public class SpawnPositionMessage extends ChannelMessage {
     /**
      * Constructs a new spawn position
      *
-     * @param position {@link org.spout.math.vector.Vector3i} containing the x, y, z axis coordinates of spawn (block)
+     * @param position {@link com.flowpowered.math.vector.Vector3i} containing the x, y, z axis coordinates of spawn (block)
      */
     public SpawnPositionMessage(Vector3i position) {
         super(REQUIRED_CHANNEL);

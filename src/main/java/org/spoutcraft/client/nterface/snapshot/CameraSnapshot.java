@@ -27,9 +27,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.spout.math.imaginary.Quaternionf;
-import org.spout.math.matrix.Matrix4f;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.imaginary.Quaternionf;
+import com.flowpowered.math.matrix.Matrix4f;
+import com.flowpowered.math.vector.Vector3f;
+
 import org.spout.renderer.api.Camera;
 
 /**

@@ -27,10 +27,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
 
-import gnu.trove.map.hash.TByteObjectHashMap;
+import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3i;
 
-import org.spout.math.vector.Vector3f;
-import org.spout.math.vector.Vector3i;
+import gnu.trove.map.hash.TByteObjectHashMap;
 
 /**
  * Contains several BlockFace array constants and functions to operate on them

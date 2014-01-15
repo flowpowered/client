@@ -30,10 +30,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.flowpowered.commons.ticking.TickingElement;
+import com.flowpowered.math.vector.Vector3f;
 
 import org.lwjgl.input.Keyboard;
-
-import org.spout.math.vector.Vector3f;
 
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.input.Input;

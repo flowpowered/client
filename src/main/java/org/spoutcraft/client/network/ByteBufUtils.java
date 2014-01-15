@@ -26,6 +26,7 @@ package org.spoutcraft.client.network;
 import java.io.IOException;
 
 import io.netty.buffer.ByteBuf;
+
 import org.apache.commons.io.Charsets;
 
 /**

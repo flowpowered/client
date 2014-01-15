@@ -36,8 +36,7 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 import com.flowpowered.commons.ticking.TickingElement;
-
-import org.spout.math.vector.Vector3i;
+import com.flowpowered.math.vector.Vector3i;
 
 import org.spoutcraft.client.util.AnnotatedMessageHandler;
 import org.spoutcraft.client.util.AnnotatedMessageHandler.Handle;

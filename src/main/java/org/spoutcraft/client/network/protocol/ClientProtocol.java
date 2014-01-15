@@ -32,8 +32,10 @@ import com.flowpowered.networking.exception.IllegalOpcodeException;
 import com.flowpowered.networking.exception.UnknownPacketException;
 import com.flowpowered.networking.protocol.Protocol;
 import com.flowpowered.networking.protocol.simple.SimpleProtocol;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+
 import org.spoutcraft.client.network.ByteBufUtils;
 
 /**
