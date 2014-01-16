@@ -25,6 +25,7 @@ package org.spoutcraft.client.network.codec.play;
 
 import java.io.IOException;
 
+import com.flowpowered.networking.ByteBufUtils;
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
 import io.netty.buffer.ByteBuf;

@@ -25,6 +25,7 @@ package org.spoutcraft.client.network.codec.login;
 
 import java.io.IOException;
 
+import com.flowpowered.networking.ByteBufUtils;
 import com.flowpowered.networking.Codec;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.network.message.login.LoginStartMessage;
