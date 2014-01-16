@@ -44,7 +44,7 @@ public class CameraSnapshot {
     private Vector3f right = Vector3f.ZERO;
     private Vector3f up = Vector3f.ZERO;
     private Vector3f forward = Vector3f.ZERO;
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
     /**
      * Returns the perspective projection matrix.

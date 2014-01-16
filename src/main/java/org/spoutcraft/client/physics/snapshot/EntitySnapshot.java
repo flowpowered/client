@@ -40,7 +40,7 @@ public class EntitySnapshot {
     private String displayName = UNNAMED;
     private WorldSnapshot world = null;
     private Vector3f position = Vector3f.ZERO;
-    protected final ReadWriteLock lock = new ReentrantReadWriteLock();
+    protected final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
     public EntitySnapshot(Entity entity) {
         id = entity.getId();

@@ -61,7 +61,7 @@ public class Input extends TickingElement {
     public void onTick(long dt) {
         // Exit game if we're asked to
         if (isCloseRequested()) {
-            game.exit();
+            game.close();
         }
         // Tries to create the input, only does so if it already hasn't been created
         createInputIfNecessary();
@@ -136,7 +136,7 @@ public class Input extends TickingElement {
         System.out.println("Input stop");
 
         // We make sure to end of the game, else there's no way to stop it normally (no input!)
-        game.exit();
+        game.close();
         if (Keyboard.isCreated()) {
             Keyboard.destroy();
         }
