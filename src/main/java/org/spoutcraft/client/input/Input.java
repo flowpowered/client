@@ -51,7 +51,7 @@ public class Input extends TickingElement {
 
     @Override
     public void onStart() {
-        System.out.println("Input start");
+        game.getLogger().info("Starting input");
 
         keyboardQueue.becomePublisher();
         mouseQueue.becomePublisher();
@@ -133,7 +133,7 @@ public class Input extends TickingElement {
 
     @Override
     public void onStop() {
-        System.out.println("Input stop");
+        game.getLogger().info("Stopping input");
 
         // We make sure to end of the game, else there's no way to stop it normally (no input!)
         game.close();

@@ -37,6 +37,8 @@ import java.util.zip.Inflater;
 
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.math.vector.Vector3i;
+import com.flowpowered.networking.util.AnnotatedMessageHandler;
+import com.flowpowered.networking.util.AnnotatedMessageHandler.Handle;
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
@@ -56,8 +58,6 @@ import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.universe.world.Chunk;
 import org.spoutcraft.client.universe.world.World;
-import org.spoutcraft.client.util.AnnotatedMessageHandler;
-import org.spoutcraft.client.util.AnnotatedMessageHandler.Handle;
 
 /**
  * Contains and manages all the voxel worlds.
@@ -83,7 +83,7 @@ public class Universe extends TickingElement {
 
     @Override
     public void onStart() {
-        System.out.println("Universe start");
+        game.getLogger().info("Starting universe");
 
         // TEST CODE
         final short[] chunkIDs = new short[Chunk.BLOCKS.VOLUME];
@@ -134,7 +134,7 @@ public class Universe extends TickingElement {
 
     @Override
     public void onStop() {
-        System.out.println("Universe stop");
+        game.getLogger().info("Stopping universe");
 
         worlds.clear();
         updateSnapshots();
@@ -227,7 +227,6 @@ public class Universe extends TickingElement {
      */
     @Handle
     private void handleJoinGame(JoinGameMessage message) {
-        System.out.println("Server says join is successful...Woo!!");
         createWorld(message.getGameMode(), message.getDimension(), message.getDifficulty(), message.getLevelType(), true);
     }
 
@@ -291,7 +290,7 @@ public class Universe extends TickingElement {
 
                 decompressChunkData(data, message.isGroundUpContinuous(), message.getCompressedData(), columnDataSize, true);
             } catch (IOException e) {
-                System.out.println(e);
+                game.getLogger().fatal(e);
             }
             populateChunks(message.getColumnX(), message.getColumnZ(), data);
         }

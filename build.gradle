@@ -98,6 +98,7 @@ tasks.withType(License).each { licenseTask ->
     licenseTask.exclude '**/*.ttf'
     licenseTask.exclude '**/*.vert'
     licenseTask.exclude '**/*.yml'
+    licenseTask.exclude '**/*.xml'
 }
 license {
     ext.name = projectName

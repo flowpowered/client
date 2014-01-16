@@ -31,7 +31,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.flowpowered.commons.ticking.TickingElement;
-import com.flowpowered.networking.session.PulsingSession.State;
+import com.flowpowered.networking.util.AnnotatedMessageHandler;
+import com.flowpowered.networking.util.AnnotatedMessageHandler.Handle;
 import io.netty.channel.ChannelOption;
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.network.message.ChannelMessage;
@@ -46,6 +47,7 @@ public class Network extends TickingElement {
     private static final int TPS = 20;
     private final Game game;
     private final GameNetworkClient client;
+    private final AnnotatedMessageHandler handler;
     private final Map<Channel, ConcurrentLinkedQueue<ChannelMessage>> messageQueue = new EnumMap<>(Channel.class);
 
     /**
@@ -57,6 +59,7 @@ public class Network extends TickingElement {
         super("network", TPS);
         this.game = game;
         client = new GameNetworkClient(game);
+        handler = new AnnotatedMessageHandler(this);
         messageQueue.put(Channel.UNIVERSE, new ConcurrentLinkedQueue<ChannelMessage>());
         messageQueue.put(Channel.NETWORK, new ConcurrentLinkedQueue<ChannelMessage>());
         messageQueue.put(Channel.PHYSICS, new ConcurrentLinkedQueue<ChannelMessage>());
@@ -64,7 +67,7 @@ public class Network extends TickingElement {
 
     @Override
     public void onStart() {
-        System.out.println("Network start");
+        game.getLogger().info("Starting network");
 
         connect();
     }
@@ -74,27 +77,19 @@ public class Network extends TickingElement {
         if (!client.hasSession()) {
             return;
         }
-        for (Map.Entry<Channel, ConcurrentLinkedQueue<ChannelMessage>> entry : messageQueue.entrySet()) {
-            final Iterator<ChannelMessage> messages = entry.getValue().iterator();
-            while (messages.hasNext()) {
-                final ChannelMessage message = messages.next();
-                //Handle all Network channel message
-                if (entry.getKey() == Channel.NETWORK && !message.isFullyRead()) {
-                    processMessage(message);
-                }
-                if (message.isFullyRead()) {
-                    messages.remove();
-                }
-            }
+        final Iterator<ChannelMessage> messages = messageQueue.get(Channel.NETWORK).iterator();
+        while (messages.hasNext()) {
+            handler.handle(messages.next());
+            messages.remove();
         }
-        // TODO: it *might* be good to only call this when NOT in PlayProtocol
-        client.getSession().getChannel().read();
-        client.getSession().pulse();
+        if (!getSession().getChannel().config().isAutoRead()) {
+            getSession().getChannel().read();
+        }
     }
 
     @Override
     public void onStop() {
-        System.out.println("Network stop");
+        game.getLogger().info("Stopping network");
 
         client.shutdown();
     }
@@ -157,23 +152,11 @@ public class Network extends TickingElement {
         messageQueue.get(c).offer(m);
     }
 
-    /**
-     * Processes the next {@link org.spoutcraft.client.network.message.ChannelMessage} in the network pipeline
-     *
-     * @param message See {@link org.spoutcraft.client.network.message.ChannelMessage}
-     */
-    private void processMessage(ChannelMessage message) {
-        if (message.getClass() == LoginSuccessMessage.class) {
-            final LoginSuccessMessage loginSuccessMessage = (LoginSuccessMessage) message;
-            System.out.println("Server says login is successful...Woo!!");
-
-            ClientSession session = getSession();
-            session.setProtocol(new PlayProtocol(game));
-            session.setUUID(loginSuccessMessage.getUUID());
-            session.setUsername(loginSuccessMessage.getUsername());
-            session.setState(State.OPEN);
-            session.setOption(ChannelOption.AUTO_READ, true);
-            message.markChannelRead(Channel.NETWORK);
-        }
+    @Handle
+    private void handleLoginSuccess(LoginSuccessMessage message) {
+        getSession().setProtocol(new PlayProtocol(game));
+        getSession().setUUID(message.getUUID());
+        getSession().setUsername(message.getUsername());
+        getSession().setOption(ChannelOption.AUTO_READ, true);
     }
 }

@@ -32,7 +32,6 @@ import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
-import org.spoutcraft.client.network.ByteBufUtils;
 import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.RespawnMessage;

@@ -27,7 +27,6 @@ import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
 import io.netty.buffer.ByteBuf;
-import org.spoutcraft.client.network.ByteBufUtils;
 import org.spoutcraft.client.network.message.handshake.HandshakeMessage;
 
 /**

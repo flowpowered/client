@@ -53,7 +53,7 @@ public class GameNetworkClient extends NetworkClient {
 
     @Override
     public void sessionInactivated(Session session) {
-        System.out.println("Connection lost from Minecraft server, stopping Network thread");
+        game.getLogger().warn("Connection lost from Minecraft server, stopping network thread");
         this.session = null;
         game.getNetwork().stop();
     }
@@ -61,7 +61,7 @@ public class GameNetworkClient extends NetworkClient {
     @Override
     public void onConnectFailure() {
         super.onConnectFailure();
-        System.out.println("Failed to connect to Minecraft server, stopping Network thread");
+        game.getLogger().warn("Failed to connect to Minecraft server, stopping network thread");
         this.session = null;
         game.getNetwork().stop();
     }

@@ -62,7 +62,7 @@ public class Physics extends TickingElement {
 
     @Override
     public void onStart() {
-        System.out.println("Physics start");
+        game.getLogger().info("Starting physics");
 
         // TEST CODE
         player.set(new Player(0, "Spoutcrafty", null, new Vector3f(0, 18, 0), null));
@@ -75,6 +75,11 @@ public class Physics extends TickingElement {
 
         // TODO: process messages that spawn the player to create and set the field
         // TODO: process messages that set player position, head rotation, and other data
+    }
+
+    @Override
+    public void onStop() {
+        game.getLogger().info("Stopping physics");
     }
 
     private void updateSnapshots() {
@@ -149,11 +154,6 @@ public class Physics extends TickingElement {
         }
         // Update the player position
         player.setPosition(position);
-    }
-
-    @Override
-    public void onStop() {
-        System.out.println("Physics stop");
     }
 
     public PlayerSnapshot getPlayerSnapshot() {

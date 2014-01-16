@@ -106,7 +106,7 @@ public class Interface extends TickingElement {
 
     @Override
     public void onStart() {
-        System.out.println("Interface start");
+        game.getLogger().info("Starting interface");
 
         // TEST CODE
         Renderer.setGLVersion(GLVersion.GL32);
@@ -133,7 +133,7 @@ public class Interface extends TickingElement {
 
     @Override
     public void onStop() {
-        System.out.println("Interface stop");
+        game.getLogger().info("Stopping interface");
 
         // We make sure to stop the input because it relies on the display
         game.getInput().stop();
@@ -211,7 +211,7 @@ public class Interface extends TickingElement {
         worldLastUpdateNumber = world.getUpdateNumber();
         // Safety precautions
         if (Renderer.getModels().size() > chunkModels.size()) {
-            System.out.println("There are more models in the renderer (" + Renderer.getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
+            game.getLogger().warn("There are more models in the renderer (" + Renderer.getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
         }
     }
 

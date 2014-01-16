@@ -25,7 +25,8 @@ package org.spoutcraft.client;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.spoutcraft.client.input.Input;
 import org.spoutcraft.client.network.Network;
 import org.spoutcraft.client.nterface.Interface;
@@ -39,6 +40,7 @@ public class Game {
     // A semaphore with no permits, so that the first acquire() call blocks
     private final Semaphore semaphore = new Semaphore(0);
     private final AtomicBoolean running = new AtomicBoolean(false);
+    private final Logger logger;
     private final Universe universe;
     private final Physics physics;
     private final Interface nterface;
@@ -54,6 +56,7 @@ public class Game {
     }
 
     public Game() {
+        logger = LogManager.getLogger("Client");
         universe = new Universe(this);
         physics = new Physics(this);
         nterface = new Interface(this);
@@ -75,6 +78,10 @@ public class Game {
         universe.stop();
         network.stop();
         input.stop();
+    }
+
+    public Logger getLogger() {
+        return logger;
     }
 
     public Universe getUniverse() {
