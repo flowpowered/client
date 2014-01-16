@@ -66,10 +66,8 @@ repositories {
 dependencies {
     compile 'com.flowpowered:flow-commons:0.1.0-SNAPSHOT'
     compile 'com.flowpowered:flow-networking:0.1.0-SNAPSHOT'
-    compile 'commons-io:commons-io:2.4'
     compile 'io.netty:netty-all:4.0.13.Final'
     compile 'junit:junit:4.8.1'
-    compile 'org.apache.commons:commons-lang3:3.1'
     compile 'org.apache.logging.log4j:log4j-api:2.0-beta9'
     compile 'org.apache.logging.log4j:log4j-core:2.0-beta9'
     compile 'org.spout:caustic-lwjgl:1.0.0-SNAPSHOT'

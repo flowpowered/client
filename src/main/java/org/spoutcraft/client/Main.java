@@ -24,8 +24,8 @@
 package org.spoutcraft.client;
 
 import java.io.File;
+import java.nio.file.Files;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 public class Main {
@@ -37,7 +37,7 @@ public class Main {
     private static void deploy() throws Exception {
         final File configFile = new File("config.yml");
         if (!configFile.exists()) {
-            FileUtils.copyInputStreamToFile(Main.class.getResourceAsStream("/config.yml"), configFile);
+            Files.copy(Main.class.getResourceAsStream("/config.yml"), configFile.toPath());
         }
         final String osPath;
         final String[] nativeLibs;
@@ -66,7 +66,7 @@ public class Main {
         for (String nativeLib : nativeLibs) {
             final File nativeFile = new File(nativesDir, nativeLib);
             if (!nativeFile.exists()) {
-                FileUtils.copyInputStreamToFile(Main.class.getResourceAsStream("/" + nativeLib), nativeFile);
+                Files.copy(Main.class.getResourceAsStream("/" + nativeLib), nativeFile.toPath());
             }
         }
         final String nativesPath = nativesDir.getAbsolutePath();
