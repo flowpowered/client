@@ -37,9 +37,6 @@ import java.util.zip.Inflater;
 
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.math.vector.Vector3i;
-
-import org.spoutcraft.client.util.AnnotatedMessageHandler;
-import org.spoutcraft.client.util.AnnotatedMessageHandler.Handle;
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
@@ -59,6 +56,8 @@ import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.universe.world.Chunk;
 import org.spoutcraft.client.universe.world.World;
+import org.spoutcraft.client.util.AnnotatedMessageHandler;
+import org.spoutcraft.client.util.AnnotatedMessageHandler.Handle;
 
 /**
  * Contains and manages all the voxel worlds.

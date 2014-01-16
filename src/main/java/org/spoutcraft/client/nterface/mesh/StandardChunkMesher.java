@@ -25,12 +25,11 @@ package org.spoutcraft.client.nterface.mesh;
 
 import gnu.trove.list.TFloatList;
 import gnu.trove.list.TIntList;
-
 import org.spoutcraft.client.nterface.mesh.Mesh.MeshAttribute;
-import org.spoutcraft.client.universe.world.Chunk;
 import org.spoutcraft.client.universe.block.BlockFace;
 import org.spoutcraft.client.universe.block.BlockFaces;
 import org.spoutcraft.client.universe.block.material.Material;
+import org.spoutcraft.client.universe.world.Chunk;
 
 /**
  * The standard chunk mesher. Voxels are meshed as blocks. Occludes any block not visible, including the edge blocks. Can mesh a chunk with 3n^2(n+2) block access operations, n being the size of the

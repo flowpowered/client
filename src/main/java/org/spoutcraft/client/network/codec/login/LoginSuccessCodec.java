@@ -28,10 +28,7 @@ import java.util.UUID;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
-import com.flowpowered.networking.session.Session;
-
 import io.netty.buffer.ByteBuf;
-
 import org.spoutcraft.client.network.ByteBufUtils;
 import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.network.message.ChannelMessage;
@@ -40,14 +37,9 @@ import org.spoutcraft.client.network.message.login.LoginSuccessMessage;
 /**
  * The codec for the login success message. Also handles the login success message.
  */
-public class LoginSuccessCodec extends Codec<LoginSuccessMessage> implements MessageHandler<LoginSuccessMessage> {
-    private static final int OP_CODE = 2;
-
-    /**
-     * Constructs a new login success message codec and handler.
-     */
+public class LoginSuccessCodec extends Codec<LoginSuccessMessage> implements MessageHandler<ClientSession, LoginSuccessMessage> {
     public LoginSuccessCodec() {
-        super(LoginSuccessMessage.class, OP_CODE);
+        super(LoginSuccessMessage.class);
     }
 
     @Override
@@ -63,7 +55,7 @@ public class LoginSuccessCodec extends Codec<LoginSuccessMessage> implements Mes
     }
 
     @Override
-    public void handle(Session session, LoginSuccessMessage message) {
-        ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.NETWORK, message);
+    public void handle(ClientSession session, LoginSuccessMessage message) {
+        session.getGame().getNetwork().offer(ChannelMessage.Channel.NETWORK, message);
     }
 }

@@ -27,23 +27,16 @@ import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
-import com.flowpowered.networking.session.Session;
-
 import io.netty.buffer.ByteBuf;
-
+import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.network.message.play.KeepAliveMessage;
 
 /**
  * The codec for the keep alive message. Also handles the keep alive message .
  */
-public class KeepAliveCodec extends Codec<KeepAliveMessage> implements MessageHandler<KeepAliveMessage> {
-    private static final int OP_CODE = 0;
-
-    /**
-     * Constructs a new keep alive message codec and handler.
-     */
+public class KeepAliveCodec extends Codec<KeepAliveMessage> implements MessageHandler<ClientSession, KeepAliveMessage> {
     public KeepAliveCodec() {
-        super(KeepAliveMessage.class, OP_CODE);
+        super(KeepAliveMessage.class);
     }
 
     @Override
@@ -58,7 +51,7 @@ public class KeepAliveCodec extends Codec<KeepAliveMessage> implements MessageHa
     }
 
     @Override
-    public void handle(Session session, KeepAliveMessage message) {
+    public void handle(ClientSession session, KeepAliveMessage message) {
         session.send(new KeepAliveMessage(message.getRandom()));
     }
 }

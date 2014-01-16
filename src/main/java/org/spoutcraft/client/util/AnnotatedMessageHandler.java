@@ -92,8 +92,8 @@ public class AnnotatedMessageHandler {
     /**
      * The annotation to mark message handle methods.
      */
-    @Target(ElementType.METHOD)
-    @Retention(RetentionPolicy.RUNTIME)
+    @Target (ElementType.METHOD)
+    @Retention (RetentionPolicy.RUNTIME)
     public static @interface Handle {
     }
 }

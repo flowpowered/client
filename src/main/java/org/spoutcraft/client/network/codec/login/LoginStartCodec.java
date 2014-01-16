@@ -26,9 +26,7 @@ package org.spoutcraft.client.network.codec.login;
 import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
-
 import io.netty.buffer.ByteBuf;
-
 import org.spoutcraft.client.network.ByteBufUtils;
 import org.spoutcraft.client.network.message.login.LoginStartMessage;
 
@@ -36,13 +34,8 @@ import org.spoutcraft.client.network.message.login.LoginStartMessage;
  * The codec for the login start message.
  */
 public class LoginStartCodec extends Codec<LoginStartMessage> {
-    private static final int OP_CODE = 0;
-
-    /**
-     * Constructs a new login start message codec.
-     */
     public LoginStartCodec() {
-        super(LoginStartMessage.class, OP_CODE);
+        super(LoginStartMessage.class);
     }
 
     @Override

@@ -27,19 +27,14 @@ import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
-import com.flowpowered.networking.session.Session;
-
 import io.netty.buffer.ByteBuf;
-
 import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.ChunkDataMessage;
 
-public class ChunkDataCodec extends Codec<ChunkDataMessage> implements MessageHandler<ChunkDataMessage> {
-    private static final int OP_CODE = 21;
-
+public class ChunkDataCodec extends Codec<ChunkDataMessage> implements MessageHandler<ClientSession, ChunkDataMessage> {
     public ChunkDataCodec() {
-        super(ChunkDataMessage.class, OP_CODE);
+        super(ChunkDataMessage.class);
     }
 
     @Override
@@ -61,7 +56,7 @@ public class ChunkDataCodec extends Codec<ChunkDataMessage> implements MessageHa
     }
 
     @Override
-    public void handle(Session session, ChunkDataMessage message) {
-        ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
+    public void handle(ClientSession session, ChunkDataMessage message) {
+        session.getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
     }
 }

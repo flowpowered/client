@@ -27,10 +27,7 @@ import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
-import com.flowpowered.networking.session.Session;
-
 import io.netty.buffer.ByteBuf;
-
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
@@ -43,14 +40,9 @@ import org.spoutcraft.client.network.message.play.RespawnMessage;
 /**
  * The codec for the respawn message. Also handles the respawn message.
  */
-public class RespawnCodec extends Codec<RespawnMessage> implements MessageHandler<RespawnMessage> {
-    private static final int OP_CODE = 7;
-
-    /**
-     * Constructs a new respawn message codec and handler.
-     */
+public class RespawnCodec extends Codec<RespawnMessage> implements MessageHandler<ClientSession, RespawnMessage> {
     public RespawnCodec() {
-        super(RespawnMessage.class, OP_CODE);
+        super(RespawnMessage.class);
     }
 
     @Override
@@ -68,7 +60,7 @@ public class RespawnCodec extends Codec<RespawnMessage> implements MessageHandle
     }
 
     @Override
-    public void handle(Session session, RespawnMessage message) {
-        ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
+    public void handle(ClientSession session, RespawnMessage message) {
+        session.getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
     }
 }

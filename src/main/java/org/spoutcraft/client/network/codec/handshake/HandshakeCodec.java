@@ -26,9 +26,7 @@ package org.spoutcraft.client.network.codec.handshake;
 import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
-
 import io.netty.buffer.ByteBuf;
-
 import org.spoutcraft.client.network.ByteBufUtils;
 import org.spoutcraft.client.network.message.handshake.HandshakeMessage;
 
@@ -36,13 +34,8 @@ import org.spoutcraft.client.network.message.handshake.HandshakeMessage;
  * The codec for the handshake message.
  */
 public class HandshakeCodec extends Codec<HandshakeMessage> {
-    private static final int OP_CODE = 0;
-
-    /**
-     * Constructs a new handshake message codec.
-     */
     public HandshakeCodec() {
-        super(HandshakeMessage.class, OP_CODE);
+        super(HandshakeMessage.class);
     }
 
     @Override

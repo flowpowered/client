@@ -26,7 +26,6 @@ package org.spoutcraft.client.universe.block;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector3i;
-
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 /**

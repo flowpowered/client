@@ -27,10 +27,7 @@ import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
-import com.flowpowered.networking.session.Session;
-
 import io.netty.buffer.ByteBuf;
-
 import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.SpawnPositionMessage;
@@ -38,14 +35,9 @@ import org.spoutcraft.client.network.message.play.SpawnPositionMessage;
 /**
  * The codec for the spawn position message. Also handles the spawn position message.
  */
-public class SpawnPositionCodec extends Codec<SpawnPositionMessage> implements MessageHandler<SpawnPositionMessage> {
-    private static final int OP_CODE = 5;
-
-    /**
-     * Constructs a new spawn position message codec and handler.
-     */
+public class SpawnPositionCodec extends Codec<SpawnPositionMessage> implements MessageHandler<ClientSession, SpawnPositionMessage> {
     public SpawnPositionCodec() {
-        super(SpawnPositionMessage.class, OP_CODE);
+        super(SpawnPositionMessage.class);
     }
 
     @Override
@@ -62,7 +54,7 @@ public class SpawnPositionCodec extends Codec<SpawnPositionMessage> implements M
     }
 
     @Override
-    public void handle(Session session, SpawnPositionMessage message) {
-        ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
+    public void handle(ClientSession session, SpawnPositionMessage message) {
+        session.getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
     }
 }

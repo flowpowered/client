@@ -42,7 +42,7 @@ public class BlurEffect {
     }
 
     public Uniform[] getUniforms() {
-        return new Uniform[]{
+        return new Uniform[] {
                 new IntUniform("blurSize", blurSize),
                 new Vector2Uniform("texelSize", texelSize)
         };

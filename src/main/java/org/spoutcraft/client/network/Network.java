@@ -32,9 +32,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.networking.session.PulsingSession.State;
-
 import io.netty.channel.ChannelOption;
-
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.ChannelMessage.Channel;
@@ -170,7 +168,7 @@ public class Network extends TickingElement {
             System.out.println("Server says login is successful...Woo!!");
 
             ClientSession session = getSession();
-            session.setProtocol(new PlayProtocol());
+            session.setProtocol(new PlayProtocol(game));
             session.setUUID(loginSuccessMessage.getUUID());
             session.setUsername(loginSuccessMessage.getUsername());
             session.setState(State.OPEN);

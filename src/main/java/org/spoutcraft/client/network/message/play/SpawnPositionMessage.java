@@ -23,9 +23,8 @@
  */
 package org.spoutcraft.client.network.message.play;
 
-import org.spoutcraft.client.network.message.ChannelMessage;
-
 import com.flowpowered.math.vector.Vector3i;
+import org.spoutcraft.client.network.message.ChannelMessage;
 
 /**
  * Client bound message that instructs the client to update the compass position to the new spawn position.

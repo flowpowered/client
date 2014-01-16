@@ -90,7 +90,7 @@ public class ShadowMappingEffect {
     }
 
     public Uniform[] getUniforms() {
-        return new Uniform[]{
+        return new Uniform[] {
                 new IntUniform("kernelSize", kernelSize),
                 new Vector2ArrayUniform("kernel", kernel),
                 new Vector2Uniform("noiseScale", noiseScale),

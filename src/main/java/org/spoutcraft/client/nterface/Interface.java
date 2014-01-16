@@ -36,16 +36,9 @@ import com.flowpowered.math.TrigMath;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector3i;
-
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
-
-import org.lwjgl.input.Keyboard;
-
-import org.spout.renderer.api.Camera;
-import org.spout.renderer.api.GLVersioned.GLVersion;
-import org.spout.renderer.api.data.Color;
-
+import org.lwjgl.input.*;
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.input.Input;
 import org.spoutcraft.client.input.event.KeyboardEvent;
@@ -59,6 +52,10 @@ import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.universe.world.Chunk;
 import org.spoutcraft.client.universe.world.World;
+
+import org.spout.renderer.api.Camera;
+import org.spout.renderer.api.GLVersioned.GLVersion;
+import org.spout.renderer.api.data.Color;
 
 /**
  * Contains and manages the renderer, GUI and it's input and camera input. Meshes and renders chunks and entities.

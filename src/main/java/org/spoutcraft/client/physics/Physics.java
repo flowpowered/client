@@ -31,9 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.math.vector.Vector3f;
-
-import org.lwjgl.input.Keyboard;
-
+import org.lwjgl.input.*;
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.input.Input;
 import org.spoutcraft.client.nterface.snapshot.CameraSnapshot;

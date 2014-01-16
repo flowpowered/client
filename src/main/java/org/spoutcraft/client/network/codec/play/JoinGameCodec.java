@@ -27,10 +27,7 @@ import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
-import com.flowpowered.networking.session.Session;
-
 import io.netty.buffer.ByteBuf;
-
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
@@ -43,14 +40,9 @@ import org.spoutcraft.client.network.message.play.JoinGameMessage;
 /**
  * The codec for the join game message. Also handles the join game message.
  */
-public class JoinGameCodec extends Codec<JoinGameMessage> implements MessageHandler<JoinGameMessage> {
-    private static final int OP_CODE = 1;
-
-    /**
-     * Constructs a new join game message codec and handler.
-     */
+public class JoinGameCodec extends Codec<JoinGameMessage> implements MessageHandler<ClientSession, JoinGameMessage> {
     public JoinGameCodec() {
-        super(JoinGameMessage.class, OP_CODE);
+        super(JoinGameMessage.class);
     }
 
     @Override
@@ -70,7 +62,7 @@ public class JoinGameCodec extends Codec<JoinGameMessage> implements MessageHand
     }
 
     @Override
-    public void handle(Session session, JoinGameMessage message) {
-        ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
+    public void handle(ClientSession session, JoinGameMessage message) {
+        session.getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
     }
 }

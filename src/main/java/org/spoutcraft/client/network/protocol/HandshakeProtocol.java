@@ -23,6 +23,7 @@
  */
 package org.spoutcraft.client.network.protocol;
 
+import org.spoutcraft.client.Game;
 import org.spoutcraft.client.network.codec.handshake.HandshakeCodec;
 
 /**
@@ -34,8 +35,8 @@ public class HandshakeProtocol extends ClientProtocol {
     /**
      * Constructs a new handshake protocol.
      */
-    public HandshakeProtocol() {
-        super("Handshake", HIGHEST_OP_CODE);
-        registerMessage(HandshakeCodec.class, null);
+    public HandshakeProtocol(Game game) {
+        super(game, "handshake", HIGHEST_OP_CODE);
+        registerMessage(OUTBOUND, HandshakeCodec.class, null, 0);
     }
 }

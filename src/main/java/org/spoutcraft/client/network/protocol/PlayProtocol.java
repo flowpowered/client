@@ -23,6 +23,7 @@
  */
 package org.spoutcraft.client.network.protocol;
 
+import org.spoutcraft.client.Game;
 import org.spoutcraft.client.network.codec.play.ChunkDataBulkCodec;
 import org.spoutcraft.client.network.codec.play.ChunkDataCodec;
 import org.spoutcraft.client.network.codec.play.ClientStatusCodec;
@@ -42,17 +43,24 @@ public class PlayProtocol extends ClientProtocol {
     /**
      * Constructs a new play protocol.
      */
-    public PlayProtocol() {
-        super("Play", HIGHEST_OP_CODE);
-        //TODO Put handlers here
-        registerMessage(KeepAliveCodec.class, KeepAliveCodec.class);
-        registerMessage(JoinGameCodec.class, JoinGameCodec.class);
-        registerMessage(PlayerCodec.class, null);
-        registerMessage(ClientStatusCodec.class, null);
-        registerMessage(SpawnPositionCodec.class, SpawnPositionCodec.class);
-        registerMessage(RespawnCodec.class, RespawnCodec.class);
-        registerMessage(ChunkDataCodec.class, ChunkDataCodec.class);
-        registerMessage(ChunkDataBulkCodec.class, ChunkDataBulkCodec.class);
-        registerMessage(PositionLookCodec.class, PositionLookCodec.class);
+    public PlayProtocol(Game game) {
+        super(game, "play", HIGHEST_OP_CODE);
+        /**
+         * From Server, in order of opcodes
+         */
+        registerMessage(INBOUND, KeepAliveCodec.class, KeepAliveCodec.class, 0);
+        registerMessage(INBOUND, JoinGameCodec.class, JoinGameCodec.class, 1);
+        registerMessage(INBOUND, SpawnPositionCodec.class, SpawnPositionCodec.class, 5);
+        registerMessage(INBOUND, RespawnCodec.class, RespawnCodec.class, 7);
+        registerMessage(INBOUND, PositionLookCodec.class, PositionLookCodec.class, 8);
+        registerMessage(INBOUND, ChunkDataCodec.class, ChunkDataCodec.class, 21);
+        registerMessage(INBOUND, ChunkDataBulkCodec.class, ChunkDataBulkCodec.class, 26);
+        /**
+         * To Server, in order of opcodes
+         */
+        registerMessage(OUTBOUND, KeepAliveCodec.class, null, 0);
+        registerMessage(OUTBOUND, PlayerCodec.class, null, 3);
+        registerMessage(OUTBOUND, PositionLookCodec.class, null, 4);
+        registerMessage(OUTBOUND, ClientStatusCodec.class, null, 16);
     }
 }

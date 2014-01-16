@@ -27,19 +27,14 @@ import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.MessageHandler;
-import com.flowpowered.networking.session.Session;
-
 import io.netty.buffer.ByteBuf;
-
 import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.PositionLookMessage;
 
-public class PositionLookCodec extends Codec<PositionLookMessage> implements MessageHandler<PositionLookMessage> {
-    private static final int OP_CODE = 8;
-
+public class PositionLookCodec extends Codec<PositionLookMessage> implements MessageHandler<ClientSession, PositionLookMessage> {
     public PositionLookCodec() {
-        super(PositionLookMessage.class, OP_CODE);
+        super(PositionLookMessage.class);
     }
 
     @Override
@@ -66,7 +61,7 @@ public class PositionLookCodec extends Codec<PositionLookMessage> implements Mes
     }
 
     @Override
-    public void handle(Session session, PositionLookMessage message) {
-        ((ClientSession) session).getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
+    public void handle(ClientSession session, PositionLookMessage message) {
+        session.getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
     }
 }
