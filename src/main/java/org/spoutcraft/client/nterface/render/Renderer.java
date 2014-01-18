@@ -23,6 +23,7 @@
  */
 package org.spoutcraft.client.nterface.render;
 
+import javax.imageio.ImageIO;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.image.BufferedImage;
@@ -33,14 +34,10 @@ import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.imageio.ImageIO;
 
 import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.math.imaginary.Quaternionf;
@@ -48,39 +45,25 @@ import com.flowpowered.math.matrix.Matrix3f;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector3f;
-import org.lwjgl.opengl.*;
-import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.nterface.render.effect.BlurEffect;
-import org.spoutcraft.client.nterface.render.effect.SSAOEffect;
-import org.spoutcraft.client.nterface.render.effect.ShadowMappingEffect;
 
-import org.spout.renderer.api.Action.RenderModelsAction;
+import org.lwjgl.opengl.GLContext;
+
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLImplementation;
 import org.spout.renderer.api.GLVersioned.GLVersion;
 import org.spout.renderer.api.Material;
-import org.spout.renderer.api.Pipeline;
-import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Color;
-import org.spout.renderer.api.data.Uniform;
 import org.spout.renderer.api.data.Uniform.ColorUniform;
 import org.spout.renderer.api.data.Uniform.FloatUniform;
-import org.spout.renderer.api.data.Uniform.IntUniform;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
-import org.spout.renderer.api.data.Uniform.Vector2Uniform;
 import org.spout.renderer.api.data.Uniform.Vector3Uniform;
 import org.spout.renderer.api.data.UniformHolder;
-import org.spout.renderer.api.data.VertexAttribute.DataType;
 import org.spout.renderer.api.gl.Context;
-import org.spout.renderer.api.gl.Context.BlendFunction;
 import org.spout.renderer.api.gl.Context.Capability;
-import org.spout.renderer.api.gl.FrameBuffer;
-import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
 import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Program;
 import org.spout.renderer.api.gl.Shader;
 import org.spout.renderer.api.gl.Texture;
-import org.spout.renderer.api.gl.Texture.CompareMode;
 import org.spout.renderer.api.gl.Texture.FilterMode;
 import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
@@ -92,6 +75,11 @@ import org.spout.renderer.api.util.MeshGenerator;
 import org.spout.renderer.api.util.Rectangle;
 import org.spout.renderer.lwjgl.LWJGLUtil;
 
+import org.spoutcraft.client.nterface.Interface;
+import org.spoutcraft.client.nterface.render.stage.RenderGUIStage;
+import org.spoutcraft.client.nterface.render.stage.RenderModelsStage;
+import org.spoutcraft.client.nterface.render.stage.SSAOStage;
+
 /**
  * The default renderer. Support OpenGL 2.1 and 3.2. Can render fully textured models with normal and specular mapping, ambient occlusion (SSAO), shadow mapping, Phong shading, motion blur and edge
  * detection anti-aliasing. The default OpenGL version is 3.2.
@@ -99,63 +87,56 @@ import org.spout.renderer.lwjgl.LWJGLUtil;
 public class Renderer {
     // CONSTANTS
     private static final String WINDOW_TITLE = "Spoutcraft";
-    private static final Vector2f WINDOW_SIZE = new Vector2f(1200, 800);
-    private static final Vector2f SHADOW_SIZE = new Vector2f(2048, 2048);
-    private static final float ASPECT_RATIO = WINDOW_SIZE.getX() / WINDOW_SIZE.getY();
-    private static final float FIELD_OF_VIEW = 60;
-    private static final float TAN_HALF_FOV = (float) Math.tan(Math.toRadians(FIELD_OF_VIEW) / 2);
-    private static final float NEAR_PLANE = 0.1f;
-    private static final float FAR_PLANE = 1000;
-    private static final Vector2f PROJECTION = new Vector2f(FAR_PLANE / (FAR_PLANE - NEAR_PLANE), (-FAR_PLANE * NEAR_PLANE) / (FAR_PLANE - NEAR_PLANE));
-    private static final Pattern ATTACHMENT_PATTERN = Pattern.compile("([a-zA-Z]+)(\\d*)");
+    public static final Vector2f WINDOW_SIZE = new Vector2f(1200, 800);
+    public static final Vector2f SHADOW_SIZE = new Vector2f(2048, 2048);
+    public static final float ASPECT_RATIO = WINDOW_SIZE.getX() / WINDOW_SIZE.getY();
+    public static final float FIELD_OF_VIEW = 60;
+    public static final float TAN_HALF_FOV = (float) Math.tan(Math.toRadians(FIELD_OF_VIEW) / 2);
+    public static final float NEAR_PLANE = 0.1f;
+    public static final float FAR_PLANE = 1000;
+    public static final Vector2f PROJECTION = new Vector2f(FAR_PLANE / (FAR_PLANE - NEAR_PLANE), (-FAR_PLANE * NEAR_PLANE) / (FAR_PLANE - NEAR_PLANE));
     private static final DateFormat SCREENSHOT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
     // SETTINGS
-    private static boolean cullBackFaces = true;
+    private boolean cullBackFaces = true;
     // EFFECT UNIFORMS
-    private static final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.FORWARD);
-    private static final Matrix4Uniform inverseViewMatrixUniform = new Matrix4Uniform("inverseViewMatrix", new Matrix4f());
-    private static final Matrix4Uniform lightViewMatrixUniform = new Matrix4Uniform("lightViewMatrix", new Matrix4f());
-    private static final Matrix4Uniform lightProjectionMatrixUniform = new Matrix4Uniform("lightProjectionMatrix", new Matrix4f());
-    private static final Matrix4Uniform previousViewMatrixUniform = new Matrix4Uniform("previousViewMatrix", new Matrix4f());
-    private static final Matrix4Uniform previousProjectionMatrixUniform = new Matrix4Uniform("previousProjectionMatrix", new Matrix4f());
-    private static final FloatUniform blurStrengthUniform = new FloatUniform("blurStrength", 1);
+    private final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.FORWARD);
+    private final Matrix4Uniform inverseViewMatrixUniform = new Matrix4Uniform("inverseViewMatrix", new Matrix4f());
+    private final Matrix4Uniform lightViewMatrixUniform = new Matrix4Uniform("lightViewMatrix", new Matrix4f());
+    private final Matrix4Uniform lightProjectionMatrixUniform = new Matrix4Uniform("lightProjectionMatrix", new Matrix4f());
+    private final Matrix4Uniform previousViewMatrixUniform = new Matrix4Uniform("previousViewMatrix", new Matrix4f());
+    private final Matrix4Uniform previousProjectionMatrixUniform = new Matrix4Uniform("previousProjectionMatrix", new Matrix4f());
+    private final FloatUniform blurStrengthUniform = new FloatUniform("blurStrength", 1);
     // CAMERAS
-    private static final Camera modelCamera = Camera.createPerspective(FIELD_OF_VIEW, WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), NEAR_PLANE, FAR_PLANE);
-    private static final Camera lightCamera = Camera.createOrthographic(50, -50, 50, -50, -50, 50);
-    private static final Camera guiCamera = Camera.createOrthographic(1, 0, 1 / ASPECT_RATIO, 0, NEAR_PLANE, FAR_PLANE);
+    private final Camera modelCamera = Camera.createPerspective(FIELD_OF_VIEW, WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), NEAR_PLANE, FAR_PLANE);
+    private final Camera lightCamera = Camera.createOrthographic(50, -50, 50, -50, -50, 50);
+    private final Camera guiCamera = Camera.createOrthographic(1, 0, 1 / ASPECT_RATIO, 0, NEAR_PLANE, FAR_PLANE);
     // OPENGL VERSION AND FACTORY
-    private static GLVersion glVersion;
-    private static GLFactory glFactory;
+    private GLVersion glVersion;
+    private GLFactory glFactory;
     // CONTEXT
-    private static Context context;
+    private Context context;
     // RENDER LISTS
-    private static final List<Model> modelRenderList = new ArrayList<>();
-    private static final List<Model> transparentModelList = new ArrayList<>();
-    private static final List<Model> guiRenderList = new ArrayList<>();
-    // PIPELINE
-    private static Pipeline pipeline;
-    // SHADERS
-    private static final Map<String, Program> programs = new HashMap<>();
-    // TEXTURES
-    private static final Map<String, Texture> textures = new HashMap<>();
+    private final List<Model> modelRenderList = new ArrayList<>();
+    private final List<Model> transparentModelList = new ArrayList<>();
+    private final List<Model> guiRenderList = new ArrayList<>();
+    // PROGRAMS
+    private final Map<String, Program> programs = new HashMap<>();
     // MATERIALS
-    private static final Map<String, Material> materials = new HashMap<>();
-    // FRAME BUFFERS
-    private static final Map<String, FrameBuffer> frameBuffers = new HashMap<>();
+    private final Map<String, Material> materials = new HashMap<>();
     // VERTEX ARRAYS
-    private static VertexArray deferredStageScreenVertexArray;
+    private VertexArray screenVertexArray;
     // EFFECTS
-    private static SSAOEffect ssaoEffect;
-    private static ShadowMappingEffect shadowMappingEffect;
-    private static BlurEffect blurEffect;
+    private RenderModelsStage renderModelsStage;
+    private SSAOStage ssaoStage;
+    private RenderGUIStage renderGUIStage;
     // MODEL PROPERTIES
-    private static Color solidModelColor;
+    private Color solidModelColor;
     // FPS MONITOR
-    private static final TPSMonitor fpsMonitor = new TPSMonitor();
-    private static StringModel fpsMonitorModel;
-    private static boolean fpsMonitorStarted = false;
+    private final TPSMonitor fpsMonitor = new TPSMonitor();
+    private StringModel fpsMonitorModel;
+    private boolean fpsMonitorStarted = false;
 
-    static {
+    public Renderer() {
         // Set the default OpenGL version to GL32
         setGLVersion(GLVersion.GL32);
     }
@@ -163,20 +144,16 @@ public class Renderer {
     /**
      * Creates the OpenGL context and initializes the internal resources for the renderer
      */
-    public static void init() {
+    public void init() {
         initContext();
-        initEffects();
         initPrograms();
-        initTextures();
-        initMaterials();
-        initFrameBuffers();
         initVertexArrays();
-        initPipeline();
+        initEffects();
+        initMaterials();
         addDefaultObjects();
     }
 
-    private static void initContext() {
-        // CONTEXT
+    private void initContext() {
         context = glFactory.createContext();
         context.setWindowTitle(WINDOW_TITLE);
         context.setWindowSize(WINDOW_SIZE);
@@ -195,92 +172,57 @@ public class Renderer {
         uniforms.add(previousProjectionMatrixUniform);
     }
 
-    private static void initEffects() {
+    private void initEffects() {
+        final Texture colors = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
+        colors.setWrapS(WrapMode.CLAMP_TO_EDGE);
+        colors.setWrapT(WrapMode.CLAMP_TO_EDGE);
+        colors.setMagFilter(FilterMode.LINEAR);
+        colors.setMinFilter(FilterMode.LINEAR);
+        colors.create();
+
+        final Texture normals = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
+        normals.create();
+
+        final Texture depths = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.DEPTH, InternalFormat.DEPTH_COMPONENT32);
+        depths.setWrapS(WrapMode.CLAMP_TO_EDGE);
+        depths.setWrapT(WrapMode.CLAMP_TO_EDGE);
+        depths.create();
+
+        final Texture occlusion = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RED, InternalFormat.R8);
+        occlusion.create();
+
         final int blurSize = 2;
+        // RENDER MODELS
+        renderModelsStage = new RenderModelsStage(this);
+        renderModelsStage.setColorsOutput(colors);
+        renderModelsStage.setNormalsOutput(normals);
+        renderModelsStage.setDepthsOutput(depths);
+        renderModelsStage.create();
         // SSAO
-        ssaoEffect = new SSAOEffect(glFactory, WINDOW_SIZE, 8, blurSize, 0.5f, 0.15f, 2);
-        // SHADOW MAPPING
-        shadowMappingEffect = new ShadowMappingEffect(glFactory, WINDOW_SIZE, 8, blurSize, 0.005f, 0.0004f);
-        // BLUR
-        blurEffect = new BlurEffect(WINDOW_SIZE, blurSize);
+        ssaoStage = new SSAOStage(this);
+        ssaoStage.setNormalsInput(normals);
+        ssaoStage.setDepthsInput(depths);
+        ssaoStage.setKernelSize(8);
+        ssaoStage.setNoiseSize(blurSize);
+        ssaoStage.setRadius(0.5f);
+        ssaoStage.setThreshold(0.15f);
+        ssaoStage.setPower(2);
+        ssaoStage.setOcclusionOutput(occlusion);
+        ssaoStage.create();
+        // RENDER GUI
+        renderGUIStage = new RenderGUIStage(this);
+        renderGUIStage.create();
     }
 
-    private static void initPipeline() {
-        PipelineBuilder pipelineBuilder = new PipelineBuilder();
-        // MODEL
-        pipelineBuilder = pipelineBuilder
-                .bindFrameBuffer(frameBuffers.get("model"))
-                .clearBuffer()
-                .renderModels(modelRenderList);
-        // WEIGHTED SUM TRANSPARENCY
-        pipelineBuilder = pipelineBuilder
-                .disableDepthMask()
-                .disableCapabilities(Capability.CULL_FACE)
-                .enableCapabilities(Capability.BLEND)
-                .setBlendingFunctions(BlendFunction.GL_ONE, BlendFunction.GL_ONE)
-                .bindFrameBuffer(frameBuffers.get("weightedSum"))
-                .clearBuffer()
-                .renderModels(transparentModelList)
-                .disableCapabilities(Capability.BLEND)
-                .enableCapabilities(Capability.CULL_FACE)
-                .enableDepthMask();
-        // LIGHT MODEL
-        pipelineBuilder = pipelineBuilder
-                .useViewPort(new Rectangle(Vector2f.ZERO, SHADOW_SIZE))
-                .useCamera(lightCamera)
-                .bindFrameBuffer(frameBuffers.get("lightModel"))
-                .clearBuffer()
-                .renderModels(modelRenderList)
-                .useViewPort(new Rectangle(Vector2f.ZERO, WINDOW_SIZE))
-                .useCamera(modelCamera);
-        // SSAO
-        if (glVersion == GLVersion.GL32 || GLContext.getCapabilities().GL_ARB_depth_clamp) {
-            pipelineBuilder = pipelineBuilder
-                    .disableCapabilities(Capability.DEPTH_CLAMP);
-        }
-        pipelineBuilder = pipelineBuilder
-                .disableCapabilities(Capability.DEPTH_TEST)
-                .doAction(new DoDeferredStageAction("ssao", deferredStageScreenVertexArray, "ssao"));
-        // SHADOW
-        pipelineBuilder = pipelineBuilder
-                .doAction(new DoDeferredStageAction("shadow", deferredStageScreenVertexArray, "shadow"));
-        // BLUR
-        pipelineBuilder = pipelineBuilder
-                .doAction(new DoDeferredStageAction("blur", deferredStageScreenVertexArray, "blur"));
-        // LIGHTING
-        pipelineBuilder = pipelineBuilder
-                .doAction(new DoDeferredStageAction("lighting", deferredStageScreenVertexArray, "lighting"));
-        // ANTI ALIASING
-        pipelineBuilder = pipelineBuilder
-                .doAction(new DoDeferredStageAction("antiAliasing", deferredStageScreenVertexArray, "antiAliasing"));
-        // TRANSPARENCY BLENDING
-        pipelineBuilder = pipelineBuilder
-                .enableCapabilities(Capability.BLEND)
-                .setBlendingFunctions(BlendFunction.GL_ONE_MINUS_SRC_ALPHA, BlendFunction.GL_SRC_ALPHA)
-                .doAction(new DoDeferredStageAction("transparencyBlending", deferredStageScreenVertexArray, "transparencyBlending"))
-                .disableCapabilities(Capability.BLEND)
-                .enableDepthMask();
-        // MOTION BLUR
-        pipelineBuilder = pipelineBuilder
-                .doAction(new DoDeferredStageAction("motionBlur", deferredStageScreenVertexArray, "motionBlur"))
-                .unbindFrameBuffer(frameBuffers.get("motionBlur"))
-                .enableCapabilities(Capability.DEPTH_TEST);
-        if (glVersion == GLVersion.GL32 || GLContext.getCapabilities().GL_ARB_depth_clamp) {
-            pipelineBuilder = pipelineBuilder
-                    .enableCapabilities(Capability.DEPTH_CLAMP);
-        }
-        // GUI
-        pipelineBuilder = pipelineBuilder
-                .useCamera(guiCamera)
-                .clearBuffer()
-                .renderModels(guiRenderList)
-                .useCamera(modelCamera)
-                .updateDisplay();
-        // BUILD
-        pipeline = pipelineBuilder.build();
+    private Texture createTexture(int width, int height, Format format, InternalFormat internalFormat) {
+        final Texture texture = glFactory.createTexture();
+        texture.setFormat(format);
+        texture.setInternalFormat(internalFormat);
+        texture.setImageData(null, width, height);
+        return texture;
     }
 
-    private static void initPrograms() {
+    private void initPrograms() {
         // SOLID
         loadProgram("solid");
         // TEXTURED
@@ -307,221 +249,109 @@ public class Renderer {
         loadProgram("screen");
     }
 
-    private static void loadProgram(String name) {
+    private void loadProgram(String name) {
         final String shaderPath = "/shaders/" + glVersion.toString().toLowerCase() + "/" + name;
         // SHADERS
-        final Shader vert = glFactory.createShader();
-        vert.setSource(Renderer.class.getResourceAsStream(shaderPath + ".vert"));
-        vert.create();
-        final Shader frag = glFactory.createShader();
-        frag.setSource(Renderer.class.getResourceAsStream(shaderPath + ".frag"));
-        frag.create();
+        final Shader vertex = glFactory.createShader();
+        vertex.setSource(Renderer.class.getResourceAsStream(shaderPath + ".vert"));
+        vertex.create();
+        final Shader fragment = glFactory.createShader();
+        fragment.setSource(Renderer.class.getResourceAsStream(shaderPath + ".frag"));
+        fragment.create();
         // PROGRAM
         final Program program = glFactory.createProgram();
-        program.addShader(vert);
-        program.addShader(frag);
+        program.addShader(vertex);
+        program.addShader(fragment);
         program.create();
         programs.put(name, program);
     }
 
-    private static void initTextures() {
-        Texture texture;
-        // COLORS
-        texture = createTexture("colors", WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
-        texture.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        texture.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        texture.setMagFilter(FilterMode.LINEAR);
-        texture.setMinFilter(FilterMode.LINEAR);
-        texture.create();
-        // NORMALS
-        texture = createTexture("normals", WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
-        texture.create();
-        // VERTEX NORMALS
-        texture = createTexture("vertexNormals", WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
-        texture.create();
-        // MATERIALS
-        texture = createTexture("materials", WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGB, InternalFormat.RGB8);
-        texture.create();
-        // VELOCITIES
-        texture = createTexture("velocities", WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RG, InternalFormat.RG16F);
-        texture.setComponentType(DataType.HALF_FLOAT);
-        texture.create();
-        // DEPTHS
-        texture = createTexture("depths", WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.DEPTH, InternalFormat.DEPTH_COMPONENT32);
-        texture.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        texture.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        texture.create();
-        // LIGHT DEPTHS
-        texture = createTexture("lightDepths", SHADOW_SIZE.getFloorX(), SHADOW_SIZE.getFloorY(), Format.DEPTH, InternalFormat.DEPTH_COMPONENT32);
-        texture.setWrapS(WrapMode.CLAMP_TO_BORDER);
-        texture.setWrapT(WrapMode.CLAMP_TO_BORDER);
-        texture.setMagFilter(FilterMode.LINEAR);
-        texture.setMinFilter(FilterMode.LINEAR);
-        texture.setCompareMode(CompareMode.LESS);
-        texture.create();
-        // SSAO
-        texture = createTexture("ssao", WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RED, InternalFormat.R8);
-        texture.create();
-        // SHADOW
-        texture = createTexture("shadow", WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RED, InternalFormat.R8);
-        texture.create();
-        // AUX R
-        texture = createTexture("auxR", WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RED, InternalFormat.R8);
-        texture.create();
-        // AUX RGBA
-        texture = createTexture("auxRGBA", WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
-        texture.setMagFilter(FilterMode.LINEAR);
-        texture.setMinFilter(FilterMode.LINEAR);
-        texture.create();
-        // WEIGHTED COLORS
-        texture = createTexture("weightedColors", WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA16F);
-        texture.create();
-        // WEIGHTED VELOCITIES
-        texture = createTexture("weightedVelocities", WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RG, InternalFormat.RG16F);
-        texture.create();
-        // LAYER COUNTS
-        texture = createTexture("layerCounts", WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RED, InternalFormat.R16F);
-        texture.create();
-    }
-
-    private static Texture createTexture(String name, int width, int height, Format format, InternalFormat internalFormat) {
-        final Texture texture = glFactory.createTexture();
-        texture.setFormat(format);
-        texture.setInternalFormat(internalFormat);
-        texture.setImageData(null, width, height);
-        textures.put(name, texture);
-        return texture;
-    }
-
-    private static void initMaterials() {
+    private void initMaterials() {
         Material material;
+        UniformHolder uniforms;
         // SOLID
-        material = createMaterial("solid", "solid");
-        addUniforms(material, new FloatUniform("diffuseIntensity", 0.8f), new FloatUniform("specularIntensity", 1), new FloatUniform("ambientIntensity", 0.2f));
-        // SSAO
-        material = createMaterial("ssao", "ssao", "0:normals", "1:depths");
-        material.addTexture(2, ssaoEffect.getNoiseTexture());
-        addUniforms(material, new Vector2Uniform("projection", PROJECTION), new FloatUniform("tanHalfFOV", TAN_HALF_FOV), new FloatUniform("aspectRatio", ASPECT_RATIO));
-        addUniforms(material, ssaoEffect.getUniforms());
-        // SHADOW
-        material = createMaterial("shadow", "shadow", "0:vertexNormals", "1:depths", "2:lightDepths");
-        material.addTexture(3, shadowMappingEffect.getNoiseTexture());
-        addUniforms(material, new Vector2Uniform("projection", PROJECTION), new FloatUniform("tanHalfFOV", TAN_HALF_FOV), new FloatUniform("aspectRatio", ASPECT_RATIO),
-                lightDirectionUniform, inverseViewMatrixUniform, lightViewMatrixUniform, lightProjectionMatrixUniform);
-        addUniforms(material, shadowMappingEffect.getUniforms());
-        // BLUR
-        material = createMaterial("blur", "blur", "0:auxR", "1:auxRGBA");
-        addUniforms(material, blurEffect.getUniforms());
-        // LIGHTING
-        material = createMaterial("lighting", "lighting", "0:colors", "1:normals", "2:depths", "3:materials", "4:ssao", "5:shadow");
-        addUniforms(material, new FloatUniform("tanHalfFOV", TAN_HALF_FOV), new FloatUniform("aspectRatio", ASPECT_RATIO), lightDirectionUniform);
-        // ANTI ALIASING
-        material = createMaterial("antiAliasing", "edaa", "0:auxRGBA", "1:vertexNormals", "2:depths");
-        addUniforms(material, new Vector2Uniform("projection", PROJECTION), new Vector2Uniform("resolution", WINDOW_SIZE), new FloatUniform("maxSpan", 8),
-                new Vector2Uniform("barriers", new Vector2f(0.8f, 0.5f)), new Vector2Uniform("weights", new Vector2f(0.25f, 0.6f)), new FloatUniform("kernel", 0.75f));
+        material = new Material(programs.get("solid"));
+        uniforms = material.getUniforms();
+        uniforms.add(new FloatUniform("diffuseIntensity", 0.8f));
+        uniforms.add(new FloatUniform("specularIntensity", 1));
+        uniforms.add(new FloatUniform("ambientIntensity", 0.2f));
+        materials.put("solid", material);
         // TRANSPARENCY
-        material = createMaterial("transparency", "weightedSum");
-        addUniforms(material, lightDirectionUniform, new FloatUniform("diffuseIntensity", 0.8f), new FloatUniform("specularIntensity", 1), new FloatUniform("ambientIntensity", 0.2f));
-        // TRANSPARENCY BLENDING
-        createMaterial("transparencyBlending", "transparencyBlending", "0:weightedColors", "1:weightedVelocities", "2:layerCounts");
-        // MOTION BLUR
-        material = createMaterial("motionBlur", "motionBlur", "0:colors", "1:velocities");
-        addUniforms(material, new Vector2Uniform("resolution", WINDOW_SIZE), new IntUniform("sampleCount", 8), blurStrengthUniform);
+        material = new Material(programs.get("weightedSum"));
+        uniforms = material.getUniforms();
+        uniforms.add(lightDirectionUniform);
+        uniforms.add(new FloatUniform("diffuseIntensity", 0.8f));
+        uniforms.add(new FloatUniform("specularIntensity", 1));
+        uniforms.add(new FloatUniform("ambientIntensity", 0.2f));
+        materials.put("transparency", material);
         // SCREEN
-        createMaterial("screen", "screen", "0:auxRGBA");
+        material = new Material(programs.get("screen"));
+        material.addTexture(0, renderModelsStage.getColorsOutput());
+        materials.put("screen", material);
     }
 
-    private static Material createMaterial(String name, String program, String... textures) {
-        final Material material = new Material(programs.get(program));
-        for (String texture : textures) {
-            final String[] indexAndName = texture.split(":");
-            material.addTexture(Integer.parseInt(indexAndName[0]), Renderer.textures.get(indexAndName[1]));
-        }
-        materials.put(name, material);
-        return material;
-    }
-
-    private static void addUniforms(Material material, Uniform... uniforms) {
-        for (Uniform uniform : uniforms) {
-            material.getUniforms().add(uniform);
-        }
-    }
-
-    private static void initFrameBuffers() {
-        // MODEL
-        createFrameBuffer("model", "C0:colors", "C1:normals", "C2:vertexNormals", "C3:materials", "C4:velocities", "D:depths");
-        // LIGHT MODEL
-        createFrameBuffer("lightModel", "D:lightDepths");
-        // SSAO
-        createFrameBuffer("ssao", "C0:auxR");
-        // SHADOW
-        createFrameBuffer("shadow", "C0:auxRGBA");
-        // BLUR
-        createFrameBuffer("blur", "C0:ssao", "C1:shadow");
-        // LIGHTING
-        createFrameBuffer("lighting", "C0:auxRGBA");
-        // ANTI ALIASING
-        createFrameBuffer("antiAliasing", "C0:colors");
-        // WEIGHTED SUM
-        createFrameBuffer("weightedSum", "C0:weightedColors", "C1:weightedVelocities", "C2:layerCounts", "D:depths");
-        // TRANSPARENCY BLENDING
-        createFrameBuffer("transparencyBlending", "C0:colors", "C1:velocities");
-        // MOTION BLUR
-        createFrameBuffer("motionBlur", "C0:auxRGBA");
-    }
-
-    private static FrameBuffer createFrameBuffer(String name, String... textures) {
-        final FrameBuffer frameBuffer = glFactory.createFrameBuffer();
-        for (String texture : textures) {
-            final String[] typeAndName = texture.split(":");
-            frameBuffer.attach(decodeAttachment(typeAndName[0]), Renderer.textures.get(typeAndName[1]));
-        }
-        frameBuffer.create();
-        frameBuffers.put(name, frameBuffer);
-        return frameBuffer;
-    }
-
-    private static void initVertexArrays() {
+    private void initVertexArrays() {
         // DEFERRED STAGE SCREEN
-        deferredStageScreenVertexArray = glFactory.createVertexArray();
-        deferredStageScreenVertexArray.setData(MeshGenerator.generateTexturedPlane(null, new Vector2f(2, 2)));
-        deferredStageScreenVertexArray.create();
+        screenVertexArray = glFactory.createVertexArray();
+        screenVertexArray.setData(MeshGenerator.generateTexturedPlane(null, new Vector2f(2, 2)));
+        screenVertexArray.create();
     }
 
-    private static void addDefaultObjects() {
+    private void addDefaultObjects() {
         addScreen();
         addFPSMonitor();
+    }
+
+    private void addScreen() {
+        guiRenderList.add(new Model(screenVertexArray, materials.get("screen")));
+    }
+
+    private void addFPSMonitor() {
+        final Font ubuntu;
+        try {
+            ubuntu = Font.createFont(Font.TRUETYPE_FONT, Renderer.class.getResourceAsStream("/fonts/ubuntu-r.ttf"));
+        } catch (FontFormatException | IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        final StringModel sandboxModel = new StringModel(glFactory, programs.get("font"), "ClientWIPFPS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), WINDOW_SIZE.getFloorX());
+        final float aspect = 1 / ASPECT_RATIO;
+        sandboxModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.315, -0.1));
+        sandboxModel.setString("Client - WIP");
+        guiRenderList.add(sandboxModel);
+        final StringModel fpsModel = sandboxModel.getInstance();
+        fpsModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.285, -0.1));
+        fpsModel.setString("FPS: " + fpsMonitor.getTPS());
+        guiRenderList.add(fpsModel);
+        fpsMonitorModel = fpsModel;
     }
 
     /**
      * Destroys the renderer internal resources and the OpenGL context.
      */
-    public static void dispose() {
+    public void dispose() {
         disposeEffects();
         disposePrograms();
-        disposeTextures();
-        disposeMaterials();
-        disposeFrameBuffers();
         disposeVertexArrays();
         disposeContext();
         fpsMonitorStarted = false;
     }
 
-    private static void disposeContext() {
+    private void disposeContext() {
         // CONTEXT
         context.destroy();
     }
 
-    private static void disposeEffects() {
+    private void disposeEffects() {
+        // RENDER MODELS
+        renderModelsStage.destroy();
         // SSAO
-        ssaoEffect.dispose();
-        // SHADOW MAPPING
-        shadowMappingEffect.dispose();
-        // BLUR
-        blurEffect.dispose();
+        ssaoStage.destroy();
+        // RENDER GUI
+        renderGUIStage.destroy();
     }
 
-    private static void disposePrograms() {
+    private void disposePrograms() {
         for (Program program : programs.values()) {
             // SHADERS
             for (Shader shader : program.getShaders()) {
@@ -532,25 +362,56 @@ public class Renderer {
         }
     }
 
-    private static void disposeTextures() {
-        for (Texture texture : textures.values()) {
-            texture.destroy();
-        }
-    }
-
-    private static void disposeMaterials() {
-        materials.clear();
-    }
-
-    private static void disposeFrameBuffers() {
-        for (FrameBuffer frameBuffer : frameBuffers.values()) {
-            frameBuffer.destroy();
-        }
-    }
-
-    private static void disposeVertexArrays() {
+    private void disposeVertexArrays() {
         // DEFERRED STAGE SCREEN
-        deferredStageScreenVertexArray.destroy();
+        screenVertexArray.destroy();
+    }
+
+    /**
+     * Renders the models to the window.
+     */
+    public void render() {
+        if (!fpsMonitorStarted) {
+            fpsMonitor.start();
+            fpsMonitorStarted = true;
+        }
+        // UPDATE PER-FRAME UNIFORMS
+        inverseViewMatrixUniform.set(modelCamera.getViewMatrix().invert());
+        lightViewMatrixUniform.set(lightCamera.getViewMatrix());
+        lightProjectionMatrixUniform.set(lightCamera.getProjectionMatrix());
+        blurStrengthUniform.set((float) fpsMonitor.getTPS() / Interface.TPS);
+        // RENDER
+        renderModelsStage.render();
+        ssaoStage.render();
+        renderGUIStage.render();
+        // UPDATE PREVIOUS FRAME UNIFORMS
+        setPreviousModelMatrices();
+        previousViewMatrixUniform.set(modelCamera.getViewMatrix());
+        previousProjectionMatrixUniform.set(modelCamera.getProjectionMatrix());
+        // UPDATE FPS
+        updateFPSMonitor();
+    }
+
+    private void setPreviousModelMatrices() {
+        for (Model model : modelRenderList) {
+            model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
+        }
+        for (Model model : transparentModelList) {
+            model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
+        }
+    }
+
+    private void updateFPSMonitor() {
+        fpsMonitor.update();
+        fpsMonitorModel.setString("FPS: " + fpsMonitor.getTPS());
+    }
+
+    public GLFactory getGLFactory() {
+        return glFactory;
+    }
+
+    public GLVersion getGLVersion() {
+        return glVersion;
     }
 
     /**
@@ -558,7 +419,7 @@ public class Renderer {
      *
      * @param version The OpenGL version to use
      */
-    public static void setGLVersion(GLVersion version) {
+    public void setGLVersion(GLVersion version) {
         switch (version) {
             case GL20:
             case GL21:
@@ -573,22 +434,16 @@ public class Renderer {
         }
     }
 
-    /**
-     * Returns the OpenGL version.
-     *
-     * @return The OpenGL version
-     */
-    public static GLVersion getGLVersion() {
-        return glVersion;
+    public Context getContext() {
+        return context;
     }
 
-    /**
-     * Returns the OpenGL factory.
-     *
-     * @return The OpenGL factory
-     */
-    public static GLFactory getGLFactory() {
-        return glFactory;
+    public Program getProgram(String name) {
+        return programs.get(name);
+    }
+
+    public VertexArray getScreen() {
+        return screenVertexArray;
     }
 
     /**
@@ -596,7 +451,7 @@ public class Renderer {
      *
      * @param cull Whether or not to cull the back faces
      */
-    public static void setCullBackFaces(boolean cull) {
+    public void setCullBackFaces(boolean cull) {
         cullBackFaces = cull;
     }
 
@@ -605,7 +460,7 @@ public class Renderer {
      *
      * @param color The solid color
      */
-    public static void setSolidColor(Color color) {
+    public void setSolidColor(Color color) {
         solidModelColor = color;
     }
 
@@ -614,8 +469,12 @@ public class Renderer {
      *
      * @return The camera
      */
-    public static Camera getCamera() {
+    public Camera getCamera() {
         return modelCamera;
+    }
+
+    public Camera getGUICamera() {
+        return guiCamera;
     }
 
     /**
@@ -625,7 +484,7 @@ public class Renderer {
      * @param position The light camera position
      * @param size The size of the cuboid that must have shadows
      */
-    public static void updateLight(Vector3f direction, Vector3f position, Vector3f size) {
+    public void updateLight(Vector3f direction, Vector3f position, Vector3f size) {
         // Set the direction uniform
         direction = direction.normalize();
         lightDirectionUniform.set(direction);
@@ -671,7 +530,7 @@ public class Renderer {
      *
      * @param model The model
      */
-    public static void addSolidModel(Model model) {
+    public void addSolidModel(Model model) {
         model.setMaterial(materials.get("solid"));
         model.getUniforms().add(new ColorUniform("modelColor", solidModelColor));
         addModel(model);
@@ -682,7 +541,7 @@ public class Renderer {
      *
      * @param model The transparent model
      */
-    public static void addTransparentModel(Model model) {
+    public void addTransparentModel(Model model) {
         model.setMaterial(materials.get("transparency"));
         model.getUniforms().add(new Matrix4Uniform("previousModelMatrix", model.getMatrix()));
         transparentModelList.add(model);
@@ -693,7 +552,7 @@ public class Renderer {
      *
      * @param model The model to add
      */
-    public static void addModel(Model model) {
+    public void addModel(Model model) {
         model.getUniforms().add(new Matrix4Uniform("previousModelMatrix", model.getMatrix()));
         modelRenderList.add(model);
     }
@@ -703,14 +562,14 @@ public class Renderer {
      *
      * @param model The model to remove
      */
-    public static void removeModel(Model model) {
+    public void removeModel(Model model) {
         modelRenderList.remove(model);
     }
 
     /**
      * Removes all the models from the renderer.
      */
-    public static void clearModels() {
+    public void clearModels() {
         modelRenderList.clear();
     }
 
@@ -719,69 +578,12 @@ public class Renderer {
      *
      * @return The modifiable list of models
      */
-    public static List<Model> getModels() {
+    public List<Model> getModels() {
         return modelRenderList;
     }
 
-    private static void addScreen() {
-        guiRenderList.add(new Model(deferredStageScreenVertexArray, materials.get("screen")));
-    }
-
-    private static void addFPSMonitor() {
-        final Font ubuntu;
-        try {
-            ubuntu = Font.createFont(Font.TRUETYPE_FONT, Renderer.class.getResourceAsStream("/fonts/ubuntu-r.ttf"));
-        } catch (FontFormatException | IOException e) {
-            e.printStackTrace();
-            return;
-        }
-        final StringModel sandboxModel = new StringModel(glFactory, programs.get("font"), "ClientWIPFPS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), WINDOW_SIZE.getFloorX());
-        final float aspect = 1 / ASPECT_RATIO;
-        sandboxModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.315, -0.1));
-        sandboxModel.setString("Client - WIP");
-        guiRenderList.add(sandboxModel);
-        final StringModel fpsModel = sandboxModel.getInstance();
-        fpsModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.285, -0.1));
-        fpsModel.setString("FPS: " + fpsMonitor.getTPS());
-        guiRenderList.add(fpsModel);
-        fpsMonitorModel = fpsModel;
-    }
-
-    /**
-     * Renders the models to the window.
-     */
-    public static void render() {
-        if (!fpsMonitorStarted) {
-            fpsMonitor.start();
-            fpsMonitorStarted = true;
-        }
-        // UPDATE PER-FRAME UNIFORMS
-        inverseViewMatrixUniform.set(modelCamera.getViewMatrix().invert());
-        lightViewMatrixUniform.set(lightCamera.getViewMatrix());
-        lightProjectionMatrixUniform.set(lightCamera.getProjectionMatrix());
-        blurStrengthUniform.set((float) fpsMonitor.getTPS() / Interface.TPS);
-        // RENDER
-        pipeline.run(context);
-        // UPDATE PREVIOUS FRAME UNIFORMS
-        setPreviousModelMatrices();
-        previousViewMatrixUniform.set(modelCamera.getViewMatrix());
-        previousProjectionMatrixUniform.set(modelCamera.getProjectionMatrix());
-        // UPDATE FPS
-        updateFPSMonitor();
-    }
-
-    private static void setPreviousModelMatrices() {
-        for (Model model : modelRenderList) {
-            model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
-        }
-        for (Model model : transparentModelList) {
-            model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
-        }
-    }
-
-    private static void updateFPSMonitor() {
-        fpsMonitor.update();
-        fpsMonitorModel.setString("FPS: " + fpsMonitor.getTPS());
+    public List<Model> getGUIModels() {
+        return guiRenderList;
     }
 
     /**
@@ -789,7 +591,7 @@ public class Renderer {
      *
      * @param outputDir The directory in which to output the file
      */
-    public static void saveScreenshot(File outputDir) {
+    public void saveScreenshot(File outputDir) {
         final ByteBuffer buffer = context.readCurrentFrame(new Rectangle(Vector2f.ZERO, WINDOW_SIZE), Format.RGB);
         final int width = context.getWindowWidth();
         final int height = context.getWindowHeight();
@@ -808,51 +610,6 @@ public class Renderer {
             ImageIO.write(image, "PNG", new File(outputDir, SCREENSHOT_DATE_FORMAT.format(Calendar.getInstance().getTime()) + ".png"));
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    private static AttachmentPoint decodeAttachment(String s) {
-        final Matcher matcher = ATTACHMENT_PATTERN.matcher(s);
-        if (!matcher.find()) {
-            return null;
-        }
-        switch (matcher.group(1).toUpperCase()) {
-            case "C":
-                switch (Integer.parseInt(matcher.group(2))) {
-                    case 0:
-                        return AttachmentPoint.COLOR0;
-                    case 1:
-                        return AttachmentPoint.COLOR1;
-                    case 2:
-                        return AttachmentPoint.COLOR2;
-                    case 3:
-                        return AttachmentPoint.COLOR3;
-                    case 4:
-                        return AttachmentPoint.COLOR4;
-                }
-                return null;
-            case "D":
-                return AttachmentPoint.DEPTH;
-            case "S":
-                return AttachmentPoint.STENCIL;
-            case "DS":
-                return AttachmentPoint.DEPTH_STENCIL;
-        }
-        return null;
-    }
-
-    private static class DoDeferredStageAction extends RenderModelsAction {
-        private final FrameBuffer frameBuffer;
-
-        private DoDeferredStageAction(String frameBuffer, VertexArray screen, String material) {
-            super(Arrays.asList(new Model(screen, materials.get(material))));
-            this.frameBuffer = frameBuffers.get(frameBuffer);
-        }
-
-        @Override
-        public void execute(Context context) {
-            frameBuffer.bind();
-            super.execute(context);
         }
     }
 }

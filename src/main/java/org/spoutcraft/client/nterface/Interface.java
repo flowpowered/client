@@ -36,9 +36,16 @@ import com.flowpowered.math.TrigMath;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector3i;
+
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
-import org.lwjgl.input.*;
+
+import org.lwjgl.input.Keyboard;
+
+import org.spout.renderer.api.Camera;
+import org.spout.renderer.api.GLVersioned.GLVersion;
+import org.spout.renderer.api.data.Color;
+
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.input.Input;
 import org.spoutcraft.client.input.event.KeyboardEvent;
@@ -53,10 +60,6 @@ import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 import org.spoutcraft.client.universe.world.Chunk;
 import org.spoutcraft.client.universe.world.World;
 
-import org.spout.renderer.api.Camera;
-import org.spout.renderer.api.GLVersioned.GLVersion;
-import org.spout.renderer.api.data.Color;
-
 /**
  * Contains and manages the renderer, GUI and it's input and camera input. Meshes and renders chunks and entities.
  */
@@ -69,6 +72,7 @@ public class Interface extends TickingElement {
     private static final Vector3f[] CHUNK_VERTICES;
     private static final float MOUSE_SENSITIVITY = 0.08f;
     private final Game game;
+    private final Renderer renderer = new Renderer();
     private final ParallelChunkMesher mesher;
     private final Map<Vector3i, ChunkModel> chunkModels = new HashMap<>();
     private long worldLastUpdateNumber;
@@ -109,9 +113,9 @@ public class Interface extends TickingElement {
         game.getLogger().info("Starting interface");
 
         // TEST CODE
-        Renderer.setGLVersion(GLVersion.GL32);
-        Renderer.init();
-        Renderer.setSolidColor(new Color(0, 200, 0));
+        renderer.setGLVersion(GLVersion.GL32);
+        renderer.init();
+        renderer.setSolidColor(new Color(0, 200, 0));
         // Subscribe to the keyboard input queue
         final Input input = game.getInput();
         input.subscribeToKeyboard();
@@ -125,9 +129,9 @@ public class Interface extends TickingElement {
         updateChunkModels(world);
         handleInput(dt / 1000000000f);
         updateLight(world.getTime());
-        final Camera camera = Renderer.getCamera();
+        final Camera camera = renderer.getCamera();
         frustum.update(camera.getProjectionMatrix(), camera.getViewMatrix());
-        Renderer.render();
+        renderer.render();
         updateSnapshots();
     }
 
@@ -140,7 +144,7 @@ public class Interface extends TickingElement {
         mesher.shutdown();
         // Updating with a null world will clear all models
         updateChunkModels(null);
-        Renderer.dispose();
+        renderer.dispose();
     }
 
     private void updateLight(long time) {
@@ -154,8 +158,8 @@ public class Interface extends TickingElement {
         }
         lightAngle = lightAngle / PI * (PI - 2 * LIGHT_ANGLE_LIMIT) + LIGHT_ANGLE_LIMIT;
         final Vector3f direction = new Vector3f(0, -Math.sin(lightAngle), -Math.cos(lightAngle));
-        final Vector3f position = Renderer.getCamera().getPosition();
-        Renderer.updateLight(direction, new Vector3f(position.getX(), 0, position.getZ()), SHADOWED_CHUNKS);
+        final Vector3f position = renderer.getCamera().getPosition();
+        renderer.updateLight(direction, new Vector3f(position.getX(), 0, position.getZ()), SHADOWED_CHUNKS);
         // TODO: lower light intensity at night
     }
 
@@ -210,8 +214,8 @@ public class Interface extends TickingElement {
         // Update the world update number
         worldLastUpdateNumber = world.getUpdateNumber();
         // Safety precautions
-        if (Renderer.getModels().size() > chunkModels.size()) {
-            game.getLogger().warn("There are more models in the renderer (" + Renderer.getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
+        if (renderer.getModels().size() > chunkModels.size()) {
+            game.getLogger().warn("There are more models in the renderer (" + renderer.getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
         }
     }
 
@@ -222,13 +226,13 @@ public class Interface extends TickingElement {
         model.setRotation(Quaternionf.IDENTITY);
         // The previous model is kept to prevent frames with missing chunks because they're being meshed
         model.setPrevious(previous);
-        Renderer.addSolidModel(model);
+        renderer.addSolidModel(model);
         chunkModels.put(position, model);
         chunkLastUpdateNumbers.put(position, chunk.getUpdateNumber());
     }
 
     private void removeChunkModel(ChunkModel model, boolean destroy) {
-        Renderer.removeModel(model);
+        renderer.removeModel(model);
         if (destroy) {
             // TODO: recycle the vertex array?
             model.destroy();
@@ -261,7 +265,7 @@ public class Interface extends TickingElement {
             // Update the camera position to match the player
             final PlayerSnapshot player = game.getPhysics().getPlayerSnapshot();
             if (player != null) {
-                Renderer.getCamera().setPosition(player.getPosition());
+                renderer.getCamera().setPosition(player.getPosition());
             }
         }
     }
@@ -276,7 +280,7 @@ public class Interface extends TickingElement {
                         mouseGrabbed ^= true;
                         break;
                     case Keyboard.KEY_F2:
-                        Renderer.saveScreenshot(new File(""));
+                        renderer.saveScreenshot(new File(""));
                 }
             }
         }
@@ -298,14 +302,14 @@ public class Interface extends TickingElement {
         cameraYaw %= 360;
         final Quaternionf yaw = Quaternionf.fromAngleDegAxis(cameraYaw, 1, 0, 0);
         // Set the new camera rotation
-        Renderer.getCamera().setRotation(pitch.mul(yaw));
+        renderer.getCamera().setRotation(pitch.mul(yaw));
         // Update the last mouse x and y
         this.mouseX = mouseX;
         this.mouseY = mouseY;
     }
 
     private void updateSnapshots() {
-        cameraSnapshot.update(Renderer.getCamera());
+        cameraSnapshot.update(renderer.getCamera());
     }
 
     public CameraSnapshot getCameraSnapshot() {
@@ -319,6 +323,10 @@ public class Interface extends TickingElement {
      */
     public Game getGame() {
         return game;
+    }
+
+    public Renderer getRenderer() {
+        return renderer;
     }
 
     /**
