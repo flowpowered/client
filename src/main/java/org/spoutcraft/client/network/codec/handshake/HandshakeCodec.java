@@ -33,10 +33,7 @@ import org.spoutcraft.client.network.message.handshake.HandshakeMessage;
 /**
  * The codec for the handshake message.
  */
-public class HandshakeCodec extends Codec<HandshakeMessage> {
-    public HandshakeCodec() {
-        super(HandshakeMessage.class);
-    }
+public class HandshakeCodec implements Codec<HandshakeMessage> {
 
     @Override
     public HandshakeMessage decode(ByteBuf byteBuf) throws IOException {

@@ -26,6 +26,8 @@ package org.spoutcraft.client.network.protocol;
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.network.codec.login.LoginStartCodec;
 import org.spoutcraft.client.network.codec.login.LoginSuccessCodec;
+import org.spoutcraft.client.network.message.login.LoginStartMessage;
+import org.spoutcraft.client.network.message.login.LoginSuccessMessage;
 
 /**
  * The login protocol for the client protocol.
@@ -41,10 +43,10 @@ public class LoginProtocol extends ClientProtocol {
         /**
          * From Server, in order of opcodes
          */
-        registerMessage(INBOUND, LoginSuccessCodec.class, LoginSuccessCodec.class, 2);
+        registerMessage(INBOUND, LoginSuccessMessage.class, LoginSuccessCodec.class, LoginSuccessCodec.class, 2);
         /**
          * To Server, in order of opcodes
          */
-        registerMessage(OUTBOUND, LoginStartCodec.class, null, 0);
+        registerMessage(OUTBOUND, LoginStartMessage.class, LoginStartCodec.class, null, 0);
     }
 }

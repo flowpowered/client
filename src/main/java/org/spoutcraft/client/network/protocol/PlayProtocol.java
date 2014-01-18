@@ -33,6 +33,15 @@ import org.spoutcraft.client.network.codec.play.PlayerCodec;
 import org.spoutcraft.client.network.codec.play.PositionLookCodec;
 import org.spoutcraft.client.network.codec.play.RespawnCodec;
 import org.spoutcraft.client.network.codec.play.SpawnPositionCodec;
+import org.spoutcraft.client.network.message.play.ChunkDataBulkMessage;
+import org.spoutcraft.client.network.message.play.ChunkDataMessage;
+import org.spoutcraft.client.network.message.play.ClientStatusMessage;
+import org.spoutcraft.client.network.message.play.JoinGameMessage;
+import org.spoutcraft.client.network.message.play.KeepAliveMessage;
+import org.spoutcraft.client.network.message.play.PlayerMessage;
+import org.spoutcraft.client.network.message.play.PositionLookMessage;
+import org.spoutcraft.client.network.message.play.RespawnMessage;
+import org.spoutcraft.client.network.message.play.SpawnPositionMessage;
 
 /**
  * The main play protocol for the client protocol.
@@ -48,19 +57,19 @@ public class PlayProtocol extends ClientProtocol {
         /**
          * From Server, in order of opcodes
          */
-        registerMessage(INBOUND, KeepAliveCodec.class, KeepAliveCodec.class, 0);
-        registerMessage(INBOUND, JoinGameCodec.class, JoinGameCodec.class, 1);
-        registerMessage(INBOUND, SpawnPositionCodec.class, SpawnPositionCodec.class, 5);
-        registerMessage(INBOUND, RespawnCodec.class, RespawnCodec.class, 7);
-        registerMessage(INBOUND, PositionLookCodec.class, PositionLookCodec.class, 8);
-        registerMessage(INBOUND, ChunkDataCodec.class, ChunkDataCodec.class, 21);
-        registerMessage(INBOUND, ChunkDataBulkCodec.class, ChunkDataBulkCodec.class, 26);
+        registerMessage(INBOUND, KeepAliveMessage.class, KeepAliveCodec.class, KeepAliveCodec.class, 0);
+        registerMessage(INBOUND, JoinGameMessage.class, JoinGameCodec.class, JoinGameCodec.class, 1);
+        registerMessage(INBOUND, SpawnPositionMessage.class, SpawnPositionCodec.class, SpawnPositionCodec.class, 5);
+        registerMessage(INBOUND, RespawnMessage.class, RespawnCodec.class, RespawnCodec.class, 7);
+        registerMessage(INBOUND, PositionLookMessage.class, PositionLookCodec.class, PositionLookCodec.class, 8);
+        registerMessage(INBOUND, ChunkDataMessage.class, ChunkDataCodec.class, ChunkDataCodec.class, 21);
+        registerMessage(INBOUND, ChunkDataBulkMessage.class, ChunkDataBulkCodec.class, ChunkDataBulkCodec.class, 26);
         /**
          * To Server, in order of opcodes
          */
-        registerMessage(OUTBOUND, KeepAliveCodec.class, null, 0);
-        registerMessage(OUTBOUND, PlayerCodec.class, null, 3);
-        registerMessage(OUTBOUND, PositionLookCodec.class, null, 4);
-        registerMessage(OUTBOUND, ClientStatusCodec.class, null, 16);
+        registerMessage(OUTBOUND, KeepAliveMessage.class, KeepAliveCodec.class, null, 0);
+        registerMessage(OUTBOUND, PlayerMessage.class, PlayerCodec.class, null, 3);
+        registerMessage(OUTBOUND, PositionLookMessage.class, PositionLookCodec.class, null, 4);
+        registerMessage(OUTBOUND, ClientStatusMessage.class, ClientStatusCodec.class, null, 16);
     }
 }

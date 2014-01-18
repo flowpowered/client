@@ -32,10 +32,7 @@ import org.spoutcraft.client.network.message.play.PlayerMessage;
 /**
  * The codec for the player message.
  */
-public class PlayerCodec extends Codec<PlayerMessage> {
-    public PlayerCodec() {
-        super(PlayerMessage.class);
-    }
+public class PlayerCodec implements Codec<PlayerMessage> {
 
     @Override
     public PlayerMessage decode(ByteBuf buf) throws IOException {
