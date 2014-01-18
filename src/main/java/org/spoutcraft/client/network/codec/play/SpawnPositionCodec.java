@@ -35,10 +35,7 @@ import org.spoutcraft.client.network.message.play.SpawnPositionMessage;
 /**
  * The codec for the spawn position message. Also handles the spawn position message.
  */
-public class SpawnPositionCodec extends Codec<SpawnPositionMessage> implements MessageHandler<ClientSession, SpawnPositionMessage> {
-    public SpawnPositionCodec() {
-        super(SpawnPositionMessage.class);
-    }
+public class SpawnPositionCodec implements Codec<SpawnPositionMessage>, MessageHandler<ClientSession, SpawnPositionMessage> {
 
     @Override
     public SpawnPositionMessage decode(ByteBuf buf) throws IOException {

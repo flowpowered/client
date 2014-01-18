@@ -40,10 +40,7 @@ import org.spoutcraft.client.network.message.play.RespawnMessage;
 /**
  * The codec for the respawn message. Also handles the respawn message.
  */
-public class RespawnCodec extends Codec<RespawnMessage> implements MessageHandler<ClientSession, RespawnMessage> {
-    public RespawnCodec() {
-        super(RespawnMessage.class);
-    }
+public class RespawnCodec implements Codec<RespawnMessage>, MessageHandler<ClientSession, RespawnMessage> {
 
     @Override
     public RespawnMessage decode(ByteBuf buf) throws IOException {

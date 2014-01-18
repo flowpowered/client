@@ -37,10 +37,7 @@ import org.spoutcraft.client.network.message.login.LoginSuccessMessage;
 /**
  * The codec for the login success message. Also handles the login success message.
  */
-public class LoginSuccessCodec extends Codec<LoginSuccessMessage> implements MessageHandler<ClientSession, LoginSuccessMessage> {
-    public LoginSuccessCodec() {
-        super(LoginSuccessMessage.class);
-    }
+public class LoginSuccessCodec implements Codec<LoginSuccessMessage>, MessageHandler<ClientSession, LoginSuccessMessage> {
 
     @Override
     public LoginSuccessMessage decode(ByteBuf buf) throws IOException {

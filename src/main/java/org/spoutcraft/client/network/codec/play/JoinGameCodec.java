@@ -40,10 +40,7 @@ import org.spoutcraft.client.network.message.play.JoinGameMessage;
 /**
  * The codec for the join game message. Also handles the join game message.
  */
-public class JoinGameCodec extends Codec<JoinGameMessage> implements MessageHandler<ClientSession, JoinGameMessage> {
-    public JoinGameCodec() {
-        super(JoinGameMessage.class);
-    }
+public class JoinGameCodec implements Codec<JoinGameMessage>, MessageHandler<ClientSession, JoinGameMessage> {
 
     @Override
     public JoinGameMessage decode(ByteBuf buf) throws IOException {

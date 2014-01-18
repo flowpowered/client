@@ -32,10 +32,7 @@ import org.spoutcraft.client.network.message.play.ClientStatusMessage;
 /**
  * The codec for the client status message.
  */
-public class ClientStatusCodec extends Codec<ClientStatusMessage> {
-    public ClientStatusCodec() {
-        super(ClientStatusMessage.class);
-    }
+public class ClientStatusCodec implements Codec<ClientStatusMessage> {
 
     @Override
     public ClientStatusMessage decode(ByteBuf buf) throws IOException {

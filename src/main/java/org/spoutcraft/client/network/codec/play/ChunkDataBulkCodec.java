@@ -32,10 +32,7 @@ import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.ChunkDataBulkMessage;
 
-public class ChunkDataBulkCodec extends Codec<ChunkDataBulkMessage> implements MessageHandler<ClientSession, ChunkDataBulkMessage> {
-    public ChunkDataBulkCodec() {
-        super(ChunkDataBulkMessage.class);
-    }
+public class ChunkDataBulkCodec implements Codec<ChunkDataBulkMessage>, MessageHandler<ClientSession, ChunkDataBulkMessage> {
 
     @Override
     public ChunkDataBulkMessage decode(ByteBuf buf) throws IOException {

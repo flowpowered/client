@@ -33,10 +33,7 @@ import org.spoutcraft.client.network.message.login.LoginStartMessage;
 /**
  * The codec for the login start message.
  */
-public class LoginStartCodec extends Codec<LoginStartMessage> {
-    public LoginStartCodec() {
-        super(LoginStartMessage.class);
-    }
+public class LoginStartCodec implements Codec<LoginStartMessage> {
 
     @Override
     public LoginStartMessage decode(ByteBuf byteBuf) throws IOException {

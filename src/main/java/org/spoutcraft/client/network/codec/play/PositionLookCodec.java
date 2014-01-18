@@ -32,10 +32,7 @@ import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.PositionLookMessage;
 
-public class PositionLookCodec extends Codec<PositionLookMessage> implements MessageHandler<ClientSession, PositionLookMessage> {
-    public PositionLookCodec() {
-        super(PositionLookMessage.class);
-    }
+public class PositionLookCodec implements Codec<PositionLookMessage>, MessageHandler<ClientSession, PositionLookMessage> {
 
     @Override
     public PositionLookMessage decode(ByteBuf buf) throws IOException {

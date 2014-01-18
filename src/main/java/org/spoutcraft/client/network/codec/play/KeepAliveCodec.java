@@ -34,10 +34,7 @@ import org.spoutcraft.client.network.message.play.KeepAliveMessage;
 /**
  * The codec for the keep alive message. Also handles the keep alive message .
  */
-public class KeepAliveCodec extends Codec<KeepAliveMessage> implements MessageHandler<ClientSession, KeepAliveMessage> {
-    public KeepAliveCodec() {
-        super(KeepAliveMessage.class);
-    }
+public class KeepAliveCodec implements Codec<KeepAliveMessage>, MessageHandler<ClientSession, KeepAliveMessage> {
 
     @Override
     public KeepAliveMessage decode(ByteBuf buf) throws IOException {
