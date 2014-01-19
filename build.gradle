@@ -1,5 +1,5 @@
 // Default tasks
-defaultTasks 'clean', 'build', 'licenseFormatMain', 'licenseFormatTest', 'shadow'
+defaultTasks 'clean', 'build', 'licenseFormatMain', 'licenseFormatTest', 'shadowJar'
 
 // Apply plugins
 apply plugin: 'application'
@@ -16,6 +16,7 @@ mainClassName = "org.spoutcraft.client.Main"
 // Extended project information
 ext.projectName = 'Client'
 ext.inceptionYear = '2013'
+ext.currentYear = '2014'
 ext.packaging = 'jar'
 ext.url = 'http://spoutcraft.org'
 ext.description = 'Open source, multi-threaded Minecraft client written in Java.'
@@ -43,14 +44,11 @@ buildscript {
             name = 'sonatype-nexus-public'
             url = 'https://oss.sonatype.org/content/repositories/public/'
         }
-        maven {
-            name = 'shadow-repo'
-            url = 'http://dl.bintray.com/content/johnrengelman/gradle-plugins/'
-        }
+        jcenter()
     }
     dependencies {
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.6.0'
-        classpath 'org.gradle.plugins:shadow:0.7.4'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:0.8'
     }
 }
 
@@ -66,13 +64,13 @@ repositories {
 dependencies {
     compile 'com.flowpowered:flow-commons:0.1.0-SNAPSHOT'
     compile 'com.flowpowered:flow-networking:0.1.0-SNAPSHOT'
-    compile 'io.netty:netty-all:4.0.13.Final'
-    compile 'junit:junit:4.8.1'
+    compile 'io.netty:netty-all:4.0.14.Final'
+    compile 'junit:junit:4.8.2'
     compile 'org.apache.logging.log4j:log4j-api:2.0-beta9'
     compile 'org.apache.logging.log4j:log4j-core:2.0-beta9'
     compile 'org.spout:caustic-lwjgl:1.0.0-SNAPSHOT'
     compile 'org.spout:react:1.0.0-SNAPSHOT'
-    testCompile 'junit:junit:4.8.1'
+    testCompile 'junit:junit:4.8.2'
 }
 
 // Filter, process, and include resources
@@ -102,7 +100,7 @@ license {
     ext.name = projectName
     ext.organization = organization
     ext.url = url
-    ext.year = inceptionYear
+    ext.year = inceptionYear + '-' + currentYear
     header rootProject.file('HEADER.txt')
     strictCheck true
 }
