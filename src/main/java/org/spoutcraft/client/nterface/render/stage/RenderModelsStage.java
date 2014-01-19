@@ -1,12 +1,18 @@
 package org.spoutcraft.client.nterface.render.stage;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.Creatable;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
+import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
 import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture;
+import org.spout.renderer.api.model.Model;
 
 import org.spoutcraft.client.nterface.render.Renderer;
 
@@ -16,10 +22,12 @@ import org.spoutcraft.client.nterface.render.Renderer;
 public class RenderModelsStage extends Creatable {
     private final Renderer renderer;
     private final FrameBuffer frameBuffer;
-    private Pipeline pipeline;
     private Texture colorsOutput;
     private Texture normalsOutput;
     private Texture depthsOutput;
+    private final List<Model> models = new ArrayList<>();
+    private final Camera camera = Camera.createPerspective(Renderer.FIELD_OF_VIEW, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY(), Renderer.NEAR_PLANE, Renderer.FAR_PLANE);
+    private Pipeline pipeline;
 
     public RenderModelsStage(Renderer renderer) {
         this.renderer = renderer;
@@ -38,7 +46,7 @@ public class RenderModelsStage extends Creatable {
         frameBuffer.attach(AttachmentPoint.DEPTH, depthsOutput);
         frameBuffer.create();
         // Create the pipeline
-        pipeline = new PipelineBuilder().bindFrameBuffer(frameBuffer).clearBuffer().renderModels(renderer.getModels()).unbindFrameBuffer(frameBuffer).build();
+        pipeline = new PipelineBuilder().useCamera(camera).bindFrameBuffer(frameBuffer).clearBuffer().renderModels(models).unbindFrameBuffer(frameBuffer).build();
         // Update the state to created
         super.create();
     }
@@ -80,5 +88,39 @@ public class RenderModelsStage extends Creatable {
     public void setDepthsOutput(Texture texture) {
         texture.checkCreated();
         depthsOutput = texture;
+    }
+
+    public Camera getCamera() {
+        return camera;
+    }
+
+    /**
+     * Adds a model to the renderer.
+     *
+     * @param model The model to add
+     */
+    public void addModel(Model model) {
+        model.getUniforms().add(new Matrix4Uniform("previousModelMatrix", model.getMatrix()));
+        models.add(model);
+    }
+
+    /**
+     * Removes a model from the renderer.
+     *
+     * @param model The model to remove
+     */
+    public void removeModel(Model model) {
+        models.remove(model);
+    }
+
+    /**
+     * Removes all the models from the renderer.
+     */
+    public void clearModels() {
+        models.clear();
+    }
+
+    public List<Model> getModels() {
+        return models;
     }
 }

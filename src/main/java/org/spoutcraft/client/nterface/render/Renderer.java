@@ -79,6 +79,7 @@ import org.spoutcraft.client.nterface.Interface;
 import org.spoutcraft.client.nterface.render.stage.RenderGUIStage;
 import org.spoutcraft.client.nterface.render.stage.RenderModelsStage;
 import org.spoutcraft.client.nterface.render.stage.SSAOStage;
+import org.spoutcraft.client.nterface.render.stage.ShadowMappingStage;
 
 /**
  * The default renderer. Support OpenGL 2.1 and 3.2. Can render fully textured models with normal and specular mapping, ambient occlusion (SSAO), shadow mapping, Phong shading, motion blur and edge
@@ -100,25 +101,16 @@ public class Renderer {
     private boolean cullBackFaces = true;
     // EFFECT UNIFORMS
     private final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.FORWARD);
-    private final Matrix4Uniform inverseViewMatrixUniform = new Matrix4Uniform("inverseViewMatrix", new Matrix4f());
-    private final Matrix4Uniform lightViewMatrixUniform = new Matrix4Uniform("lightViewMatrix", new Matrix4f());
-    private final Matrix4Uniform lightProjectionMatrixUniform = new Matrix4Uniform("lightProjectionMatrix", new Matrix4f());
     private final Matrix4Uniform previousViewMatrixUniform = new Matrix4Uniform("previousViewMatrix", new Matrix4f());
     private final Matrix4Uniform previousProjectionMatrixUniform = new Matrix4Uniform("previousProjectionMatrix", new Matrix4f());
     private final FloatUniform blurStrengthUniform = new FloatUniform("blurStrength", 1);
-    // CAMERAS
-    private final Camera modelCamera = Camera.createPerspective(FIELD_OF_VIEW, WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), NEAR_PLANE, FAR_PLANE);
-    private final Camera lightCamera = Camera.createOrthographic(50, -50, 50, -50, -50, 50);
-    private final Camera guiCamera = Camera.createOrthographic(1, 0, 1 / ASPECT_RATIO, 0, NEAR_PLANE, FAR_PLANE);
     // OPENGL VERSION AND FACTORY
     private GLVersion glVersion;
     private GLFactory glFactory;
     // CONTEXT
     private Context context;
     // RENDER LISTS
-    private final List<Model> modelRenderList = new ArrayList<>();
     private final List<Model> transparentModelList = new ArrayList<>();
-    private final List<Model> guiRenderList = new ArrayList<>();
     // PROGRAMS
     private final Map<String, Program> programs = new HashMap<>();
     // MATERIALS
@@ -127,6 +119,7 @@ public class Renderer {
     private VertexArray screenVertexArray;
     // EFFECTS
     private RenderModelsStage renderModelsStage;
+    private ShadowMappingStage shadowMappingStage;
     private SSAOStage ssaoStage;
     private RenderGUIStage renderGUIStage;
     // MODEL PROPERTIES
@@ -159,7 +152,6 @@ public class Renderer {
         context.setWindowSize(WINDOW_SIZE);
         context.create();
         context.setClearColor(new Color(0, 0, 0, 0));
-        context.setCamera(modelCamera);
         if (cullBackFaces) {
             context.enableCapability(Capability.CULL_FACE);
         }
@@ -188,16 +180,29 @@ public class Renderer {
         depths.setWrapT(WrapMode.CLAMP_TO_EDGE);
         depths.create();
 
-        final Texture occlusion = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RED, InternalFormat.R8);
-        occlusion.create();
+        final Texture shadows = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RED, InternalFormat.R8);
+        shadows.create();
 
-        final int blurSize = 2;
+        final Texture occlusions = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RED, InternalFormat.R8);
+        occlusions.create();
+
+        final int blurSize = 4;
         // RENDER MODELS
         renderModelsStage = new RenderModelsStage(this);
         renderModelsStage.setColorsOutput(colors);
         renderModelsStage.setNormalsOutput(normals);
         renderModelsStage.setDepthsOutput(depths);
         renderModelsStage.create();
+        // SHADOWS
+        shadowMappingStage = new ShadowMappingStage(this);
+        shadowMappingStage.setNormalsInput(normals);
+        shadowMappingStage.setDepthsInput(depths);
+        shadowMappingStage.setKernelSize(8);
+        shadowMappingStage.setNoiseSize(blurSize);
+        shadowMappingStage.setBias(0.005f);
+        shadowMappingStage.setRadius(0.0004f);
+        shadowMappingStage.setShadowsOutput(shadows);
+        shadowMappingStage.create();
         // SSAO
         ssaoStage = new SSAOStage(this);
         ssaoStage.setNormalsInput(normals);
@@ -207,7 +212,7 @@ public class Renderer {
         ssaoStage.setRadius(0.5f);
         ssaoStage.setThreshold(0.15f);
         ssaoStage.setPower(2);
-        ssaoStage.setOcclusionOutput(occlusion);
+        ssaoStage.setOcclusionOutput(occlusions);
         ssaoStage.create();
         // RENDER GUI
         renderGUIStage = new RenderGUIStage(this);
@@ -303,7 +308,7 @@ public class Renderer {
     }
 
     private void addScreen() {
-        guiRenderList.add(new Model(screenVertexArray, materials.get("screen")));
+        renderGUIStage.addModel(new Model(screenVertexArray, materials.get("screen")));
     }
 
     private void addFPSMonitor() {
@@ -318,11 +323,11 @@ public class Renderer {
         final float aspect = 1 / ASPECT_RATIO;
         sandboxModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.315, -0.1));
         sandboxModel.setString("Client - WIP");
-        guiRenderList.add(sandboxModel);
+        renderGUIStage.addModel(sandboxModel);
         final StringModel fpsModel = sandboxModel.getInstance();
         fpsModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.285, -0.1));
         fpsModel.setString("FPS: " + fpsMonitor.getTPS());
-        guiRenderList.add(fpsModel);
+        renderGUIStage.addModel(fpsModel);
         fpsMonitorModel = fpsModel;
     }
 
@@ -338,13 +343,14 @@ public class Renderer {
     }
 
     private void disposeContext() {
-        // CONTEXT
         context.destroy();
     }
 
     private void disposeEffects() {
         // RENDER MODELS
         renderModelsStage.destroy();
+        // SHADOWS
+        shadowMappingStage.destroy();
         // SSAO
         ssaoStage.destroy();
         // RENDER GUI
@@ -376,24 +382,23 @@ public class Renderer {
             fpsMonitorStarted = true;
         }
         // UPDATE PER-FRAME UNIFORMS
-        inverseViewMatrixUniform.set(modelCamera.getViewMatrix().invert());
-        lightViewMatrixUniform.set(lightCamera.getViewMatrix());
-        lightProjectionMatrixUniform.set(lightCamera.getProjectionMatrix());
+        final Camera camera = renderModelsStage.getCamera();
         blurStrengthUniform.set((float) fpsMonitor.getTPS() / Interface.TPS);
         // RENDER
         renderModelsStage.render();
+        shadowMappingStage.render();
         ssaoStage.render();
         renderGUIStage.render();
         // UPDATE PREVIOUS FRAME UNIFORMS
         setPreviousModelMatrices();
-        previousViewMatrixUniform.set(modelCamera.getViewMatrix());
-        previousProjectionMatrixUniform.set(modelCamera.getProjectionMatrix());
+        previousViewMatrixUniform.set(camera.getViewMatrix());
+        previousProjectionMatrixUniform.set(camera.getProjectionMatrix());
         // UPDATE FPS
         updateFPSMonitor();
     }
 
     private void setPreviousModelMatrices() {
-        for (Model model : modelRenderList) {
+        for (Model model : renderModelsStage.getModels()) {
             model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
         }
         for (Model model : transparentModelList) {
@@ -446,6 +451,18 @@ public class Renderer {
         return screenVertexArray;
     }
 
+    public RenderModelsStage getRenderModelsStage() {
+        return renderModelsStage;
+    }
+
+    public RenderGUIStage getRenderGUIStage() {
+        return renderGUIStage;
+    }
+
+    public Vector3Uniform getLightDirectionUniform() {
+        return lightDirectionUniform;
+    }
+
     /**
      * Sets whether or not to cull the back faces of the geometry.
      *
@@ -465,19 +482,6 @@ public class Renderer {
     }
 
     /**
-     * Returns the renderer camera
-     *
-     * @return The camera
-     */
-    public Camera getCamera() {
-        return modelCamera;
-    }
-
-    public Camera getGUICamera() {
-        return guiCamera;
-    }
-
-    /**
      * Updates the light direction and camera bounds to ensure that shadows are casted inside the cuboid defined by size.
      *
      * @param direction The light direction
@@ -489,10 +493,11 @@ public class Renderer {
         direction = direction.normalize();
         lightDirectionUniform.set(direction);
         // Set the camera position
-        lightCamera.setPosition(position);
+        final Camera camera = shadowMappingStage.getCamera();
+        camera.setPosition(position);
         // Calculate the camera rotation from the direction and set
         final Quaternionf rotation = Quaternionf.fromRotationTo(Vector3f.FORWARD.negate(), direction);
-        lightCamera.setRotation(rotation);
+        camera.setRotation(rotation);
         // Calculate the transformation from the camera bounds rotation to the identity rotation (its axis aligned space)
         final Matrix3f axisAlignTransform = Matrix3f.createRotation(rotation).invert();
         // Calculate the points of the box to completely include inside the camera bounds
@@ -522,7 +527,7 @@ public class Renderer {
         // Calculate the size of the new camera bounds
         size = high.sub(low).div(2);
         // Update the camera to the new bounds
-        lightCamera.setProjection(Matrix4f.createOrthographic(size.getX(), -size.getX(), size.getY(), -size.getY(), -size.getZ(), size.getZ()));
+        camera.setProjection(Matrix4f.createOrthographic(size.getX(), -size.getX(), size.getY(), -size.getY(), -size.getZ(), size.getZ()));
     }
 
     /**
@@ -533,7 +538,7 @@ public class Renderer {
     public void addSolidModel(Model model) {
         model.setMaterial(materials.get("solid"));
         model.getUniforms().add(new ColorUniform("modelColor", solidModelColor));
-        addModel(model);
+        renderModelsStage.addModel(model);
     }
 
     /**
@@ -545,45 +550,6 @@ public class Renderer {
         model.setMaterial(materials.get("transparency"));
         model.getUniforms().add(new Matrix4Uniform("previousModelMatrix", model.getMatrix()));
         transparentModelList.add(model);
-    }
-
-    /**
-     * Adds a model to the renderer.
-     *
-     * @param model The model to add
-     */
-    public void addModel(Model model) {
-        model.getUniforms().add(new Matrix4Uniform("previousModelMatrix", model.getMatrix()));
-        modelRenderList.add(model);
-    }
-
-    /**
-     * Removes a model from the renderer.
-     *
-     * @param model The model to remove
-     */
-    public void removeModel(Model model) {
-        modelRenderList.remove(model);
-    }
-
-    /**
-     * Removes all the models from the renderer.
-     */
-    public void clearModels() {
-        modelRenderList.clear();
-    }
-
-    /**
-     * Returns the modifiable list of the models. Changes in this list are reflected in the renderer.
-     *
-     * @return The modifiable list of models
-     */
-    public List<Model> getModels() {
-        return modelRenderList;
-    }
-
-    public List<Model> getGUIModels() {
-        return guiRenderList;
     }
 
     /**
