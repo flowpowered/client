@@ -122,12 +122,10 @@ public class Interface extends TickingElement {
 
     @Override
     public void onTick(long dt) {
+        handleInput(dt / 1000000000f);
         final WorldSnapshot world = game.getUniverse().getActiveWorldSnapshot();
         updateChunkModels(world);
-        handleInput(dt / 1000000000f);
         updateLight(world.getTime());
-        final Camera camera = renderer.getRenderModelsStage().getCamera();
-        frustum.update(camera.getProjectionMatrix(), camera.getViewMatrix());
         renderer.render();
         updateSnapshots();
     }
@@ -249,7 +247,7 @@ public class Interface extends TickingElement {
             // If the mouse grabbed state has changed from the keyboard events, update the mouse grabbed state
             if (mouseGrabbed != mouseGrabbedBefore) {
                 input.setMouseGrabbed(mouseGrabbed);
-                // If the mouse has just been re-grabbed, ensure that movement when not grabbed will ignored
+                // If the mouse has just been re-grabbed, ensure that movement when not grabbed will be ignored
                 if (mouseGrabbed) {
                     mouseX = input.getMouseX();
                     mouseY = input.getMouseY();
@@ -260,10 +258,13 @@ public class Interface extends TickingElement {
                 handleMouseInput(dt);
             }
             // Update the camera position to match the player
+            final Camera camera = renderer.getRenderModelsStage().getCamera();
             final PlayerSnapshot player = game.getPhysics().getPlayerSnapshot();
             if (player != null) {
-                renderer.getRenderModelsStage().getCamera().setPosition(player.getPosition());
+                camera.setPosition(player.getPosition());
             }
+            // Update the frustum to match the camera
+            frustum.update(camera.getProjectionMatrix(), camera.getViewMatrix());
         }
     }
 
