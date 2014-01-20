@@ -560,7 +560,7 @@ public class Renderer {
      */
     public void addSolidModel(Model model) {
         model.setMaterial(solidMaterial);
-        model.getUniforms().add(new ColorUniform("modelColor", solidModelColor));
+        model.getUniforms().add(new ColorUniform("modelColor", new Color(Math.random(), Math.random(), Math.random(), 1)));
         renderModelsStage.addModel(model);
     }
 

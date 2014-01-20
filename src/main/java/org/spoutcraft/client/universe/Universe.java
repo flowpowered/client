@@ -39,6 +39,7 @@ import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.math.vector.Vector3i;
 import com.flowpowered.networking.util.AnnotatedMessageHandler;
 import com.flowpowered.networking.util.AnnotatedMessageHandler.Handle;
+
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
@@ -111,15 +112,17 @@ public class Universe extends TickingElement {
 
         // TEST CODE
         final Random random = new Random();
-        final World world = activeWorld.get();
-        int x = random.nextInt(64) - 32;
-        int z = random.nextInt(64) - 32;
-        final Chunk chunk = world.getChunk(x >> Chunk.BLOCKS.BITS, 0, z >> Chunk.BLOCKS.BITS);
-        if (chunk != null) {
-            for (int y = 15; y >= 0; y--) {
-                if (chunk.getMaterial(x, y, z) != Materials.AIR) {
-                    chunk.setMaterial(x, y, z, Materials.AIR);
-                    break;
+        if (random.nextInt(20) == 0) {
+            final World world = activeWorld.get();
+            int x = random.nextInt(64) - 32;
+            int z = random.nextInt(64) - 32;
+            final Chunk chunk = world.getChunk(x >> Chunk.BLOCKS.BITS, 0, z >> Chunk.BLOCKS.BITS);
+            if (chunk != null) {
+                for (int y = 15; y >= 0; y--) {
+                    if (chunk.getMaterial(x, y, z) != Materials.AIR) {
+                        chunk.setMaterial(x, y, z, Materials.AIR);
+                        break;
+                    }
                 }
             }
         }

@@ -110,8 +110,7 @@ public class Interface extends TickingElement {
     @Override
     public void onStart() {
         game.getLogger().info("Starting interface");
-
-        // TEST CODE
+        // Initialize the renderer
         renderer.setGLVersion(GLVersion.GL32);
         renderer.init();
         // Subscribe to the keyboard input queue
@@ -136,7 +135,6 @@ public class Interface extends TickingElement {
     @Override
     public void onStop() {
         game.getLogger().info("Stopping interface");
-
         // We make sure to stop the input because it relies on the display
         game.getInput().stop();
         mesher.shutdown();
@@ -195,8 +193,9 @@ public class Interface extends TickingElement {
         }
         // Next go through all the chunks, and update the chunks that are out of date
         for (ChunkSnapshot chunk : chunks.values()) {
-            // If the chunk model is out of date
-            if (chunk.getUpdateNumber() > chunkLastUpdateNumbers.get(chunk.getPosition())) {
+            // If the chunk model is out of date and visible
+            if (chunk.getUpdateNumber() > chunkLastUpdateNumbers.get(chunk.getPosition())
+                    && isChunkVisible(chunk.getPosition())) {
                 final Vector3i position = chunk.getPosition();
                 // If we have a previous model remove it to be replaced
                 final ChunkModel previous = chunkModels.get(position);
@@ -333,7 +332,18 @@ public class Interface extends TickingElement {
      * @param position The position, in world coordinates
      * @return Whether or not the chunk is visible
      */
+    public boolean isChunkVisible(Vector3i position) {
+        return frustum.intersectsCuboid(CHUNK_VERTICES, position.getX(), position.getY(), position.getZ());
+    }
+
+    /**
+     * Returns true if the chunk is visible, using the default chunk size and the position in world coordinates.
+     *
+     * @param position The position, in world coordinates
+     * @return Whether or not the chunk is visible
+     */
     public boolean isChunkVisible(Vector3f position) {
+
         return frustum.intersectsCuboid(CHUNK_VERTICES, position);
     }
 }
