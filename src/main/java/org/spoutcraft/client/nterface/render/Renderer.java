@@ -232,7 +232,7 @@ public class Renderer {
         ssaoStage.create();
         // Lighting
         lightingStage = new LightingStage(this);
-        lightingStage.setColorsIntput(colors);
+        lightingStage.setColorsInput(colors);
         lightingStage.setNormalsInput(normals);
         lightingStage.setDepthsInput(depths);
         lightingStage.setMaterialInput(materials);

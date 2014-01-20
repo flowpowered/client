@@ -78,7 +78,7 @@ public class LightingStage extends Creatable {
         pipeline.run(renderer.getContext());
     }
 
-    public void setColorsIntput(Texture texture) {
+    public void setColorsInput(Texture texture) {
         texture.checkCreated();
         colorsInput = texture;
     }
