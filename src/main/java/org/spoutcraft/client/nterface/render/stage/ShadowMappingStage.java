@@ -67,7 +67,6 @@ public class ShadowMappingStage extends Creatable {
     private Texture normalsInput;
     private Texture depthsInput;
     private Texture shadowsOutput;
-    private Vector2f resolution;
     private final Matrix4Uniform inverseViewMatrixUniform = new Matrix4Uniform("inverseViewMatrix", new Matrix4f());
     private final Matrix4Uniform lightViewMatrixUniform = new Matrix4Uniform("lightViewMatrix", new Matrix4f());
     private final Matrix4Uniform lightProjectionMatrixUniform = new Matrix4Uniform("lightProjectionMatrix", new Matrix4f());
@@ -143,7 +142,7 @@ public class ShadowMappingStage extends Creatable {
         uniforms.add(lightProjectionMatrixUniform);
         uniforms.add(new IntUniform("kernelSize", kernelSize));
         uniforms.add(new Vector2ArrayUniform("kernel", kernel));
-        uniforms.add(new Vector2Uniform("noiseScale", resolution.div(noiseSize)));
+        uniforms.add(new Vector2Uniform("noiseScale", new Vector2f(shadowsOutput.getWidth(), shadowsOutput.getHeight()).div(noiseSize)));
         uniforms.add(new FloatUniform("bias", bias));
         uniforms.add(new FloatUniform("radius", radius));
         // Create the screen model
@@ -170,7 +169,9 @@ public class ShadowMappingStage extends Creatable {
         noiseTexture.destroy();
         depthFrameBuffer.destroy();
         frameBuffer.destroy();
-        shadowsOutput.destroy();
+        if (shadowsOutput.isCreated()) {
+            shadowsOutput.destroy();
+        }
         super.destroy();
     }
 
@@ -210,7 +211,6 @@ public class ShadowMappingStage extends Creatable {
     public void setShadowsOutput(Texture texture) {
         texture.checkCreated();
         shadowsOutput = texture;
-        resolution = new Vector2f(texture.getWidth(), texture.getHeight());
     }
 
     public Texture getShadowsOutput() {

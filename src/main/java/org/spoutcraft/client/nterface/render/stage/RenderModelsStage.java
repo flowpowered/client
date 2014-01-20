@@ -59,11 +59,21 @@ public class RenderModelsStage extends Creatable {
     public void destroy() {
         checkCreated();
         frameBuffer.destroy();
-        colorsOutput.destroy();
-        normalsOutput.destroy();
-        depthsOutput.destroy();
-        vertexNormalsOutput.destroy();
-        materialsOutput.destroy();
+        if (colorsOutput.isCreated()) {
+            colorsOutput.destroy();
+        }
+        if (normalsOutput.isCreated()) {
+            normalsOutput.destroy();
+        }
+        if (depthsOutput.isCreated()) {
+            depthsOutput.destroy();
+        }
+        if (vertexNormalsOutput.isCreated()) {
+            vertexNormalsOutput.destroy();
+        }
+        if (materialsOutput.isCreated()) {
+            materialsOutput.destroy();
+        }
         super.destroy();
     }
 

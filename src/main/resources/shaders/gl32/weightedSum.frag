@@ -18,7 +18,7 @@ uniform float specularIntensity;
 uniform float ambientIntensity;
 
 void main() {
-    vec3 forwardNormalView = faceforward(normalView, lightDirectionView, normalView);
+    vec3 forwardNormalView = normalize(faceforward(normalView, lightDirectionView, normalView));
 
     float ambientTerm = ambientIntensity;
 

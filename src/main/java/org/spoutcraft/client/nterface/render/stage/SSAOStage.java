@@ -59,7 +59,6 @@ public class SSAOStage extends Creatable {
     private Texture normalsInput;
     private Texture depthsInput;
     private Texture occlusionsOutput;
-    private Vector2f resolution;
     private Pipeline pipeline;
     private int kernelSize = 8;
     private float radius = 0.5f;
@@ -120,7 +119,7 @@ public class SSAOStage extends Creatable {
         uniforms.add(new Vector3ArrayUniform("kernel", kernel));
         uniforms.add(new FloatUniform("radius", radius));
         uniforms.add(new FloatUniform("threshold", threshold));
-        uniforms.add(new Vector2Uniform("noiseScale", resolution.div(noiseSize)));
+        uniforms.add(new Vector2Uniform("noiseScale", new Vector2f(occlusionsOutput.getWidth(), occlusionsOutput.getHeight()).div(noiseSize)));
         uniforms.add(new FloatUniform("power", power));
         // Create the screen model
         final Model model = new Model(renderer.getScreen(), material);
@@ -180,7 +179,6 @@ public class SSAOStage extends Creatable {
     public void setOcclusionOutput(Texture texture) {
         texture.checkCreated();
         occlusionsOutput = texture;
-        resolution = new Vector2f(texture.getWidth(), texture.getHeight());
     }
 
     public Texture getOcclusionsOutput() {

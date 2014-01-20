@@ -67,11 +67,14 @@ public class LightingStage extends Creatable {
     @Override
     public void destroy() {
         checkCreated();
-        colorsOutput.destroy();
+        if (colorsOutput.isCreated()) {
+            colorsOutput.destroy();
+        }
         super.destroy();
     }
 
     public void render() {
+        checkCreated();
         pipeline.run(renderer.getContext());
     }
 
@@ -88,11 +91,6 @@ public class LightingStage extends Creatable {
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         depthsInput = texture;
-    }
-
-    public void setColorsOutput(Texture texture) {
-        texture.checkCreated();
-        colorsOutput = texture;
     }
 
     public void setMaterialInput(Texture texture) {
@@ -112,5 +110,10 @@ public class LightingStage extends Creatable {
 
     public Texture getColorsOutput() {
         return colorsOutput;
+    }
+
+    public void setColorsOutput(Texture texture) {
+        texture.checkCreated();
+        colorsOutput = texture;
     }
 }

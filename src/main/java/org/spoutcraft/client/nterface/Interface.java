@@ -44,7 +44,6 @@ import org.lwjgl.input.Keyboard;
 
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLVersioned.GLVersion;
-import org.spout.renderer.api.data.Color;
 
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.input.Input;
@@ -115,7 +114,6 @@ public class Interface extends TickingElement {
         // TEST CODE
         renderer.setGLVersion(GLVersion.GL32);
         renderer.init();
-        renderer.setSolidColor(new Color(0, 200, 0));
         // Subscribe to the keyboard input queue
         final Input input = game.getInput();
         input.subscribeToKeyboard();

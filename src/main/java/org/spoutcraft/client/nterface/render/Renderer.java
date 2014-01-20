@@ -33,10 +33,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.flowpowered.commons.TPSMonitor;
@@ -79,6 +77,7 @@ import org.spoutcraft.client.nterface.Interface;
 import org.spoutcraft.client.nterface.render.stage.LightingStage;
 import org.spoutcraft.client.nterface.render.stage.RenderGUIStage;
 import org.spoutcraft.client.nterface.render.stage.RenderModelsStage;
+import org.spoutcraft.client.nterface.render.stage.RenderTransparentModelsStage;
 import org.spoutcraft.client.nterface.render.stage.SSAOStage;
 import org.spoutcraft.client.nterface.render.stage.ShadowMappingStage;
 
@@ -99,6 +98,7 @@ public class Renderer {
     private static final DateFormat SCREENSHOT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
     // Settings
     private boolean cullBackFaces = true;
+    private Color solidModelColor = Color.WHITE;
     // Effect uniforms
     private final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.FORWARD);
     private final Matrix4Uniform previousViewMatrixUniform = new Matrix4Uniform("previousViewMatrix", new Matrix4f());
@@ -108,7 +108,6 @@ public class Renderer {
     private GLVersion glVersion;
     private GLFactory glFactory;
     private Context context;
-    private final List<Model> transparentModelList = new ArrayList<>();
     // Shader programs
     private final Map<String, Program> programs = new HashMap<>();
     // Included materials
@@ -122,8 +121,8 @@ public class Renderer {
     private ShadowMappingStage shadowMappingStage;
     private SSAOStage ssaoStage;
     private LightingStage lightingStage;
+    private RenderTransparentModelsStage renderTransparentModelsStage;
     private RenderGUIStage renderGUIStage;
-    private Color solidModelColor;
     // FPS monitor
     private final TPSMonitor fpsMonitor = new TPSMonitor();
     private StringModel fpsMonitorModel;
@@ -241,6 +240,11 @@ public class Renderer {
         lightingStage.setShadowsInput(shadows);
         lightingStage.setColorsOutput(colors2);
         lightingStage.create();
+        // Transparent models
+        renderTransparentModelsStage = new RenderTransparentModelsStage(this);
+        renderTransparentModelsStage.setDepthsInput(depths);
+        renderTransparentModelsStage.setColorsOutput(colors2);
+        renderTransparentModelsStage.create();
         // Render GUI
         renderGUIStage = new RenderGUIStage(this);
         renderGUIStage.create();
@@ -301,7 +305,7 @@ public class Renderer {
         uniforms.add(new FloatUniform("ambientIntensity", 0.2f));
         // Screen material
         screenMaterial = new Material(programs.get("screen"));
-        screenMaterial.addTexture(0, lightingStage.getColorsOutput());
+        screenMaterial.addTexture(0, renderTransparentModelsStage.getColorsOutput());
     }
 
     private void initVertexArrays() {
@@ -313,6 +317,18 @@ public class Renderer {
     private void addDefaultObjects() {
         addScreen();
         addFPSMonitor();
+
+        final VertexArray sphere = glFactory.createVertexArray();
+        sphere.setData(MeshGenerator.generateSphere(null, 5));
+        sphere.create();
+        final Model model1 = new Model(sphere, transparencyMaterial);
+        model1.setPosition(new Vector3f(0, 22, -6));
+        model1.getUniforms().add(new ColorUniform("modelColor", new Color(1, 0, 0, 0.3)));
+        addTransparentModel(model1);
+        final Model model2 = model1.getInstance();
+        model2.setPosition(new Vector3f(0, 22, 6));
+        model2.getUniforms().add(new ColorUniform("modelColor", new Color(0, 0, 1, 0.7)));
+        addTransparentModel(model2);
     }
 
     private void addScreen() {
@@ -359,6 +375,7 @@ public class Renderer {
         shadowMappingStage.destroy();
         ssaoStage.destroy();
         lightingStage.destroy();
+        renderTransparentModelsStage.destroy();
         renderGUIStage.destroy();
     }
 
@@ -391,6 +408,7 @@ public class Renderer {
         shadowMappingStage.render();
         ssaoStage.render();
         lightingStage.render();
+        renderTransparentModelsStage.render();
         renderGUIStage.render();
         // Update the previous frame uniforms
         setPreviousModelMatrices();
@@ -404,7 +422,7 @@ public class Renderer {
         for (Model model : renderModelsStage.getModels()) {
             model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
         }
-        for (Model model : transparentModelList) {
+        for (Model model : renderTransparentModelsStage.getModels()) {
             model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
         }
     }
@@ -551,8 +569,7 @@ public class Renderer {
      */
     public void addTransparentModel(Model model) {
         model.setMaterial(transparencyMaterial);
-        model.getUniforms().add(new Matrix4Uniform("previousModelMatrix", model.getMatrix()));
-        transparentModelList.add(model);
+        renderTransparentModelsStage.addModel(model);
     }
 
     /**
