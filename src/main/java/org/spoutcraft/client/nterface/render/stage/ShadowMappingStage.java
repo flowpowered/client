@@ -56,6 +56,7 @@ import org.spout.renderer.api.util.Rectangle;
 
 import org.spoutcraft.client.nterface.render.Renderer;
 
+// TODO: cascaded shadow maps, render models for light depths using the basic shader
 public class ShadowMappingStage extends Creatable {
     private final Renderer renderer;
     private final Material material;
@@ -90,7 +91,7 @@ public class ShadowMappingStage extends Creatable {
     @Override
     public void create() {
         if (isCreated()) {
-            throw new IllegalStateException("SSAO stage has already been created");
+            throw new IllegalStateException("Shadow mapping stage has already been created");
         }
         // Generate the kernel
         final Vector2f[] kernel = new Vector2f[kernelSize];
@@ -169,6 +170,7 @@ public class ShadowMappingStage extends Creatable {
         noiseTexture.destroy();
         depthFrameBuffer.destroy();
         frameBuffer.destroy();
+        shadowsOutput.destroy();
         super.destroy();
     }
 

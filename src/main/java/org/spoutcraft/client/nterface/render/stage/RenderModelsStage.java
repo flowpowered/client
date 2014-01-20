@@ -25,6 +25,8 @@ public class RenderModelsStage extends Creatable {
     private Texture colorsOutput;
     private Texture normalsOutput;
     private Texture depthsOutput;
+    private Texture vertexNormalsOutput;
+    private Texture materialsOutput;
     private final List<Model> models = new ArrayList<>();
     private final Camera camera = Camera.createPerspective(Renderer.FIELD_OF_VIEW, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY(), Renderer.NEAR_PLANE, Renderer.FAR_PLANE);
     private Pipeline pipeline;
@@ -43,6 +45,8 @@ public class RenderModelsStage extends Creatable {
         // Create the frame buffer
         frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         frameBuffer.attach(AttachmentPoint.COLOR1, normalsOutput);
+        frameBuffer.attach(AttachmentPoint.COLOR2, vertexNormalsOutput);
+        frameBuffer.attach(AttachmentPoint.COLOR3, materialsOutput);
         frameBuffer.attach(AttachmentPoint.DEPTH, depthsOutput);
         frameBuffer.create();
         // Create the pipeline
@@ -55,6 +59,11 @@ public class RenderModelsStage extends Creatable {
     public void destroy() {
         checkCreated();
         frameBuffer.destroy();
+        colorsOutput.destroy();
+        normalsOutput.destroy();
+        depthsOutput.destroy();
+        vertexNormalsOutput.destroy();
+        materialsOutput.destroy();
         super.destroy();
     }
 
@@ -88,6 +97,24 @@ public class RenderModelsStage extends Creatable {
     public void setDepthsOutput(Texture texture) {
         texture.checkCreated();
         depthsOutput = texture;
+    }
+
+    public Texture getVertexNormalsOutput() {
+        return vertexNormalsOutput;
+    }
+
+    public void setVertexNormalsOutput(Texture texture) {
+        texture.checkCreated();
+        vertexNormalsOutput = texture;
+    }
+
+    public Texture getMaterialsOutput() {
+        return materialsOutput;
+    }
+
+    public void setMaterialsOutput(Texture texture) {
+        texture.checkCreated();
+        materialsOutput = texture;
     }
 
     public Camera getCamera() {
