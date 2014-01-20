@@ -182,7 +182,7 @@ public class Renderer {
         final Texture vertexNormals = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
         vertexNormals.create();
 
-        final Texture materials = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGB, InternalFormat.RGB8);
+        final Texture materials = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
         materials.create();
 
         final Texture shadows = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RED, InternalFormat.R8);
@@ -294,8 +294,9 @@ public class Renderer {
         solidMaterial = new Material(programs.get("solid"));
         uniforms = solidMaterial.getUniforms();
         uniforms.add(new FloatUniform("diffuseIntensity", 0.8f));
-        uniforms.add(new FloatUniform("specularIntensity", 1));
+        uniforms.add(new FloatUniform("specularIntensity", 0.5f));
         uniforms.add(new FloatUniform("ambientIntensity", 0.2f));
+        uniforms.add(new FloatUniform("shininess", 0.15f));
         // Transparency material
         transparencyMaterial = new Material(programs.get("weightedSum"));
         uniforms = transparencyMaterial.getUniforms();
@@ -303,6 +304,7 @@ public class Renderer {
         uniforms.add(new FloatUniform("diffuseIntensity", 0.8f));
         uniforms.add(new FloatUniform("specularIntensity", 1));
         uniforms.add(new FloatUniform("ambientIntensity", 0.2f));
+        uniforms.add(new FloatUniform("shininess", 0.8f));
         // Screen material
         screenMaterial = new Material(programs.get("screen"));
         screenMaterial.addTexture(0, renderTransparentModelsStage.getColorsOutput());
