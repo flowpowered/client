@@ -55,7 +55,9 @@ public class PlayerMessage extends ChannelMessage {
     }
 
     @Override
-    public boolean isAsync() {
-        return true;
+    public String toString() {
+        return "PlayerMessage{" +
+                "onGround=" + onGround +
+                '}';
     }
 }

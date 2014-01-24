@@ -26,14 +26,10 @@ package org.spoutcraft.client.network.codec.play;
 import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
-import com.flowpowered.networking.MessageHandler;
 import io.netty.buffer.ByteBuf;
-import org.spoutcraft.client.network.ClientSession;
-import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.PositionLookMessage;
 
-public class PositionLookCodec implements Codec<PositionLookMessage>, MessageHandler<ClientSession, PositionLookMessage> {
-
+public class PositionLookCodec implements Codec<PositionLookMessage> {
     @Override
     public PositionLookMessage decode(ByteBuf buf) throws IOException {
         final double x = buf.readInt();
@@ -55,10 +51,5 @@ public class PositionLookCodec implements Codec<PositionLookMessage>, MessageHan
         buf.writeFloat(message.getPitch());
         buf.writeBoolean(message.isOnGround());
         return buf;
-    }
-
-    @Override
-    public void handle(ClientSession session, PositionLookMessage message) {
-        session.getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
     }
 }

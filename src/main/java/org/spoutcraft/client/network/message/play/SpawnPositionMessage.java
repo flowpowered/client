@@ -30,7 +30,7 @@ import org.spoutcraft.client.network.message.ChannelMessage;
  * Client bound message that instructs the client to update the compass position to the new spawn position.
  */
 public class SpawnPositionMessage extends ChannelMessage {
-    private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
+    private static final Channel[] CHANNELS = new Channel[] {Channel.UNIVERSE};
     private final Vector3i position;
 
     /**
@@ -50,7 +50,7 @@ public class SpawnPositionMessage extends ChannelMessage {
      * @param position {@link com.flowpowered.math.vector.Vector3i} containing the x, y, z axis coordinates of spawn (block)
      */
     public SpawnPositionMessage(Vector3i position) {
-        super(REQUIRED_CHANNEL);
+        super(CHANNELS);
         this.position = position;
     }
 
@@ -91,7 +91,9 @@ public class SpawnPositionMessage extends ChannelMessage {
     }
 
     @Override
-    public boolean isAsync() {
-        return true;
+    public String toString() {
+        return "SpawnPositionMessage{" +
+                "position=" + position +
+                '}';
     }
 }

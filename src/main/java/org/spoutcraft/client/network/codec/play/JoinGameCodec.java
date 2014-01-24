@@ -1,7 +1,7 @@
 /**
  * This file is part of Client, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2013-2014 Spoutcraft <http://spoutcraft.org/>
+ * Copyright (c) 2013 Spoutcraft <http://spoutcraft.org/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,39 +27,32 @@ import java.io.IOException;
 
 import com.flowpowered.networking.ByteBufUtils;
 import com.flowpowered.networking.Codec;
-import com.flowpowered.networking.MessageHandler;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
-import org.spoutcraft.client.network.ClientSession;
-import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.JoinGameMessage;
 
 /**
  * The codec for the join game message. Also handles the join game message.
  */
-public class JoinGameCodec implements Codec<JoinGameMessage>, MessageHandler<ClientSession, JoinGameMessage> {
-
+public class JoinGameCodec implements Codec<JoinGameMessage> {
     @Override
     public JoinGameMessage decode(ByteBuf buf) throws IOException {
         final int playerID = buf.readInt();
-        final GameMode gameMode = GameMode.get(buf.readUnsignedByte());
+        final short modePacked = buf.readUnsignedByte();
+        final boolean hardcore = (modePacked & 8) == 8;
+        final GameMode gameMode = GameMode.get(modePacked & -9);
         final Dimension dimension = Dimension.get(buf.readByte());
         final Difficulty difficulty = Difficulty.get(buf.readUnsignedByte());
         final short maxPlayers = buf.readUnsignedByte();
         final LevelType levelType = LevelType.get(ByteBufUtils.readUTF8(buf));
-        return new JoinGameMessage(playerID, gameMode, dimension, difficulty, maxPlayers, levelType);
+        return new JoinGameMessage(playerID, hardcore, gameMode, dimension, difficulty, maxPlayers, levelType);
     }
 
     @Override
     public ByteBuf encode(ByteBuf buf, JoinGameMessage message) throws IOException {
         throw new IOException("The client cannot send a join game to the Minecraft server!");
-    }
-
-    @Override
-    public void handle(ClientSession session, JoinGameMessage message) {
-        session.getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
     }
 }

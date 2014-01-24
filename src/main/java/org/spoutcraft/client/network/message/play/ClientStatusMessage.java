@@ -50,8 +50,10 @@ public class ClientStatusMessage extends ChannelMessage {
     }
 
     @Override
-    public boolean isAsync() {
-        return true;
+    public String toString() {
+        return "ClientStatusMessage{" +
+                "state=" + state +
+                '}';
     }
 
     /**

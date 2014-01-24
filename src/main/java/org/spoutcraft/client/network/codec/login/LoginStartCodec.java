@@ -34,7 +34,6 @@ import org.spoutcraft.client.network.message.login.LoginStartMessage;
  * The codec for the login start message.
  */
 public class LoginStartCodec implements Codec<LoginStartMessage> {
-
     @Override
     public LoginStartMessage decode(ByteBuf byteBuf) throws IOException {
         throw new IOException("The client should not receive a login start from the Minecraft server!");

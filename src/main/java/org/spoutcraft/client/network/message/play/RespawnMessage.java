@@ -33,7 +33,7 @@ import org.spoutcraft.client.network.message.ChannelMessage;
  * Client-bound {@link com.flowpowered.networking.Message} that instructs the client to respawn, updating the active {@link org.spoutcraft.client.universe.world.World}'s characteristics.
  */
 public class RespawnMessage extends ChannelMessage {
-    private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
+    private static final Channel[] CHANNELS = new Channel[] {Channel.UNIVERSE};
     private final Dimension dimension;
     private final Difficulty difficulty;
     private final GameMode gameMode;
@@ -48,7 +48,7 @@ public class RespawnMessage extends ChannelMessage {
      * @param levelType The {@link org.spoutcraft.client.game.LevelType} the active {@link org.spoutcraft.client.universe.world.World} should be
      */
     public RespawnMessage(Dimension dimension, Difficulty difficulty, GameMode gameMode, LevelType levelType) {
-        super(REQUIRED_CHANNEL);
+        super(CHANNELS);
         this.dimension = dimension;
         this.difficulty = difficulty;
         this.gameMode = gameMode;
@@ -92,7 +92,12 @@ public class RespawnMessage extends ChannelMessage {
     }
 
     @Override
-    public boolean isAsync() {
-        return true;
+    public String toString() {
+        return "RespawnMessage{" +
+                "dimension=" + dimension +
+                ", difficulty=" + difficulty +
+                ", gameMode=" + gameMode +
+                ", levelType=" + levelType +
+                '}';
     }
 }

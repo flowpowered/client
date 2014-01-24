@@ -28,17 +28,13 @@ import java.util.UUID;
 
 import com.flowpowered.networking.ByteBufUtils;
 import com.flowpowered.networking.Codec;
-import com.flowpowered.networking.MessageHandler;
 import io.netty.buffer.ByteBuf;
-import org.spoutcraft.client.network.ClientSession;
-import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.login.LoginSuccessMessage;
 
 /**
  * The codec for the login success message. Also handles the login success message.
  */
-public class LoginSuccessCodec implements Codec<LoginSuccessMessage>, MessageHandler<ClientSession, LoginSuccessMessage> {
-
+public class LoginSuccessCodec implements Codec<LoginSuccessMessage> {
     @Override
     public LoginSuccessMessage decode(ByteBuf buf) throws IOException {
         final UUID uuid = UUID.fromString(ByteBufUtils.readUTF8(buf));
@@ -49,10 +45,5 @@ public class LoginSuccessCodec implements Codec<LoginSuccessMessage>, MessageHan
     @Override
     public ByteBuf encode(ByteBuf buf, LoginSuccessMessage message) throws IOException {
         throw new IOException("The client should not send a login success to the Minecraft server!");
-    }
-
-    @Override
-    public void handle(ClientSession session, LoginSuccessMessage message) {
-        session.getGame().getNetwork().offer(ChannelMessage.Channel.NETWORK, message);
     }
 }

@@ -62,7 +62,7 @@ public class ClientProtocol extends KeyedProtocol {
 
     @Override
     public <M extends Message> MessageHandler<?, M> getMessageHandle(Class<M> clazz) {
-        return getHandlerLookupService(INBOUND).find(clazz);
+        return null;
     }
 
     @Override

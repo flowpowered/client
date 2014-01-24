@@ -38,6 +38,7 @@ import org.spoutcraft.client.Game;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.ChannelMessage.Channel;
 import org.spoutcraft.client.network.message.login.LoginSuccessMessage;
+import org.spoutcraft.client.network.message.play.KeepAliveMessage;
 import org.spoutcraft.client.network.protocol.PlayProtocol;
 
 /**
@@ -158,5 +159,10 @@ public class Network extends TickingElement {
         getSession().setUUID(message.getUUID());
         getSession().setUsername(message.getUsername());
         getSession().setOption(ChannelOption.AUTO_READ, true);
+    }
+
+    @Handle
+    private void handleKeepAlive(KeepAliveMessage message) {
+        getSession().send(new KeepAliveMessage(message.getRandom()));
     }
 }

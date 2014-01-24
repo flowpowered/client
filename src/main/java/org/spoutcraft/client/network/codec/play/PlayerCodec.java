@@ -33,7 +33,6 @@ import org.spoutcraft.client.network.message.play.PlayerMessage;
  * The codec for the player message.
  */
 public class PlayerCodec implements Codec<PlayerMessage> {
-
     @Override
     public PlayerMessage decode(ByteBuf buf) throws IOException {
         throw new IOException("The client does not receive a player (message) from the Minecraft server!");

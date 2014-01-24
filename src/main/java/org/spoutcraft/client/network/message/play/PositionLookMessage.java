@@ -26,7 +26,7 @@ package org.spoutcraft.client.network.message.play;
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 public class PositionLookMessage extends ChannelMessage {
-    private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
+    private static final Channel[] CHANNELS = new Channel[] {Channel.UNIVERSE};
     private final double x;
     private final double y;
     private final double z;
@@ -43,7 +43,7 @@ public class PositionLookMessage extends ChannelMessage {
 
     //Client -> Server
     public PositionLookMessage(double x, double y, double z, float yaw, float pitch, boolean onGround, double stance) {
-        super(REQUIRED_CHANNEL);
+        super(CHANNELS);
         this.x = x;
         this.y = y;
         this.z = z;
@@ -82,7 +82,15 @@ public class PositionLookMessage extends ChannelMessage {
     }
 
     @Override
-    public boolean isAsync() {
-        return false;
+    public String toString() {
+        return "PositionLookMessage{" +
+                "x=" + x +
+                ", y=" + y +
+                ", z=" + z +
+                ", yaw=" + yaw +
+                ", pitch=" + pitch +
+                ", onGround=" + onGround +
+                ", stance=" + stance +
+                '}';
     }
 }

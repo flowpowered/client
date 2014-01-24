@@ -1,7 +1,7 @@
 /**
  * This file is part of Client, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2013-2014 Spoutcraft <http://spoutcraft.org/>
+ * Copyright (c) 2013 Spoutcraft <http://spoutcraft.org/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,17 @@ package org.spoutcraft.client.network.codec.play;
 import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
-import com.flowpowered.networking.MessageHandler;
 import io.netty.buffer.ByteBuf;
-import org.spoutcraft.client.network.ClientSession;
-import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.ChunkDataBulkMessage;
 
-public class ChunkDataBulkCodec implements Codec<ChunkDataBulkMessage>, MessageHandler<ClientSession, ChunkDataBulkMessage> {
-
+public class ChunkDataBulkCodec implements Codec<ChunkDataBulkMessage> {
     @Override
     public ChunkDataBulkMessage decode(ByteBuf buf) throws IOException {
         final short columnCount = buf.readShort();
         final int compressedDataLength = buf.readInt();
         final boolean hasSkyLight = buf.readBoolean();
         final byte[] compressedData = new byte[compressedDataLength];
-        buf.readBytes(compressedData);
+        buf.readBytes(compressedData, 0, compressedData.length);
         final int[] columnXs = new int[columnCount];
         final int[] columnZs = new int[columnCount];
         final short[] primaryBitMaps = new short[columnCount];
@@ -57,10 +53,5 @@ public class ChunkDataBulkCodec implements Codec<ChunkDataBulkMessage>, MessageH
     @Override
     public ByteBuf encode(ByteBuf buf, ChunkDataBulkMessage message) throws IOException {
         throw new IOException("The client cannot send a chunk data bulk to the Minecraft server!");
-    }
-
-    @Override
-    public void handle(ClientSession session, ChunkDataBulkMessage message) {
-        session.getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
     }
 }

@@ -1,7 +1,7 @@
 /**
  * This file is part of Client, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2013-2014 Spoutcraft <http://spoutcraft.org/>
+ * Copyright (c) 2013 Spoutcraft <http://spoutcraft.org/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,10 @@ package org.spoutcraft.client.network.codec.play;
 import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
-import com.flowpowered.networking.MessageHandler;
 import io.netty.buffer.ByteBuf;
-import org.spoutcraft.client.network.ClientSession;
-import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.ChunkDataMessage;
 
-public class ChunkDataCodec implements Codec<ChunkDataMessage>, MessageHandler<ClientSession, ChunkDataMessage> {
-
+public class ChunkDataCodec implements Codec<ChunkDataMessage> {
     @Override
     public ChunkDataMessage decode(ByteBuf buf) throws IOException {
         final int x = buf.readInt();
@@ -50,10 +46,5 @@ public class ChunkDataCodec implements Codec<ChunkDataMessage>, MessageHandler<C
     @Override
     public ByteBuf encode(ByteBuf buf, ChunkDataMessage message) throws IOException {
         throw new IOException("The client cannot send a chunk data to the Minecraft server!");
-    }
-
-    @Override
-    public void handle(ClientSession session, ChunkDataMessage message) {
-        session.getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
     }
 }

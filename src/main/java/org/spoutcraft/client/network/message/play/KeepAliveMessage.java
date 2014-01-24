@@ -30,7 +30,7 @@ import org.spoutcraft.client.network.message.ChannelMessage;
  * timeout period, it will terminate the session.
  */
 public class KeepAliveMessage extends ChannelMessage {
-    private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
+    private static final Channel[] CHANNELS = new Channel[] {Channel.NETWORK};
     private final int random;
 
     /**
@@ -39,7 +39,7 @@ public class KeepAliveMessage extends ChannelMessage {
      * @param random Random value
      */
     public KeepAliveMessage(int random) {
-        super(REQUIRED_CHANNEL);
+        super(CHANNELS);
         this.random = random;
     }
 
@@ -53,7 +53,9 @@ public class KeepAliveMessage extends ChannelMessage {
     }
 
     @Override
-    public boolean isAsync() {
-        return true;
+    public String toString() {
+        return "KeepAliveMessage{" +
+                "random=" + random +
+                '}';
     }
 }

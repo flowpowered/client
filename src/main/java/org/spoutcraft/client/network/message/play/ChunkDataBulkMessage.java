@@ -23,25 +23,27 @@
  */
 package org.spoutcraft.client.network.message.play;
 
+import java.util.Arrays;
+
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 public class ChunkDataBulkMessage extends ChannelMessage {
-    private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
+    private static final Channel[] CHANNELS = new Channel[] {Channel.UNIVERSE};
     private final short columnCount;
     private final int compressedDataLength;
-    private final boolean hasSkyLightData;
+    private final boolean hasSkyLight;
     private final byte[] compressedData;
     private final int[] columnXs;
     private final int[] columnZs;
     private final short[] primaryBitMaps;
     private final short[] additionalDataBitMaps;
 
-    public ChunkDataBulkMessage(short columnCount, int compressedDataLength, boolean hasSkyLightData, byte[] compressedData, int[] columnXs, int[] columnZs, short[] primaryBitMaps, short[] additionalDataBitMaps) {
-        super(REQUIRED_CHANNEL);
+    public ChunkDataBulkMessage(short columnCount, int compressedDataLength, boolean hasSkyLight, byte[] compressedData, int[] columnXs, int[] columnZs, short[] primaryBitMaps, short[] additionalDataBitMaps) {
+        super(CHANNELS);
 
         this.columnCount = columnCount;
         this.compressedDataLength = compressedDataLength;
-        this.hasSkyLightData = hasSkyLightData;
+        this.hasSkyLight = hasSkyLight;
         this.compressedData = compressedData;
         this.columnXs = columnXs;
         this.columnZs = columnZs;
@@ -57,8 +59,8 @@ public class ChunkDataBulkMessage extends ChannelMessage {
         return compressedDataLength;
     }
 
-    public boolean hasSkyLightData() {
-        return hasSkyLightData;
+    public boolean hasSkyLight() {
+        return hasSkyLight;
     }
 
     public byte[] getCompressedData() {
@@ -82,7 +84,16 @@ public class ChunkDataBulkMessage extends ChannelMessage {
     }
 
     @Override
-    public boolean isAsync() {
-        return true;
+    public String toString() {
+        return "ChunkDataBulkMessage{" +
+                "columnCount=" + columnCount +
+                ", compressedDataLength=" + compressedDataLength +
+                ", hasSkyLight=" + hasSkyLight +
+                ", compressedData=" + Arrays.toString(compressedData) +
+                ", columnXs=" + Arrays.toString(columnXs) +
+                ", columnZs=" + Arrays.toString(columnZs) +
+                ", primaryBitMaps=" + Arrays.toString(primaryBitMaps) +
+                ", additionalDataBitMaps=" + Arrays.toString(additionalDataBitMaps) +
+                '}';
     }
 }

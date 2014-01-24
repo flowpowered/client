@@ -25,11 +25,14 @@ package org.spoutcraft.client.network;
 
 import java.util.UUID;
 
+import com.flowpowered.networking.Message;
 import com.flowpowered.networking.protocol.AbstractProtocol;
 import com.flowpowered.networking.session.BasicSession;
 import io.netty.channel.Channel;
 import org.spoutcraft.client.Game;
+import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.handshake.HandshakeMessage;
+import org.spoutcraft.client.network.message.handshake.HandshakeMessage.HandshakeState;
 import org.spoutcraft.client.network.message.login.LoginStartMessage;
 import org.spoutcraft.client.network.protocol.ClientProtocol;
 import org.spoutcraft.client.network.protocol.LoginProtocol;
@@ -91,15 +94,28 @@ public class ClientSession extends BasicSession {
     }
 
     @Override
+    public void messageReceived(Message message) {
+        final ChannelMessage channelMessage = (ChannelMessage) message;
+        for (ChannelMessage.Channel channel : channelMessage.getChannels()) {
+            game.getNetwork().offer(channel, channelMessage);
+        }
+    }
+
+    @Override
     protected void setProtocol(AbstractProtocol protocol) {
         super.setProtocol(protocol);
     }
 
     @Override
     public void onReady() {
-        send(new HandshakeMessage("localhost", ClientProtocol.DEFAULT_PORT, HandshakeMessage.HandshakeState.LOGIN));
+        send(new HandshakeMessage(ClientProtocol.VERSION, "localhost", ClientProtocol.DEFAULT_PORT, HandshakeState.LOGIN));
         setProtocol(new LoginProtocol(game));
         send(new LoginStartMessage("Spoutcrafty"));
+    }
+
+    @Override
+    public void onThrowable(Throwable throwable) {
+        game.getLogger().fatal(throwable);
     }
 
     /**

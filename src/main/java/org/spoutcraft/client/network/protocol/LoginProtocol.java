@@ -43,7 +43,7 @@ public class LoginProtocol extends ClientProtocol {
         /**
          * From Server, in order of opcodes
          */
-        registerMessage(INBOUND, LoginSuccessMessage.class, LoginSuccessCodec.class, LoginSuccessCodec.class, 2);
+        registerMessage(INBOUND, LoginSuccessMessage.class, LoginSuccessCodec.class, null, 2);
         /**
          * To Server, in order of opcodes
          */

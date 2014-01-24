@@ -23,10 +23,12 @@
  */
 package org.spoutcraft.client.network.message.play;
 
+import java.util.Arrays;
+
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 public class ChunkDataMessage extends ChannelMessage {
-    private static final Channel REQUIRED_CHANNEL = Channel.UNIVERSE;
+    private static final Channel[] CHANNELS = new Channel[] {Channel.UNIVERSE};
     private final int columnX;
     private final int columnZ;
     private final boolean groundUpContinuous;
@@ -36,7 +38,7 @@ public class ChunkDataMessage extends ChannelMessage {
     private final byte[] compressedData;
 
     public ChunkDataMessage(int columnX, int columnZ, boolean groundUpContinuous, short primaryBitMap, short additionalDataBitMap, int compressedDataLength, byte[] compressedData) {
-        super(REQUIRED_CHANNEL);
+        super(CHANNELS);
         this.columnX = columnX;
         this.columnZ = columnZ;
         this.groundUpContinuous = groundUpContinuous;
@@ -75,7 +77,15 @@ public class ChunkDataMessage extends ChannelMessage {
     }
 
     @Override
-    public boolean isAsync() {
-        return true;
+    public String toString() {
+        return "ChunkDataMessage{" +
+                "columnX=" + columnX +
+                ", columnZ=" + columnZ +
+                ", groundUpContinuous=" + groundUpContinuous +
+                ", primaryBitMap=" + primaryBitMap +
+                ", additionalDataBitMap=" + additionalDataBitMap +
+                ", compressedDataLength=" + compressedDataLength +
+                ", compressedData=" + Arrays.toString(compressedData) +
+                '}';
     }
 }

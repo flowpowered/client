@@ -24,7 +24,6 @@
 package org.spoutcraft.client.network.message.handshake;
 
 import org.spoutcraft.client.network.message.ChannelMessage;
-import org.spoutcraft.client.network.protocol.ClientProtocol;
 
 /**
  * Server-bound message that initiates the connection process to the server
@@ -38,12 +37,13 @@ public class HandshakeMessage extends ChannelMessage {
     /**
      * Constructs a new handshake
      *
+     * @param version The protocol version the client will connect with
      * @param address The address of the server
      * @param port The port to connect to on the server
      * @param state The state of the handshake, see {@link HandshakeMessage.HandshakeState}
      */
-    public HandshakeMessage(String address, int port, HandshakeState state) {
-        version = ClientProtocol.VERSION;
+    public HandshakeMessage(int version, String address, int port, HandshakeState state) {
+        this.version = version;
         this.address = address;
         this.port = port;
         this.state = state;
@@ -86,8 +86,13 @@ public class HandshakeMessage extends ChannelMessage {
     }
 
     @Override
-    public boolean isAsync() {
-        return true;
+    public String toString() {
+        return "HandshakeMessage{" +
+                "version=" + version +
+                ", address='" + address + '\'' +
+                ", port=" + port +
+                ", state=" + state +
+                '}';
     }
 
     /**

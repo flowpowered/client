@@ -26,17 +26,13 @@ package org.spoutcraft.client.network.codec.play;
 import java.io.IOException;
 
 import com.flowpowered.networking.Codec;
-import com.flowpowered.networking.MessageHandler;
 import io.netty.buffer.ByteBuf;
-import org.spoutcraft.client.network.ClientSession;
-import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.SpawnPositionMessage;
 
 /**
  * The codec for the spawn position message. Also handles the spawn position message.
  */
-public class SpawnPositionCodec implements Codec<SpawnPositionMessage>, MessageHandler<ClientSession, SpawnPositionMessage> {
-
+public class SpawnPositionCodec implements Codec<SpawnPositionMessage> {
     @Override
     public SpawnPositionMessage decode(ByteBuf buf) throws IOException {
         final int x = buf.readInt();
@@ -48,10 +44,5 @@ public class SpawnPositionCodec implements Codec<SpawnPositionMessage>, MessageH
     @Override
     public ByteBuf encode(ByteBuf buf, SpawnPositionMessage message) throws IOException {
         throw new IOException("The client should not send a spawn position to the Minecraft server!");
-    }
-
-    @Override
-    public void handle(ClientSession session, SpawnPositionMessage message) {
-        session.getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
     }
 }

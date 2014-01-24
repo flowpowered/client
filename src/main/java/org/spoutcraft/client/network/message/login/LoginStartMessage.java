@@ -50,7 +50,9 @@ public class LoginStartMessage extends ChannelMessage {
     }
 
     @Override
-    public boolean isAsync() {
-        return true;
+    public String toString() {
+        return "LoginStartMessage{" +
+                "username='" + username + '\'' +
+                '}';
     }
 }

@@ -27,21 +27,17 @@ import java.io.IOException;
 
 import com.flowpowered.networking.ByteBufUtils;
 import com.flowpowered.networking.Codec;
-import com.flowpowered.networking.MessageHandler;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
 import org.spoutcraft.client.game.GameMode;
 import org.spoutcraft.client.game.LevelType;
-import org.spoutcraft.client.network.ClientSession;
-import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.play.RespawnMessage;
 
 /**
  * The codec for the respawn message. Also handles the respawn message.
  */
-public class RespawnCodec implements Codec<RespawnMessage>, MessageHandler<ClientSession, RespawnMessage> {
-
+public class RespawnCodec implements Codec<RespawnMessage> {
     @Override
     public RespawnMessage decode(ByteBuf buf) throws IOException {
         final Dimension dimension = Dimension.get(buf.readInt());
@@ -54,10 +50,5 @@ public class RespawnCodec implements Codec<RespawnMessage>, MessageHandler<Clien
     @Override
     public ByteBuf encode(ByteBuf buf, RespawnMessage message) throws IOException {
         throw new IOException("The client should not send a respawn to the Minecraft server!");
-    }
-
-    @Override
-    public void handle(ClientSession session, RespawnMessage message) {
-        session.getGame().getNetwork().offer(ChannelMessage.Channel.UNIVERSE, message);
     }
 }

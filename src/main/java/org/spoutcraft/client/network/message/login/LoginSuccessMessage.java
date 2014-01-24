@@ -32,7 +32,7 @@ import org.spoutcraft.client.network.message.ChannelMessage;
  * LoginStartMessage} is sent.
  */
 public class LoginSuccessMessage extends ChannelMessage {
-    private static final Channel REQUIRED_CHANNEL = Channel.NETWORK;
+    private static final Channel[] CHANNELS = new Channel[] {Channel.NETWORK};
     private final UUID uuid;
     private final String username;
 
@@ -43,7 +43,7 @@ public class LoginSuccessMessage extends ChannelMessage {
      * @param username The username of this session
      */
     public LoginSuccessMessage(UUID uuid, String username) {
-        super(REQUIRED_CHANNEL);
+        super(CHANNELS);
         this.uuid = uuid;
         this.username = username;
     }
@@ -67,7 +67,10 @@ public class LoginSuccessMessage extends ChannelMessage {
     }
 
     @Override
-    public boolean isAsync() {
-        return true;
+    public String toString() {
+        return "LoginSuccessMessage{" +
+                "uuid=" + uuid +
+                ", username='" + username + '\'' +
+                '}';
     }
 }

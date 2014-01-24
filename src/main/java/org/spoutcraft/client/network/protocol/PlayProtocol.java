@@ -57,13 +57,13 @@ public class PlayProtocol extends ClientProtocol {
         /**
          * From Server, in order of opcodes
          */
-        registerMessage(INBOUND, KeepAliveMessage.class, KeepAliveCodec.class, KeepAliveCodec.class, 0);
-        registerMessage(INBOUND, JoinGameMessage.class, JoinGameCodec.class, JoinGameCodec.class, 1);
-        registerMessage(INBOUND, SpawnPositionMessage.class, SpawnPositionCodec.class, SpawnPositionCodec.class, 5);
-        registerMessage(INBOUND, RespawnMessage.class, RespawnCodec.class, RespawnCodec.class, 7);
-        registerMessage(INBOUND, PositionLookMessage.class, PositionLookCodec.class, PositionLookCodec.class, 8);
-        registerMessage(INBOUND, ChunkDataMessage.class, ChunkDataCodec.class, ChunkDataCodec.class, 21);
-        registerMessage(INBOUND, ChunkDataBulkMessage.class, ChunkDataBulkCodec.class, ChunkDataBulkCodec.class, 26);
+        registerMessage(INBOUND, KeepAliveMessage.class, KeepAliveCodec.class, null, 0);
+        registerMessage(INBOUND, JoinGameMessage.class, JoinGameCodec.class, null, 1);
+        registerMessage(INBOUND, SpawnPositionMessage.class, SpawnPositionCodec.class, null, 5);
+        registerMessage(INBOUND, RespawnMessage.class, RespawnCodec.class, null, 7);
+        registerMessage(INBOUND, PositionLookMessage.class, PositionLookCodec.class, null, 8);
+        registerMessage(INBOUND, ChunkDataMessage.class, ChunkDataCodec.class, null, 21);
+        registerMessage(INBOUND, ChunkDataBulkMessage.class, ChunkDataBulkCodec.class, null, 26);
         /**
          * To Server, in order of opcodes
          */

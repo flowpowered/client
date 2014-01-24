@@ -34,7 +34,6 @@ import org.spoutcraft.client.network.message.handshake.HandshakeMessage;
  * The codec for the handshake message.
  */
 public class HandshakeCodec implements Codec<HandshakeMessage> {
-
     @Override
     public HandshakeMessage decode(ByteBuf byteBuf) throws IOException {
         throw new IOException("The client should not receive a handshake from the Minecraft server!");
