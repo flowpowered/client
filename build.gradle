@@ -102,6 +102,7 @@ license {
     ext.url = url
     ext.year = inceptionYear + '-' + currentYear
     header rootProject.file('HEADER.txt')
+    ignoreFailures true
     strictCheck true
 }
 
