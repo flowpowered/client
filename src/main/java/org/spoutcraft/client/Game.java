@@ -47,6 +47,7 @@ public class Game {
     private final Interface nterface;
     private final Network network;
     private final Input input;
+    private final String version;
 
     static {
         try {
@@ -63,6 +64,7 @@ public class Game {
         nterface = new Interface(this);
         network = new Network(this);
         input = new Input(this);
+        version = getClass().getPackage().getImplementationVersion();
     }
 
     private void start() {
@@ -103,6 +105,10 @@ public class Game {
 
     public Input getInput() {
         return input;
+    }
+
+    public String getVersion() {
+        return version;
     }
 
     /**
