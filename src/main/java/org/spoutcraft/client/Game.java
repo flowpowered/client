@@ -38,6 +38,7 @@ import org.spoutcraft.client.universe.Universe;
  * The game class.
  */
 public class Game {
+    private static final String version;
     // A semaphore with no permits, so that the first acquire() call blocks
     private final Semaphore semaphore = new Semaphore(0);
     private final AtomicBoolean running = new AtomicBoolean(false);
@@ -47,7 +48,6 @@ public class Game {
     private final Interface nterface;
     private final Network network;
     private final Input input;
-    private final String version;
 
     static {
         try {
@@ -55,6 +55,7 @@ public class Game {
         } catch (Exception ex) {
             System.err.println("Couldn't load the default materials");
         }
+        version = Game.class.getPackage().getImplementationVersion();
     }
 
     public Game() {
@@ -64,7 +65,6 @@ public class Game {
         nterface = new Interface(this);
         network = new Network(this);
         input = new Input(this);
-        version = getClass().getPackage().getImplementationVersion();
     }
 
     private void start() {
