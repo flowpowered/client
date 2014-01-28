@@ -62,7 +62,6 @@ public class Network extends TickingElement {
         client = new GameNetworkClient(game);
         handler = new AnnotatedMessageHandler(this);
         messageQueue.put(Channel.UNIVERSE, new ConcurrentLinkedQueue<ChannelMessage>());
-        messageQueue.put(Channel.NETWORK, new ConcurrentLinkedQueue<ChannelMessage>());
         messageQueue.put(Channel.PHYSICS, new ConcurrentLinkedQueue<ChannelMessage>());
     }
 
@@ -75,17 +74,6 @@ public class Network extends TickingElement {
 
     @Override
     public void onTick(long dt) {
-        if (!client.hasSession()) {
-            return;
-        }
-        final Iterator<ChannelMessage> messages = messageQueue.get(Channel.NETWORK).iterator();
-        while (messages.hasNext()) {
-            handler.handle(messages.next());
-            messages.remove();
-        }
-        if (!getSession().getChannel().config().isAutoRead()) {
-            getSession().getChannel().read();
-        }
     }
 
     @Override
@@ -149,7 +137,11 @@ public class Network extends TickingElement {
      * @param m See {@link org.spoutcraft.client.network.message.ChannelMessage}
      */
     public void offer(Channel c, ChannelMessage m) {
-        messageQueue.get(c).offer(m);
+        if (c == Channel.NETWORK) {
+            handler.handle(m);
+        } else {
+            messageQueue.get(c).offer(m);
+        }
     }
 
     @Handle
