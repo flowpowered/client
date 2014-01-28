@@ -111,7 +111,6 @@ public class Network extends TickingElement {
         if (!isRunning()) {
             throw new RuntimeException("Attempt made to issue a connection but the Network thread isn't running!");
         }
-        client.preConnectOption(ChannelOption.AUTO_READ, false);
         client.connect(address);
     }
 
@@ -158,7 +157,6 @@ public class Network extends TickingElement {
         getSession().setProtocol(new PlayProtocol(game));
         getSession().setUUID(message.getUUID());
         getSession().setUsername(message.getUsername());
-        getSession().setOption(ChannelOption.AUTO_READ, true);
     }
 
     @Handle
