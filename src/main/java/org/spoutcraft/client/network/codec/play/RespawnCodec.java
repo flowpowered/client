@@ -25,8 +25,8 @@ package org.spoutcraft.client.network.codec.play;
 
 import java.io.IOException;
 
-import com.flowpowered.networking.ByteBufUtils;
 import com.flowpowered.networking.Codec;
+import com.flowpowered.networking.util.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
@@ -35,7 +35,7 @@ import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.network.message.play.RespawnMessage;
 
 /**
- * The codec for the respawn message. Also handles the respawn message.
+ * The codec for the respawn message.
  */
 public class RespawnCodec implements Codec<RespawnMessage> {
     @Override
@@ -48,7 +48,7 @@ public class RespawnCodec implements Codec<RespawnMessage> {
     }
 
     @Override
-    public ByteBuf encode(ByteBuf buf, RespawnMessage message) throws IOException {
+    public void encode(ByteBuf buf, RespawnMessage message) throws IOException {
         throw new IOException("The client should not send a respawn to the Minecraft server!");
     }
 }

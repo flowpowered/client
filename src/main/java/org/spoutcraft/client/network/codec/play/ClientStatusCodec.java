@@ -39,8 +39,7 @@ public class ClientStatusCodec implements Codec<ClientStatusMessage> {
     }
 
     @Override
-    public ByteBuf encode(ByteBuf buf, ClientStatusMessage message) throws IOException {
+    public void encode(ByteBuf buf, ClientStatusMessage message) throws IOException {
         buf.writeByte(message.getState().value());
-        return buf;
     }
 }

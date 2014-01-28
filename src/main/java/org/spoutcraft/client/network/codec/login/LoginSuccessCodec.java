@@ -26,13 +26,13 @@ package org.spoutcraft.client.network.codec.login;
 import java.io.IOException;
 import java.util.UUID;
 
-import com.flowpowered.networking.ByteBufUtils;
 import com.flowpowered.networking.Codec;
+import com.flowpowered.networking.util.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.network.message.login.LoginSuccessMessage;
 
 /**
- * The codec for the login success message. Also handles the login success message.
+ * The codec for the login success message.
  */
 public class LoginSuccessCodec implements Codec<LoginSuccessMessage> {
     @Override
@@ -43,7 +43,7 @@ public class LoginSuccessCodec implements Codec<LoginSuccessMessage> {
     }
 
     @Override
-    public ByteBuf encode(ByteBuf buf, LoginSuccessMessage message) throws IOException {
+    public void encode(ByteBuf buf, LoginSuccessMessage message) throws IOException {
         throw new IOException("The client should not send a login success to the Minecraft server!");
     }
 }

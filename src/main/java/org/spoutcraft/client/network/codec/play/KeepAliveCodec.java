@@ -30,7 +30,7 @@ import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.network.message.play.KeepAliveMessage;
 
 /**
- * The codec for the keep alive message. Also handles the keep alive message .
+ * The codec for the keep alive message.
  */
 public class KeepAliveCodec implements Codec<KeepAliveMessage> {
     @Override
@@ -39,8 +39,7 @@ public class KeepAliveCodec implements Codec<KeepAliveMessage> {
     }
 
     @Override
-    public ByteBuf encode(ByteBuf buf, KeepAliveMessage message) throws IOException {
+    public void encode(ByteBuf buf, KeepAliveMessage message) throws IOException {
         buf.writeInt(message.getRandom());
-        return buf;
     }
 }

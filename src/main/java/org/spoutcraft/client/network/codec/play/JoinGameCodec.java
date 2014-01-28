@@ -25,8 +25,8 @@ package org.spoutcraft.client.network.codec.play;
 
 import java.io.IOException;
 
-import com.flowpowered.networking.ByteBufUtils;
 import com.flowpowered.networking.Codec;
+import com.flowpowered.networking.util.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.game.Difficulty;
 import org.spoutcraft.client.game.Dimension;
@@ -35,7 +35,7 @@ import org.spoutcraft.client.game.LevelType;
 import org.spoutcraft.client.network.message.play.JoinGameMessage;
 
 /**
- * The codec for the join game message. Also handles the join game message.
+ * The codec for the join game message.
  */
 public class JoinGameCodec implements Codec<JoinGameMessage> {
     @Override
@@ -52,7 +52,7 @@ public class JoinGameCodec implements Codec<JoinGameMessage> {
     }
 
     @Override
-    public ByteBuf encode(ByteBuf buf, JoinGameMessage message) throws IOException {
+    public void encode(ByteBuf buf, JoinGameMessage message) throws IOException {
         throw new IOException("The client cannot send a join game to the Minecraft server!");
     }
 }

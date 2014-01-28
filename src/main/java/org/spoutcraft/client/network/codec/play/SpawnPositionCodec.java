@@ -42,7 +42,7 @@ public class SpawnPositionCodec implements Codec<SpawnPositionMessage> {
     }
 
     @Override
-    public ByteBuf encode(ByteBuf buf, SpawnPositionMessage message) throws IOException {
+    public void encode(ByteBuf buf, SpawnPositionMessage message) throws IOException {
         throw new IOException("The client should not send a spawn position to the Minecraft server!");
     }
 }

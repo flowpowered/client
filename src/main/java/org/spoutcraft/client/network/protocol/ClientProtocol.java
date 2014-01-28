@@ -25,13 +25,14 @@ package org.spoutcraft.client.network.protocol;
 
 import java.io.IOException;
 
-import com.flowpowered.networking.ByteBufUtils;
 import com.flowpowered.networking.Codec;
+import com.flowpowered.networking.Codec.CodecRegistration;
 import com.flowpowered.networking.Message;
 import com.flowpowered.networking.MessageHandler;
 import com.flowpowered.networking.exception.IllegalOpcodeException;
 import com.flowpowered.networking.exception.UnknownPacketException;
 import com.flowpowered.networking.protocol.keyed.KeyedProtocol;
+import com.flowpowered.networking.util.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.spoutcraft.client.Game;
@@ -81,18 +82,17 @@ public class ClientProtocol extends KeyedProtocol {
     }
 
     @Override
-    public <M extends Message> Codec.CodecRegistration getCodecRegistration(Class<M> clazz) {
+    public <M extends Message> CodecRegistration getCodecRegistration(Class<M> clazz) {
         return getCodecLookupService(OUTBOUND).find(clazz);
     }
 
     @Override
-    public ByteBuf writeHeader(Codec.CodecRegistration codec, ByteBuf data, ByteBuf out) {
+    public void writeHeader(ByteBuf data, CodecRegistration codec, ByteBuf out) {
         final int length = data.readableBytes();
         final ByteBuf opcodeBuffer = Unpooled.buffer();
         ByteBufUtils.writeVarInt(opcodeBuffer, codec.getOpcode());
         ByteBufUtils.writeVarInt(out, length + opcodeBuffer.readableBytes());
         ByteBufUtils.writeVarInt(out, codec.getOpcode());
-        return out;
     }
 
     public Game getGame() {

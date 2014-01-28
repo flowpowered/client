@@ -25,8 +25,8 @@ package org.spoutcraft.client.network.codec.login;
 
 import java.io.IOException;
 
-import com.flowpowered.networking.ByteBufUtils;
 import com.flowpowered.networking.Codec;
+import com.flowpowered.networking.util.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import org.spoutcraft.client.network.message.login.LoginStartMessage;
 
@@ -40,8 +40,7 @@ public class LoginStartCodec implements Codec<LoginStartMessage> {
     }
 
     @Override
-    public ByteBuf encode(ByteBuf buf, LoginStartMessage message) throws IOException {
+    public void encode(ByteBuf buf, LoginStartMessage message) throws IOException {
         ByteBufUtils.writeUTF8(buf, message.getUsername());
-        return buf;
     }
 }

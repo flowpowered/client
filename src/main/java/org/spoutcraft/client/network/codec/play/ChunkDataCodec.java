@@ -44,7 +44,7 @@ public class ChunkDataCodec implements Codec<ChunkDataMessage> {
     }
 
     @Override
-    public ByteBuf encode(ByteBuf buf, ChunkDataMessage message) throws IOException {
+    public void encode(ByteBuf buf, ChunkDataMessage message) throws IOException {
         throw new IOException("The client cannot send a chunk data to the Minecraft server!");
     }
 }
