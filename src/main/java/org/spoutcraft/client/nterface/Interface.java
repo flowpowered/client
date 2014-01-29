@@ -239,10 +239,10 @@ public class Interface extends TickingElement {
         model.setRotation(Quaternionf.IDENTITY);
         // The previous model is kept to prevent frames with missing chunks because they're being meshed
         model.setPrevious(previous);
-        System.out.println("updated: " + position);
         renderer.addSolidModel(model);
         chunkModels.put(position, model);
         chunkLastUpdateNumbers.put(position, chunk.getUpdateNumber());
+        game.getLogger().info("Updated chunk model: " + position);
     }
 
     private void removeChunkModel(ChunkModel model, boolean destroy) {
