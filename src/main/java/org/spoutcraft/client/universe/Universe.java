@@ -51,7 +51,6 @@ import org.spoutcraft.client.network.message.ChannelMessage.Channel;
 import org.spoutcraft.client.network.message.play.ChunkDataBulkMessage;
 import org.spoutcraft.client.network.message.play.ChunkDataMessage;
 import org.spoutcraft.client.network.message.play.JoinGameMessage;
-import org.spoutcraft.client.network.message.play.PlayerMessage;
 import org.spoutcraft.client.network.message.play.PositionLookMessage;
 import org.spoutcraft.client.network.message.play.RespawnMessage;
 import org.spoutcraft.client.network.message.play.SpawnPositionMessage;

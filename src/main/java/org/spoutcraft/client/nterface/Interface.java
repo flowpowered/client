@@ -75,6 +75,7 @@ public class Interface extends TickingElement {
     private final ParallelChunkMesher mesher;
     private final Map<Vector3i, ChunkModel> chunkModels = new HashMap<>();
     private long worldLastUpdateNumber;
+    private boolean lastUpdatePartial = false;
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
     private final ViewFrustum frustum = new ViewFrustum();
     private float cameraPitch = 0;
@@ -167,15 +168,20 @@ public class Interface extends TickingElement {
             chunkModels.clear();
             chunkLastUpdateNumbers.clear();
             worldLastUpdateNumber = 0;
+            lastUpdatePartial = false;
             return;
         }
-        // If the snapshot hasn't updated there's nothing to do
-        if (world.getUpdateNumber() <= worldLastUpdateNumber) {
-            return;
-        }
-        // Else, we need to update the chunk models
+        // Else get the chunks
         final Map<Vector3i, ChunkSnapshot> chunks = world.getChunks();
-        // Remove chunks we don't need anymore
+        // If the snapshot hasn't updated yet, there's probably nothing to do
+        if (world.getUpdateNumber() <= worldLastUpdateNumber) {
+            if (lastUpdatePartial) {
+                // But if the last update was partial, there might still be work to do though
+                updateExistingChunkModels(chunks);
+            }
+            return;
+        }
+        // Else we need to update the chunk models, start by removing chunks we don't need anymore
         for (Iterator<Entry<Vector3i, ChunkModel>> iterator = chunkModels.entrySet().iterator(); iterator.hasNext(); ) {
             final Entry<Vector3i, ChunkModel> chunkModel = iterator.next();
             final Vector3i position = chunkModel.getKey();
@@ -189,12 +195,28 @@ public class Interface extends TickingElement {
                 chunkLastUpdateNumbers.remove(position);
             }
         }
-        // Next go through all the chunks, and update the chunks that are out of date
-        for (ChunkSnapshot chunk : chunks.values()) {
-            // If the chunk model is out of date and visible
-            if (chunk.getUpdateNumber() > chunkLastUpdateNumbers.get(chunk.getPosition())
-                    && isChunkVisible(chunk.getPosition())) {
-                final Vector3i position = chunk.getPosition();
+        // Update the existing chunk models to match the world
+        updateExistingChunkModels(chunks);
+        // Update the world update number
+        worldLastUpdateNumber = world.getUpdateNumber();
+        // Safety precautions
+        if (renderer.getRenderModelsStage().getModels().size() > chunkModels.size()) {
+            game.getLogger().warn("There are more models in the renderer (" + renderer.getRenderModelsStage().getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
+        }
+    }
+
+    private void updateExistingChunkModels(final Map<Vector3i, ChunkSnapshot> newChunks) {
+        // Go through all the chunks, and update those that are out of date
+        boolean skippedChunk = false;
+        for (ChunkSnapshot newChunk : newChunks.values()) {
+            // If the chunk model is out of date
+            if (newChunk.getUpdateNumber() > chunkLastUpdateNumbers.get(newChunk.getPosition())) {
+                // If it's not visible, skip it, and mark that we skipped at least one chunk
+                if (!isChunkVisible(newChunk.getPosition())) {
+                    skippedChunk = true;
+                    continue;
+                }
+                final Vector3i position = newChunk.getPosition();
                 // If we have a previous model remove it to be replaced
                 final ChunkModel previous = chunkModels.get(position);
                 if (previous != null) {
@@ -203,15 +225,11 @@ public class Interface extends TickingElement {
                     // No need to remove from the collections, it will be replaced in the addChunkModel call
                 }
                 // Add the new model
-                addChunkModel(chunk, previous);
+                addChunkModel(newChunk, previous);
             }
         }
-        // Update the world update number
-        worldLastUpdateNumber = world.getUpdateNumber();
-        // Safety precautions
-        if (renderer.getRenderModelsStage().getModels().size() > chunkModels.size()) {
-            game.getLogger().warn("There are more models in the renderer (" + renderer.getRenderModelsStage().getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
-        }
+        // If we skipped a chunk because it wasn't visible, the update isn't complete
+        lastUpdatePartial = skippedChunk;
     }
 
     private void addChunkModel(ChunkSnapshot chunk, ChunkModel previous) {
@@ -221,6 +239,7 @@ public class Interface extends TickingElement {
         model.setRotation(Quaternionf.IDENTITY);
         // The previous model is kept to prevent frames with missing chunks because they're being meshed
         model.setPrevious(previous);
+        System.out.println("updated: " + position);
         renderer.addSolidModel(model);
         chunkModels.put(position, model);
         chunkLastUpdateNumbers.put(position, chunk.getUpdateNumber());
