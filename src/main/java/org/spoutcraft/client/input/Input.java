@@ -255,6 +255,7 @@ public class Input extends TickingElement {
         return game;
     }
 
+    // TODO: this shouldn't be exposed, not thread safe, doesn't fit into the threading model either
     public void clear() throws IOException {
         readerThread.getConsole().clearScreen();
     }
@@ -284,7 +285,9 @@ public class Input extends TickingElement {
             running = true;
             try {
                 while (running) {
-                    String command = reader.readLine(">");
+                    // TODO: this is broken in when using "gradle run", gets spammed to hell
+                    //String command = reader.readLine(">");
+                    String command = reader.readLine();
 
                     if (command == null || command.trim().length() == 0) {
                         continue;
