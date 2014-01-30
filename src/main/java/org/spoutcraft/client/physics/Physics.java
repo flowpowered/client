@@ -26,14 +26,18 @@ package org.spoutcraft.client.physics;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.math.vector.Vector3f;
-import org.lwjgl.input.*;
+
+import org.lwjgl.input.Keyboard;
+
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.input.Input;
+import org.spoutcraft.client.input.event.KeyboardEvent;
 import org.spoutcraft.client.nterface.snapshot.CameraSnapshot;
 import org.spoutcraft.client.physics.entity.Entity;
 import org.spoutcraft.client.physics.entity.Player;
@@ -63,7 +67,7 @@ public class Physics extends TickingElement {
     @Override
     public void onStart() {
         game.getLogger().info("Starting physics");
-
+        game.getInput().subscribeToKeyboard();
         // TEST CODE
         player.set(new Player(0, "Spoutcrafty", null, new Vector3f(0, 18, 0), null));
     }
@@ -80,6 +84,7 @@ public class Physics extends TickingElement {
     @Override
     public void onStop() {
         game.getLogger().info("Stopping physics");
+        game.getInput().unsubscribeToKeyboard();
     }
 
     private void updateSnapshots() {
@@ -133,23 +138,50 @@ public class Physics extends TickingElement {
         Vector3f position = player.getPosition();
         // Adjust the player speed to the FPS
         final float speed = PLAYER_SPEED * TPS * dt;
+        // Check if the movement keys where pressed down at least once since the last tick. This means the movement resolution is dependent on the TPS of this thread
+        boolean wasWPressed = false, wasSPressed = false, wasAPressed = false, wasDPressed = false, wasSpacePressed = false, wasLShiftPressed = false;
+        final Queue<KeyboardEvent> keyboardEvents = game.getInput().getKeyboardQueue();
+        while (!keyboardEvents.isEmpty()) {
+            final KeyboardEvent event = keyboardEvents.poll();
+            if (event.wasPressedDown()) {
+                switch (event.getKey()) {
+                    case Keyboard.KEY_W:
+                        wasWPressed = true;
+                        break;
+                    case Keyboard.KEY_S:
+                        wasSPressed = true;
+                        break;
+                    case Keyboard.KEY_A:
+                        wasAPressed = true;
+                        break;
+                    case Keyboard.KEY_D:
+                        wasDPressed = true;
+                        break;
+                    case Keyboard.KEY_SPACE:
+                        wasSpacePressed = true;
+                        break;
+                    case Keyboard.KEY_LSHIFT:
+                        wasLShiftPressed = true;
+                }
+            }
+        }
         // Calculate the new player position
-        if (input.isKeyDown(Keyboard.KEY_W)) {
+        if (wasWPressed || input.isKeyDown(Keyboard.KEY_W)) {
             position = position.add(forward.mul(speed));
         }
-        if (input.isKeyDown(Keyboard.KEY_S)) {
+        if (wasSPressed || input.isKeyDown(Keyboard.KEY_S)) {
             position = position.add(forward.mul(-speed));
         }
-        if (input.isKeyDown(Keyboard.KEY_A)) {
+        if (wasAPressed || input.isKeyDown(Keyboard.KEY_A)) {
             position = position.add(right.mul(-speed));
         }
-        if (input.isKeyDown(Keyboard.KEY_D)) {
+        if (wasDPressed || input.isKeyDown(Keyboard.KEY_D)) {
             position = position.add(right.mul(speed));
         }
-        if (input.isKeyDown(Keyboard.KEY_SPACE)) {
+        if (wasSpacePressed || input.isKeyDown(Keyboard.KEY_SPACE)) {
             position = position.add(up.mul(speed));
         }
-        if (input.isKeyDown(Keyboard.KEY_LSHIFT)) {
+        if (wasLShiftPressed || input.isKeyDown(Keyboard.KEY_LSHIFT)) {
             position = position.add(up.mul(-speed));
         }
         // Update the player position
