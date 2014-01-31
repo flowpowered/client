@@ -114,8 +114,13 @@ public class ClientSession extends BasicSession {
     }
 
     @Override
-    public void onThrowable(Throwable throwable) {
-        game.getLogger().fatal(throwable);
+    public void onInboundThrowable(Throwable throwable) {
+        game.getLogger().fatal("Exception caught on inbound messsage", throwable);
+    }
+
+    @Override
+    public void onOutboundThrowable(Throwable throwable) {
+        game.getLogger().fatal("Exception caught on outbound message", throwable);
     }
 
     /**
