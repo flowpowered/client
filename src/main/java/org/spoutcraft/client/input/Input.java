@@ -35,10 +35,13 @@ import com.flowpowered.commands.annotated.AnnotatedCommandExecutorFactory;
 import com.flowpowered.commons.queue.SubscribableQueue;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.github.wolf480pl.jline_log4j2_appender.ConsoleSetupMessage;
+
 import jline.console.ConsoleReader;
-import org.lwjgl.*;
-import org.lwjgl.input.*;
-import org.lwjgl.opengl.*;
+import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
+
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.input.command.Commands;
 import org.spoutcraft.client.input.command.ConsoleCommandSender;
@@ -83,7 +86,7 @@ public class Input extends TickingElement {
             if (!readerThread.ranBefore) {
                 game.getLogger().info(new ConsoleSetupMessage(readerThread.reader, "Setting up console"));
             }
-            readerThread.start();
+            //readerThread.start();
         } else {
             readerThread.getRawCommandQueue().clear();
         }
