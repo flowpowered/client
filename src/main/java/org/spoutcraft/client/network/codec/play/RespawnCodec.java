@@ -48,7 +48,7 @@ public class RespawnCodec implements Codec<RespawnMessage> {
     }
 
     @Override
-    public void encode(ByteBuf buf, RespawnMessage message) throws IOException {
+    public ByteBuf encode(ByteBuf buf, RespawnMessage message) throws IOException {
         throw new IOException("The client should not send a respawn to the Minecraft server!");
     }
 }

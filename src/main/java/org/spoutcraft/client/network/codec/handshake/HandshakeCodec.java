@@ -40,10 +40,11 @@ public class HandshakeCodec implements Codec<HandshakeMessage> {
     }
 
     @Override
-    public void encode(ByteBuf buf, HandshakeMessage message) throws IOException {
+    public ByteBuf encode(ByteBuf buf, HandshakeMessage message) throws IOException {
         ByteBufUtils.writeVarInt(buf, message.getVersion());
         ByteBufUtils.writeUTF8(buf, message.getAddress());
         buf.writeShort(message.getPort());
         ByteBufUtils.writeVarInt(buf, message.getState().value());
+        return buf;
     }
 }

@@ -42,7 +42,7 @@ public class PositionLookCodec implements Codec<PositionLookMessage> {
     }
 
     @Override
-    public void encode(ByteBuf buf, PositionLookMessage message) throws IOException {
+    public ByteBuf encode(ByteBuf buf, PositionLookMessage message) throws IOException {
         buf.writeDouble(message.getX());
         buf.writeDouble(message.getStance());
         buf.writeDouble(message.getY());
@@ -50,5 +50,6 @@ public class PositionLookCodec implements Codec<PositionLookMessage> {
         buf.writeFloat(message.getYaw());
         buf.writeFloat(message.getPitch());
         buf.writeBoolean(message.isOnGround());
+        return buf;
     }
 }

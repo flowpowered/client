@@ -52,7 +52,7 @@ public class JoinGameCodec implements Codec<JoinGameMessage> {
     }
 
     @Override
-    public void encode(ByteBuf buf, JoinGameMessage message) throws IOException {
+    public ByteBuf encode(ByteBuf buf, JoinGameMessage message) throws IOException {
         throw new IOException("The client cannot send a join game to the Minecraft server!");
     }
 }

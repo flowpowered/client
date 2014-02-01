@@ -39,7 +39,8 @@ public class PlayerCodec implements Codec<PlayerMessage> {
     }
 
     @Override
-    public void encode(ByteBuf buf, PlayerMessage message) throws IOException {
+    public ByteBuf encode(ByteBuf buf, PlayerMessage message) throws IOException {
         buf.writeBoolean(message.isOnGround());
+        return buf;
     }
 }
