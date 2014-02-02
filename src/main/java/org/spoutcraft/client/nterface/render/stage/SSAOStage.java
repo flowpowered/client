@@ -137,7 +137,9 @@ public class SSAOStage extends Creatable {
         checkCreated();
         noiseTexture.destroy();
         frameBuffer.destroy();
-        occlusionsOutput.destroy();
+        if (occlusionsOutput.isCreated()) {
+            occlusionsOutput.destroy();
+        }
         super.destroy();
     }
 

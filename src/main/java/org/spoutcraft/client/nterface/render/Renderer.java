@@ -74,6 +74,7 @@ import org.spout.renderer.api.util.Rectangle;
 import org.spout.renderer.lwjgl.LWJGLUtil;
 
 import org.spoutcraft.client.nterface.Interface;
+import org.spoutcraft.client.nterface.render.stage.GaussianBlurStage;
 import org.spoutcraft.client.nterface.render.stage.LightingStage;
 import org.spoutcraft.client.nterface.render.stage.RenderGUIStage;
 import org.spoutcraft.client.nterface.render.stage.RenderModelsStage;
@@ -120,6 +121,7 @@ public class Renderer {
     private RenderModelsStage renderModelsStage;
     private ShadowMappingStage shadowMappingStage;
     private SSAOStage ssaoStage;
+    private GaussianBlurStage gaussianBlurStage;
     private LightingStage lightingStage;
     private RenderTransparentModelsStage renderTransparentModelsStage;
     private RenderGUIStage renderGUIStage;
@@ -200,7 +202,7 @@ public class Renderer {
 
         // TODO: maybe make the stage outputs local to them?
 
-        final int blurSize = 4;
+        final int blurSize = 5;
         // Render models
         renderModelsStage = new RenderModelsStage(this);
         renderModelsStage.setColorsOutput(colors);
@@ -240,10 +242,16 @@ public class Renderer {
         lightingStage.setShadowsInput(shadows);
         lightingStage.setColorsOutput(colors2);
         lightingStage.create();
+        // Gaussian blur
+        gaussianBlurStage = new GaussianBlurStage(this);
+        gaussianBlurStage.setColorsInput(colors2);
+        gaussianBlurStage.setKernelSize(blurSize);
+        gaussianBlurStage.setColorsOutput(colors);
+        gaussianBlurStage.create();
         // Transparent models
         renderTransparentModelsStage = new RenderTransparentModelsStage(this);
         renderTransparentModelsStage.setDepthsInput(depths);
-        renderTransparentModelsStage.setColorsOutput(colors2);
+        renderTransparentModelsStage.setColorsOutput(colors);
         renderTransparentModelsStage.create();
         // Render GUI
         renderGUIStage = new RenderGUIStage(this);
@@ -264,7 +272,7 @@ public class Renderer {
         loadProgram("font");
         loadProgram("ssao");
         loadProgram("shadow");
-        loadProgram("blur");
+        loadProgram("gaussianBlur");
         loadProgram("lighting");
         loadProgram("motionBlur");
         loadProgram("edaa");
@@ -377,6 +385,7 @@ public class Renderer {
         shadowMappingStage.destroy();
         ssaoStage.destroy();
         lightingStage.destroy();
+        gaussianBlurStage.destroy();
         renderTransparentModelsStage.destroy();
         renderGUIStage.destroy();
     }
@@ -410,6 +419,7 @@ public class Renderer {
         shadowMappingStage.render();
         ssaoStage.render();
         lightingStage.render();
+        gaussianBlurStage.render();
         renderTransparentModelsStage.render();
         renderGUIStage.render();
         // Update the previous frame uniforms
