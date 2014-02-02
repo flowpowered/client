@@ -56,9 +56,9 @@ public class SSAOStage extends Creatable {
     private final Material material;
     private final Texture noiseTexture;
     private final FrameBuffer frameBuffer;
+    private final Texture occlusionsOutput;
     private Texture normalsInput;
     private Texture depthsInput;
-    private Texture occlusionsOutput;
     private Pipeline pipeline;
     private int kernelSize = 8;
     private float radius = 0.5f;
@@ -72,6 +72,7 @@ public class SSAOStage extends Creatable {
         final GLFactory glFactory = renderer.getGLFactory();
         noiseTexture = glFactory.createTexture();
         frameBuffer = glFactory.createFrameBuffer();
+        occlusionsOutput = glFactory.createTexture();
     }
 
     @Override
@@ -101,12 +102,17 @@ public class SSAOStage extends Creatable {
             noiseTextureBuffer.put((byte) (noise.getFloorY() & 0xff));
             noiseTextureBuffer.put((byte) (noise.getFloorZ() & 0xff));
         }
-        // Create the texture
+        // Create the noise texture
         noiseTexture.setFormat(Format.RGB);
         noiseTexture.setInternalFormat(InternalFormat.RGB8);
         noiseTextureBuffer.flip();
         noiseTexture.setImageData(noiseTextureBuffer, noiseSize, noiseSize);
         noiseTexture.create();
+        // Create the occlusions texture
+        occlusionsOutput.setFormat(Format.RED);
+        occlusionsOutput.setInternalFormat(InternalFormat.R8);
+        occlusionsOutput.setImageData(null, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY());
+        occlusionsOutput.create();
         // Create the material
         material.addTexture(0, normalsInput);
         material.addTexture(1, depthsInput);
@@ -137,9 +143,7 @@ public class SSAOStage extends Creatable {
         checkCreated();
         noiseTexture.destroy();
         frameBuffer.destroy();
-        if (occlusionsOutput.isCreated()) {
-            occlusionsOutput.destroy();
-        }
+        occlusionsOutput.destroy();
         super.destroy();
     }
 
@@ -176,11 +180,6 @@ public class SSAOStage extends Creatable {
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         depthsInput = texture;
-    }
-
-    public void setOcclusionOutput(Texture texture) {
-        texture.checkCreated();
-        occlusionsOutput = texture;
     }
 
     public Texture getOcclusionsOutput() {

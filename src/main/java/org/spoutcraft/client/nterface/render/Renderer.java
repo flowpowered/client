@@ -61,11 +61,7 @@ import org.spout.renderer.api.gl.Context.Capability;
 import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Program;
 import org.spout.renderer.api.gl.Shader;
-import org.spout.renderer.api.gl.Texture;
-import org.spout.renderer.api.gl.Texture.FilterMode;
 import org.spout.renderer.api.gl.Texture.Format;
-import org.spout.renderer.api.gl.Texture.InternalFormat;
-import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.gl.VertexArray;
 import org.spout.renderer.api.model.Model;
 import org.spout.renderer.api.model.StringModel;
@@ -166,104 +162,51 @@ public class Renderer {
     }
 
     private void initEffects() {
-        final Texture colors = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
-        colors.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        colors.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        colors.setMagFilter(FilterMode.LINEAR);
-        colors.setMinFilter(FilterMode.LINEAR);
-        colors.create();
-
-        final Texture normals = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
-        normals.create();
-
-        final Texture depths = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.DEPTH, InternalFormat.DEPTH_COMPONENT32);
-        depths.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        depths.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        depths.create();
-
-        final Texture vertexNormals = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
-        vertexNormals.create();
-
-        final Texture materials = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
-        materials.create();
-
-        final Texture shadows = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RED, InternalFormat.R8);
-        shadows.create();
-
-        final Texture occlusions = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RED, InternalFormat.R8);
-        occlusions.create();
-
-        final Texture colors2 = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
-        colors2.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        colors2.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        colors2.setMagFilter(FilterMode.LINEAR);
-        colors2.setMinFilter(FilterMode.LINEAR);
-        colors2.create();
-
-        // TODO: maybe make the stage outputs local to them?
-
         final int blurSize = 5;
         // Render models
         renderModelsStage = new RenderModelsStage(this);
-        renderModelsStage.setColorsOutput(colors);
-        renderModelsStage.setNormalsOutput(normals);
-        renderModelsStage.setDepthsOutput(depths);
-        renderModelsStage.setVertexNormalsOutput(vertexNormals);
-        renderModelsStage.setMaterialsOutput(materials);
         renderModelsStage.create();
         // Shadows
         shadowMappingStage = new ShadowMappingStage(this);
-        shadowMappingStage.setNormalsInput(vertexNormals);
-        shadowMappingStage.setDepthsInput(depths);
+        shadowMappingStage.setNormalsInput(renderModelsStage.getVertexNormalsOutput());
+        shadowMappingStage.setDepthsInput(renderModelsStage.getDepthsOutput());
         shadowMappingStage.setKernelSize(8);
         shadowMappingStage.setNoiseSize(blurSize);
         shadowMappingStage.setBias(0.005f);
         shadowMappingStage.setRadius(0.0004f);
-        shadowMappingStage.setShadowsOutput(shadows);
         shadowMappingStage.create();
         // SSAO
         ssaoStage = new SSAOStage(this);
-        ssaoStage.setNormalsInput(normals);
-        ssaoStage.setDepthsInput(depths);
+        ssaoStage.setNormalsInput(renderModelsStage.getNormalsOutput());
+        ssaoStage.setDepthsInput(renderModelsStage.getDepthsOutput());
         ssaoStage.setKernelSize(8);
         ssaoStage.setNoiseSize(blurSize);
         ssaoStage.setRadius(0.5f);
         ssaoStage.setThreshold(0.15f);
         ssaoStage.setPower(2);
-        ssaoStage.setOcclusionOutput(occlusions);
         ssaoStage.create();
         // Lighting
         lightingStage = new LightingStage(this);
-        lightingStage.setColorsInput(colors);
-        lightingStage.setNormalsInput(normals);
-        lightingStage.setDepthsInput(depths);
-        lightingStage.setMaterialInput(materials);
-        lightingStage.setOcclusionsInput(occlusions);
-        lightingStage.setShadowsInput(shadows);
-        lightingStage.setColorsOutput(colors2);
+        lightingStage.setColorsInput(renderModelsStage.getColorsOutput());
+        lightingStage.setNormalsInput(renderModelsStage.getNormalsOutput());
+        lightingStage.setDepthsInput(renderModelsStage.getDepthsOutput());
+        lightingStage.setMaterialInput(renderModelsStage.getMaterialsOutput());
+        lightingStage.setOcclusionsInput(ssaoStage.getOcclusionsOutput());
+        lightingStage.setShadowsInput(shadowMappingStage.getShadowsOutput());
         lightingStage.create();
         // Gaussian blur
         gaussianBlurStage = new GaussianBlurStage(this);
-        gaussianBlurStage.setColorsInput(colors2);
+        gaussianBlurStage.setColorsInput(lightingStage.getColorsOutput());
         gaussianBlurStage.setKernelSize(blurSize);
-        gaussianBlurStage.setColorsOutput(colors);
         gaussianBlurStage.create();
         // Transparent models
         renderTransparentModelsStage = new RenderTransparentModelsStage(this);
-        renderTransparentModelsStage.setDepthsInput(depths);
-        renderTransparentModelsStage.setColorsOutput(colors);
+        renderTransparentModelsStage.setDepthsInput(renderModelsStage.getDepthsOutput());
+        renderTransparentModelsStage.setColorsInput(gaussianBlurStage.getColorsOutput());
         renderTransparentModelsStage.create();
         // Render GUI
         renderGUIStage = new RenderGUIStage(this);
         renderGUIStage.create();
-    }
-
-    private Texture createTexture(int width, int height, Format format, InternalFormat internalFormat) {
-        final Texture texture = glFactory.createTexture();
-        texture.setFormat(format);
-        texture.setInternalFormat(internalFormat);
-        texture.setImageData(null, width, height);
-        return texture;
     }
 
     private void initPrograms() {
@@ -315,7 +258,7 @@ public class Renderer {
         uniforms.add(new FloatUniform("shininess", 0.8f));
         // Screen material
         screenMaterial = new Material(programs.get("screen"));
-        screenMaterial.addTexture(0, renderTransparentModelsStage.getColorsOutput());
+        screenMaterial.addTexture(0, renderTransparentModelsStage.getColorsInput());
     }
 
     private void initVertexArrays() {

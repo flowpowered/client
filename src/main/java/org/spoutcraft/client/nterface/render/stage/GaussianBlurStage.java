@@ -36,8 +36,8 @@ public class GaussianBlurStage extends Creatable {
     private final FrameBuffer horizontalFrameBuffer;
     private final FrameBuffer verticalFrameBuffer;
     private final Texture intermediateTexture;
+    private final Texture colorsOutput;
     private Texture colorsInput;
-    private Texture colorsOutput;
     private Pipeline pipeline;
     private int kernelSize = 5;
 
@@ -50,6 +50,7 @@ public class GaussianBlurStage extends Creatable {
         horizontalFrameBuffer = glFactory.createFrameBuffer();
         verticalFrameBuffer = glFactory.createFrameBuffer();
         intermediateTexture = glFactory.createTexture();
+        colorsOutput = glFactory.createTexture();
     }
 
     @Override
@@ -77,6 +78,15 @@ public class GaussianBlurStage extends Creatable {
         for (int i = 0; i < halfKernelSize; i++) {
             kernel[i] /= sum;
         }
+        // Create the colors texture
+        colorsOutput.setFormat(Format.RGBA);
+        colorsOutput.setInternalFormat(InternalFormat.RGBA8);
+        colorsOutput.setImageData(null, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY());
+        colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
+        colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
+        colorsOutput.setMagFilter(FilterMode.LINEAR);
+        colorsOutput.setMinFilter(FilterMode.LINEAR);
+        colorsOutput.create();
         // Create the intermediate texture
         intermediateTexture.setFormat(Format.RGBA);
         intermediateTexture.setInternalFormat(InternalFormat.RGBA8);
@@ -130,9 +140,7 @@ public class GaussianBlurStage extends Creatable {
         horizontalFrameBuffer.destroy();
         verticalFrameBuffer.destroy();
         intermediateTexture.destroy();
-        if (colorsOutput.isCreated()) {
-            colorsOutput.destroy();
-        }
+        colorsOutput.destroy();
         super.destroy();
     }
 
@@ -154,11 +162,6 @@ public class GaussianBlurStage extends Creatable {
     public void setColorsInput(Texture texture) {
         texture.checkCreated();
         colorsInput = texture;
-    }
-
-    public void setColorsOutput(Texture texture) {
-        texture.checkCreated();
-        colorsOutput = texture;
     }
 
     public Texture getColorsOutput() {

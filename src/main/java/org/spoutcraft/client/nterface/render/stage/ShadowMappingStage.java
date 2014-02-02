@@ -64,9 +64,9 @@ public class ShadowMappingStage extends Creatable {
     private final Texture noiseTexture;
     private final FrameBuffer depthFrameBuffer;
     private final FrameBuffer frameBuffer;
+    private final Texture shadowsOutput;
     private Texture normalsInput;
     private Texture depthsInput;
-    private Texture shadowsOutput;
     private final Matrix4Uniform inverseViewMatrixUniform = new Matrix4Uniform("inverseViewMatrix", new Matrix4f());
     private final Matrix4Uniform lightViewMatrixUniform = new Matrix4Uniform("lightViewMatrix", new Matrix4f());
     private final Matrix4Uniform lightProjectionMatrixUniform = new Matrix4Uniform("lightProjectionMatrix", new Matrix4f());
@@ -85,6 +85,7 @@ public class ShadowMappingStage extends Creatable {
         noiseTexture = glFactory.createTexture();
         depthFrameBuffer = glFactory.createFrameBuffer();
         frameBuffer = glFactory.createFrameBuffer();
+        shadowsOutput = glFactory.createTexture();
     }
 
     @Override
@@ -117,6 +118,11 @@ public class ShadowMappingStage extends Creatable {
         noiseTextureBuffer.flip();
         noiseTexture.setImageData(noiseTextureBuffer, noiseSize, noiseSize);
         noiseTexture.create();
+        // Create the shadows texture
+        shadowsOutput.setFormat(Format.RED);
+        shadowsOutput.setInternalFormat(InternalFormat.R8);
+        shadowsOutput.setImageData(null, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY());
+        shadowsOutput.create();
         // Create the depth texture
         lightDepthsTexture.setFormat(Format.DEPTH);
         lightDepthsTexture.setInternalFormat(InternalFormat.DEPTH_COMPONENT32);
@@ -169,9 +175,7 @@ public class ShadowMappingStage extends Creatable {
         noiseTexture.destroy();
         depthFrameBuffer.destroy();
         frameBuffer.destroy();
-        if (shadowsOutput.isCreated()) {
-            shadowsOutput.destroy();
-        }
+        shadowsOutput.destroy();
         super.destroy();
     }
 
@@ -206,11 +210,6 @@ public class ShadowMappingStage extends Creatable {
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         depthsInput = texture;
-    }
-
-    public void setShadowsOutput(Texture texture) {
-        texture.checkCreated();
-        shadowsOutput = texture;
     }
 
     public Texture getShadowsOutput() {
