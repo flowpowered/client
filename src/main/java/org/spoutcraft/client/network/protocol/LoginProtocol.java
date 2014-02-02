@@ -33,13 +33,12 @@ import org.spoutcraft.client.network.message.login.LoginSuccessMessage;
  * The login protocol for the client protocol.
  */
 public class LoginProtocol extends ClientProtocol {
-    private static final int HIGHEST_OP_CODE = 2;
 
     /**
      * Constructs a new login protocol.
      */
     public LoginProtocol(Game game) {
-        super(game, "login", HIGHEST_OP_CODE);
+        super(game, "login");
         /**
          * From Server, in order of opcodes
          */

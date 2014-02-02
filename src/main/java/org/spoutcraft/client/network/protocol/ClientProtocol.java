@@ -56,8 +56,8 @@ public class ClientProtocol extends KeyedProtocol {
     public static final int VERSION = 4;
     private final Game game;
 
-    public ClientProtocol(Game game, String name, int highestOpcode) {
-        super(name, DEFAULT_PORT, highestOpcode + 1);
+    public ClientProtocol(Game game, String name) {
+        super(name, DEFAULT_PORT);
         this.game = game;
     }
 
@@ -73,7 +73,7 @@ public class ClientProtocol extends KeyedProtocol {
         try {
             length = ByteBufUtils.readVarInt(buf);
             opcode = ByteBufUtils.readVarInt(buf);
-            return getCodecLookupService(INBOUND).find(opcode).getCodec();
+            return getCodecLookupService(INBOUND).find(opcode);
         } catch (IOException e) {
             throw new UnknownPacketException("Failed to read packet data (corrupt?)", opcode, length);
         } catch (IllegalOpcodeException e) {
