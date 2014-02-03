@@ -153,7 +153,7 @@ public class Interface extends TickingElement {
         }
         lightAngle = lightAngle / PI * (PI - 2 * LIGHT_ANGLE_LIMIT) + LIGHT_ANGLE_LIMIT;
         final Vector3f direction = new Vector3f(0, -Math.sin(lightAngle), -Math.cos(lightAngle));
-        final Vector3f position = renderer.getRenderModelsStage().getCamera().getPosition();
+        final Vector3f position = renderer.getRenderModelsNode().getCamera().getPosition();
         renderer.updateLight(direction, new Vector3f(position.getX(), 0, position.getZ()), SHADOWED_CHUNKS);
         // TODO: lower light intensity at night
     }
@@ -200,8 +200,8 @@ public class Interface extends TickingElement {
         // Update the world update number
         worldLastUpdateNumber = world.getUpdateNumber();
         // Safety precautions
-        if (renderer.getRenderModelsStage().getModels().size() > chunkModels.size()) {
-            game.getLogger().warn("There are more models in the renderer (" + renderer.getRenderModelsStage().getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
+        if (renderer.getRenderModelsNode().getModels().size() > chunkModels.size()) {
+            game.getLogger().warn("There are more models in the renderer (" + renderer.getRenderModelsNode().getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
         }
     }
 
@@ -246,7 +246,7 @@ public class Interface extends TickingElement {
     }
 
     private void removeChunkModel(ChunkModel model, boolean destroy) {
-        renderer.getRenderModelsStage().removeModel(model);
+        renderer.getRenderModelsNode().removeModel(model);
         if (destroy) {
             // TODO: recycle the vertex array?
             model.destroy();
@@ -277,7 +277,7 @@ public class Interface extends TickingElement {
                 handleMouseInput(dt);
             }
             // Update the camera position to match the player
-            final Camera camera = renderer.getRenderModelsStage().getCamera();
+            final Camera camera = renderer.getRenderModelsNode().getCamera();
             final PlayerSnapshot player = game.getPhysics().getPlayerSnapshot();
             if (player != null) {
                 camera.setPosition(player.getPosition());
@@ -319,14 +319,14 @@ public class Interface extends TickingElement {
         cameraYaw %= 360;
         final Quaternionf yaw = Quaternionf.fromAngleDegAxis(cameraYaw, 1, 0, 0);
         // Set the new camera rotation
-        renderer.getRenderModelsStage().getCamera().setRotation(pitch.mul(yaw));
+        renderer.getRenderModelsNode().getCamera().setRotation(pitch.mul(yaw));
         // Update the last mouse x and y
         this.mouseX = mouseX;
         this.mouseY = mouseY;
     }
 
     private void updateSnapshots() {
-        cameraSnapshot.update(renderer.getRenderModelsStage().getCamera());
+        cameraSnapshot.update(renderer.getRenderModelsNode().getCamera());
     }
 
     public CameraSnapshot getCameraSnapshot() {

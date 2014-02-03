@@ -1,4 +1,7 @@
-package org.spoutcraft.client.nterface.render;
+package org.spoutcraft.client.nterface.render.graph;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
@@ -7,7 +10,13 @@ import org.spout.renderer.api.gl.Texture.InternalFormat;
  *
  */
 public class TexturePool {
-    public Texture request(int width, int height, InternalFormat format) {
+    private final Set<Texture> textures = new HashSet<>();
+
+    public Texture get(int width, int height, InternalFormat format) {
+        return null;
+    }
+
+    private Texture create(int width, int height, InternalFormat format) {
         return null;
     }
 

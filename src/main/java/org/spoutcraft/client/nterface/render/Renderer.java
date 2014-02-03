@@ -70,13 +70,13 @@ import org.spout.renderer.api.util.Rectangle;
 import org.spout.renderer.lwjgl.LWJGLUtil;
 
 import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.nterface.render.stage.GaussianBlurStage;
-import org.spoutcraft.client.nterface.render.stage.LightingStage;
-import org.spoutcraft.client.nterface.render.stage.RenderGUIStage;
-import org.spoutcraft.client.nterface.render.stage.RenderModelsStage;
-import org.spoutcraft.client.nterface.render.stage.RenderTransparentModelsStage;
-import org.spoutcraft.client.nterface.render.stage.SSAOStage;
-import org.spoutcraft.client.nterface.render.stage.ShadowMappingStage;
+import org.spoutcraft.client.nterface.render.graph.node.GaussianBlurNode;
+import org.spoutcraft.client.nterface.render.graph.node.LightingNode;
+import org.spoutcraft.client.nterface.render.graph.node.RenderGUINode;
+import org.spoutcraft.client.nterface.render.graph.node.RenderModelsNode;
+import org.spoutcraft.client.nterface.render.graph.node.RenderTransparentModelsNode;
+import org.spoutcraft.client.nterface.render.graph.node.SSAONode;
+import org.spoutcraft.client.nterface.render.graph.node.ShadowMappingNode;
 
 /**
  * The default renderer. Support OpenGL 2.1 and 3.2. Can render fully textured models with normal and specular mapping, ambient occlusion (SSAO), shadow mapping, Phong shading, motion blur and edge
@@ -114,13 +114,13 @@ public class Renderer {
     // Vertex array for stage screens, is reused
     private VertexArray screenVertexArray;
     // Stages
-    private RenderModelsStage renderModelsStage;
-    private ShadowMappingStage shadowMappingStage;
-    private SSAOStage ssaoStage;
-    private GaussianBlurStage gaussianBlurStage;
-    private LightingStage lightingStage;
-    private RenderTransparentModelsStage renderTransparentModelsStage;
-    private RenderGUIStage renderGUIStage;
+    private RenderModelsNode renderModelsNode;
+    private ShadowMappingNode shadowMappingNode;
+    private SSAONode ssaoNode;
+    private GaussianBlurNode gaussianBlurNode;
+    private LightingNode lightingNode;
+    private RenderTransparentModelsNode renderTransparentModelsNode;
+    private RenderGUINode renderGUINode;
     // FPS monitor
     private final TPSMonitor fpsMonitor = new TPSMonitor();
     private StringModel fpsMonitorModel;
@@ -164,49 +164,49 @@ public class Renderer {
     private void initEffects() {
         final int blurSize = 5;
         // Render models
-        renderModelsStage = new RenderModelsStage(this);
-        renderModelsStage.create();
+        renderModelsNode = new RenderModelsNode(this);
+        renderModelsNode.create();
         // Shadows
-        shadowMappingStage = new ShadowMappingStage(this);
-        shadowMappingStage.setNormalsInput(renderModelsStage.getVertexNormalsOutput());
-        shadowMappingStage.setDepthsInput(renderModelsStage.getDepthsOutput());
-        shadowMappingStage.setKernelSize(8);
-        shadowMappingStage.setNoiseSize(blurSize);
-        shadowMappingStage.setBias(0.005f);
-        shadowMappingStage.setRadius(0.0004f);
-        shadowMappingStage.create();
+        shadowMappingNode = new ShadowMappingNode(this);
+        shadowMappingNode.setNormalsInput(renderModelsNode.getVertexNormalsOutput());
+        shadowMappingNode.setDepthsInput(renderModelsNode.getDepthsOutput());
+        shadowMappingNode.setKernelSize(8);
+        shadowMappingNode.setNoiseSize(blurSize);
+        shadowMappingNode.setBias(0.005f);
+        shadowMappingNode.setRadius(0.0004f);
+        shadowMappingNode.create();
         // SSAO
-        ssaoStage = new SSAOStage(this);
-        ssaoStage.setNormalsInput(renderModelsStage.getNormalsOutput());
-        ssaoStage.setDepthsInput(renderModelsStage.getDepthsOutput());
-        ssaoStage.setKernelSize(8);
-        ssaoStage.setNoiseSize(blurSize);
-        ssaoStage.setRadius(0.5f);
-        ssaoStage.setThreshold(0.15f);
-        ssaoStage.setPower(2);
-        ssaoStage.create();
+        ssaoNode = new SSAONode(this);
+        ssaoNode.setNormalsInput(renderModelsNode.getNormalsOutput());
+        ssaoNode.setDepthsInput(renderModelsNode.getDepthsOutput());
+        ssaoNode.setKernelSize(8);
+        ssaoNode.setNoiseSize(blurSize);
+        ssaoNode.setRadius(0.5f);
+        ssaoNode.setThreshold(0.15f);
+        ssaoNode.setPower(2);
+        ssaoNode.create();
         // Lighting
-        lightingStage = new LightingStage(this);
-        lightingStage.setColorsInput(renderModelsStage.getColorsOutput());
-        lightingStage.setNormalsInput(renderModelsStage.getNormalsOutput());
-        lightingStage.setDepthsInput(renderModelsStage.getDepthsOutput());
-        lightingStage.setMaterialInput(renderModelsStage.getMaterialsOutput());
-        lightingStage.setOcclusionsInput(ssaoStage.getOcclusionsOutput());
-        lightingStage.setShadowsInput(shadowMappingStage.getShadowsOutput());
-        lightingStage.create();
+        lightingNode = new LightingNode(this, null, "lighting");
+        lightingNode.setColorsInput(renderModelsNode.getColorsOutput());
+        lightingNode.setNormalsInput(renderModelsNode.getNormalsOutput());
+        lightingNode.setDepthsInput(renderModelsNode.getDepthsOutput());
+        lightingNode.setMaterialsInput(renderModelsNode.getMaterialsOutput());
+        lightingNode.setOcclusionsInput(ssaoNode.getOcclusionsOutput());
+        lightingNode.setShadowsInput(shadowMappingNode.getShadowsOutput());
+        lightingNode.create();
         // Gaussian blur
-        gaussianBlurStage = new GaussianBlurStage(this);
-        gaussianBlurStage.setColorsInput(lightingStage.getColorsOutput());
-        gaussianBlurStage.setKernelSize(blurSize);
-        gaussianBlurStage.create();
+        gaussianBlurNode = new GaussianBlurNode(this);
+        gaussianBlurNode.setColorsInput(lightingNode.getColorsOutput());
+        gaussianBlurNode.setKernelSize(blurSize);
+        gaussianBlurNode.create();
         // Transparent models
-        renderTransparentModelsStage = new RenderTransparentModelsStage(this);
-        renderTransparentModelsStage.setDepthsInput(renderModelsStage.getDepthsOutput());
-        renderTransparentModelsStage.setColorsInput(gaussianBlurStage.getColorsOutput());
-        renderTransparentModelsStage.create();
+        renderTransparentModelsNode = new RenderTransparentModelsNode(this);
+        renderTransparentModelsNode.setDepthsInput(renderModelsNode.getDepthsOutput());
+        renderTransparentModelsNode.setColorsInput(gaussianBlurNode.getColorsOutput());
+        renderTransparentModelsNode.create();
         // Render GUI
-        renderGUIStage = new RenderGUIStage(this);
-        renderGUIStage.create();
+        renderGUINode = new RenderGUINode(this);
+        renderGUINode.create();
     }
 
     private void initPrograms() {
@@ -258,7 +258,7 @@ public class Renderer {
         uniforms.add(new FloatUniform("shininess", 0.8f));
         // Screen material
         screenMaterial = new Material(programs.get("screen"));
-        screenMaterial.addTexture(0, renderTransparentModelsStage.getColorsInput());
+        screenMaterial.addTexture(0, renderTransparentModelsNode.getColorsInput());
     }
 
     private void initVertexArrays() {
@@ -285,7 +285,7 @@ public class Renderer {
     }
 
     private void addScreen() {
-        renderGUIStage.addModel(new Model(screenVertexArray, screenMaterial));
+        renderGUINode.addModel(new Model(screenVertexArray, screenMaterial));
     }
 
     private void addFPSMonitor() {
@@ -300,11 +300,11 @@ public class Renderer {
         final float aspect = 1 / ASPECT_RATIO;
         sandboxModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.315, -0.1));
         sandboxModel.setString("Client - WIP");
-        renderGUIStage.addModel(sandboxModel);
+        renderGUINode.addModel(sandboxModel);
         final StringModel fpsModel = sandboxModel.getInstance();
         fpsModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.285, -0.1));
         fpsModel.setString("FPS: " + fpsMonitor.getTPS());
-        renderGUIStage.addModel(fpsModel);
+        renderGUINode.addModel(fpsModel);
         fpsMonitorModel = fpsModel;
     }
 
@@ -324,13 +324,13 @@ public class Renderer {
     }
 
     private void disposeEffects() {
-        renderModelsStage.destroy();
-        shadowMappingStage.destroy();
-        ssaoStage.destroy();
-        lightingStage.destroy();
-        gaussianBlurStage.destroy();
-        renderTransparentModelsStage.destroy();
-        renderGUIStage.destroy();
+        renderModelsNode.destroy();
+        shadowMappingNode.destroy();
+        ssaoNode.destroy();
+        lightingNode.destroy();
+        gaussianBlurNode.destroy();
+        renderTransparentModelsNode.destroy();
+        renderGUINode.destroy();
     }
 
     private void disposePrograms() {
@@ -355,16 +355,16 @@ public class Renderer {
             fpsMonitorStarted = true;
         }
         // Update the current frame uniforms
-        final Camera camera = renderModelsStage.getCamera();
+        final Camera camera = renderModelsNode.getCamera();
         blurStrengthUniform.set((float) fpsMonitor.getTPS() / Interface.TPS);
         // Render
-        renderModelsStage.render();
-        shadowMappingStage.render();
-        ssaoStage.render();
-        lightingStage.render();
-        gaussianBlurStage.render();
-        renderTransparentModelsStage.render();
-        renderGUIStage.render();
+        renderModelsNode.render();
+        shadowMappingNode.render();
+        ssaoNode.render();
+        lightingNode.render();
+        gaussianBlurNode.render();
+        renderTransparentModelsNode.render();
+        renderGUINode.render();
         // Update the previous frame uniforms
         setPreviousModelMatrices();
         previousViewMatrixUniform.set(camera.getViewMatrix());
@@ -374,10 +374,10 @@ public class Renderer {
     }
 
     private void setPreviousModelMatrices() {
-        for (Model model : renderModelsStage.getModels()) {
+        for (Model model : renderModelsNode.getModels()) {
             model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
         }
-        for (Model model : renderTransparentModelsStage.getModels()) {
+        for (Model model : renderTransparentModelsNode.getModels()) {
             model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
         }
     }
@@ -427,12 +427,12 @@ public class Renderer {
         return screenVertexArray;
     }
 
-    public RenderModelsStage getRenderModelsStage() {
-        return renderModelsStage;
+    public RenderModelsNode getRenderModelsNode() {
+        return renderModelsNode;
     }
 
-    public RenderGUIStage getRenderGUIStage() {
-        return renderGUIStage;
+    public RenderGUINode getRenderGUINode() {
+        return renderGUINode;
     }
 
     public Vector3Uniform getLightDirectionUniform() {
@@ -469,7 +469,7 @@ public class Renderer {
         direction = direction.normalize();
         lightDirectionUniform.set(direction);
         // Set the camera position
-        final Camera camera = shadowMappingStage.getCamera();
+        final Camera camera = shadowMappingNode.getCamera();
         camera.setPosition(position);
         // Calculate the camera rotation from the direction and set
         final Quaternionf rotation = Quaternionf.fromRotationTo(Vector3f.FORWARD.negate(), direction);
@@ -514,7 +514,7 @@ public class Renderer {
     public void addSolidModel(Model model) {
         model.setMaterial(solidMaterial);
         model.getUniforms().add(new ColorUniform("modelColor", new Color(Math.random(), Math.random(), Math.random(), 1)));
-        renderModelsStage.addModel(model);
+        renderModelsNode.addModel(model);
     }
 
     /**
@@ -524,7 +524,7 @@ public class Renderer {
      */
     public void addTransparentModel(Model model) {
         model.setMaterial(transparencyMaterial);
-        renderTransparentModelsStage.addModel(model);
+        renderTransparentModelsNode.addModel(model);
     }
 
     /**

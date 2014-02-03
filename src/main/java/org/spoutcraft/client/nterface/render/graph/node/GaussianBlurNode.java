@@ -1,4 +1,4 @@
-package org.spoutcraft.client.nterface.render.stage;
+package org.spoutcraft.client.nterface.render.graph.node;
 
 import java.util.Arrays;
 
@@ -29,7 +29,7 @@ import org.spoutcraft.client.nterface.render.Renderer;
 /**
  *
  */
-public class GaussianBlurStage extends Creatable {
+public class GaussianBlurNode extends Creatable {
     private final Renderer renderer;
     private final Material horizontalMaterial;
     private final Material verticalMaterial;
@@ -41,7 +41,7 @@ public class GaussianBlurStage extends Creatable {
     private Pipeline pipeline;
     private int kernelSize = 5;
 
-    public GaussianBlurStage(Renderer renderer) {
+    public GaussianBlurNode(Renderer renderer) {
         this.renderer = renderer;
         final Program blurProgram = renderer.getProgram("gaussianBlur");
         horizontalMaterial = new Material(blurProgram);

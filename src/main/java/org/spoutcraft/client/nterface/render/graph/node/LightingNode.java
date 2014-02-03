@@ -21,11 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.nterface.render.stage;
+package org.spoutcraft.client.nterface.render.graph.node;
 
 import java.util.Arrays;
 
-import org.spout.renderer.api.Creatable;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
@@ -42,11 +41,12 @@ import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
 
 import org.spoutcraft.client.nterface.render.Renderer;
+import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
 /**
  *
  */
-public class LightingStage extends Creatable {
+public class LightingNode extends GraphNode {
     private final Renderer renderer;
     private final Material material;
     private final FrameBuffer frameBuffer;
@@ -54,12 +54,13 @@ public class LightingStage extends Creatable {
     private Texture colorsInput;
     private Texture normalsInput;
     private Texture depthsInput;
-    private Texture materialInput;
+    private Texture materialsInput;
     private Texture occlusionsInput;
     private Texture shadowsInput;
     private Pipeline pipeline;
 
-    public LightingStage(Renderer renderer) {
+    public LightingNode(Renderer renderer, RenderGraph renderGraph, String name) {
+        super(renderGraph, name);
         this.renderer = renderer;
         material = new Material(renderer.getProgram("lighting"));
         final GLFactory glFactory = renderer.getGLFactory();
@@ -85,7 +86,7 @@ public class LightingStage extends Creatable {
         material.addTexture(0, colorsInput);
         material.addTexture(1, normalsInput);
         material.addTexture(2, depthsInput);
-        material.addTexture(3, materialInput);
+        material.addTexture(3, materialsInput);
         material.addTexture(4, occlusionsInput);
         material.addTexture(5, shadowsInput);
         final UniformHolder uniforms = material.getUniforms();
@@ -110,41 +111,49 @@ public class LightingStage extends Creatable {
         super.destroy();
     }
 
+    @Override
     public void render() {
         checkCreated();
         pipeline.run(renderer.getContext());
     }
 
+    @Input("colors")
     public void setColorsInput(Texture texture) {
         texture.checkCreated();
         colorsInput = texture;
     }
 
+    @Input("normals")
     public void setNormalsInput(Texture texture) {
         texture.checkCreated();
         normalsInput = texture;
     }
 
+    @Input("depths")
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         depthsInput = texture;
     }
 
-    public void setMaterialInput(Texture texture) {
+    @Input("materials")
+    public void setMaterialsInput(Texture texture) {
         texture.checkCreated();
-        materialInput = texture;
+        materialsInput = texture;
     }
 
+    @Input("occlusions")
     public void setOcclusionsInput(Texture texture) {
         texture.checkCreated();
         occlusionsInput = texture;
     }
 
+    @Input("shadows")
     public void setShadowsInput(Texture texture) {
         texture.checkCreated();
         shadowsInput = texture;
     }
 
+    @Output("colors")
     public Texture getColorsOutput() {
         return colorsOutput;
     }

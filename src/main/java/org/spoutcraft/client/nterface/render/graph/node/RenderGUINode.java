@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.nterface.render.stage;
+package org.spoutcraft.client.nterface.render.graph.node;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,13 +38,13 @@ import org.spoutcraft.client.nterface.render.Renderer;
 /**
  *
  */
-public class RenderGUIStage extends Creatable {
+public class RenderGUINode extends Creatable {
     private final Renderer renderer;
     private final Camera camera = Camera.createOrthographic(1, 0, 1 / Renderer.ASPECT_RATIO, 0, Renderer.NEAR_PLANE, Renderer.FAR_PLANE);
     private final List<Model> models = new ArrayList<>();
     private Pipeline pipeline;
 
-    public RenderGUIStage(Renderer renderer) {
+    public RenderGUINode(Renderer renderer) {
         this.renderer = renderer;
     }
 

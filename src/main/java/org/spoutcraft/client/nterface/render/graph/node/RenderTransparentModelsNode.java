@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.nterface.render.stage;
+package org.spoutcraft.client.nterface.render.graph.node;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +47,7 @@ import org.spoutcraft.client.nterface.render.Renderer;
 /**
  *
  */
-public class RenderTransparentModelsStage extends Creatable {
+public class RenderTransparentModelsNode extends Creatable {
     private final Renderer renderer;
     private final Material material;
     private final Texture weightedColors;
@@ -61,7 +61,7 @@ public class RenderTransparentModelsStage extends Creatable {
     private final List<Model> models = new ArrayList<>();
     private Pipeline pipeline;
 
-    public RenderTransparentModelsStage(Renderer renderer) {
+    public RenderTransparentModelsNode(Renderer renderer) {
         this.renderer = renderer;
         material = new Material(renderer.getProgram("transparencyBlending"));
         final GLFactory glFactory = renderer.getGLFactory();

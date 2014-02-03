@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.nterface.render.stage;
+package org.spoutcraft.client.nterface.render.graph.node;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +46,7 @@ import org.spoutcraft.client.nterface.render.Renderer;
 /**
  *
  */
-public class RenderModelsStage extends Creatable {
+public class RenderModelsNode extends Creatable {
     private final Renderer renderer;
     private final FrameBuffer frameBuffer;
     private final Texture colorsOutput;
@@ -58,7 +58,7 @@ public class RenderModelsStage extends Creatable {
     private final Camera camera = Camera.createPerspective(Renderer.FIELD_OF_VIEW, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY(), Renderer.NEAR_PLANE, Renderer.FAR_PLANE);
     private Pipeline pipeline;
 
-    public RenderModelsStage(Renderer renderer) {
+    public RenderModelsNode(Renderer renderer) {
         this.renderer = renderer;
         final GLFactory glFactory = renderer.getGLFactory();
         colorsOutput = glFactory.createTexture();

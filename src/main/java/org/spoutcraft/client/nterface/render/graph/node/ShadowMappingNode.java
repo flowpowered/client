@@ -21,86 +21,96 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spoutcraft.client.nterface.render.stage;
+package org.spoutcraft.client.nterface.render.graph.node;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Random;
 
-import com.flowpowered.math.GenericMath;
+import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2f;
-import com.flowpowered.math.vector.Vector3f;
 
+import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.Creatable;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.FloatUniform;
 import org.spout.renderer.api.data.Uniform.IntUniform;
+import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
+import org.spout.renderer.api.data.Uniform.Vector2ArrayUniform;
 import org.spout.renderer.api.data.Uniform.Vector2Uniform;
-import org.spout.renderer.api.data.Uniform.Vector3ArrayUniform;
 import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
 import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture;
+import org.spout.renderer.api.gl.Texture.CompareMode;
+import org.spout.renderer.api.gl.Texture.FilterMode;
 import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
+import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
 import org.spout.renderer.api.util.CausticUtil;
+import org.spout.renderer.api.util.Rectangle;
 
 import org.spoutcraft.client.nterface.render.Renderer;
 
-public class SSAOStage extends Creatable {
+// TODO: cascaded shadow maps, render models for light depths using the basic shader
+public class ShadowMappingNode extends Creatable {
     private final Renderer renderer;
     private final Material material;
+    private final Texture lightDepthsTexture;
     private final Texture noiseTexture;
+    private final FrameBuffer depthFrameBuffer;
     private final FrameBuffer frameBuffer;
-    private final Texture occlusionsOutput;
+    private final Texture shadowsOutput;
     private Texture normalsInput;
     private Texture depthsInput;
+    private final Matrix4Uniform inverseViewMatrixUniform = new Matrix4Uniform("inverseViewMatrix", new Matrix4f());
+    private final Matrix4Uniform lightViewMatrixUniform = new Matrix4Uniform("lightViewMatrix", new Matrix4f());
+    private final Matrix4Uniform lightProjectionMatrixUniform = new Matrix4Uniform("lightProjectionMatrix", new Matrix4f());
+    private final Camera camera = Camera.createOrthographic(50, -50, 50, -50, -50, 50);
     private Pipeline pipeline;
     private int kernelSize = 8;
-    private float radius = 0.5f;
-    private float threshold = 0.15f;
     private int noiseSize = 4;
-    private float power = 2;
+    private float bias = 0.005f;
+    private float radius = 0.0004f;
 
-    public SSAOStage(Renderer renderer) {
+    public ShadowMappingNode(Renderer renderer) {
         this.renderer = renderer;
-        material = new Material(renderer.getProgram("ssao"));
+        material = new Material(renderer.getProgram("shadow"));
         final GLFactory glFactory = renderer.getGLFactory();
+        lightDepthsTexture = glFactory.createTexture();
         noiseTexture = glFactory.createTexture();
+        depthFrameBuffer = glFactory.createFrameBuffer();
         frameBuffer = glFactory.createFrameBuffer();
-        occlusionsOutput = glFactory.createTexture();
+        shadowsOutput = glFactory.createTexture();
     }
 
     @Override
     public void create() {
         if (isCreated()) {
-            throw new IllegalStateException("SSAO stage has already been created");
+            throw new IllegalStateException("Shadow mapping stage has already been created");
         }
         // Generate the kernel
-        final Vector3f[] kernel = new Vector3f[kernelSize];
+        final Vector2f[] kernel = new Vector2f[kernelSize];
         final Random random = new Random();
         for (int i = 0; i < kernelSize; i++) {
-            float scale = (float) i / kernelSize;
-            scale = GenericMath.lerp(threshold, 1, scale * scale);
-            // Create a set of random unit vectors inside a hemisphere
-            // The vectors are scaled so that the amount falls of as we get further away from the center
-            kernel[i] = new Vector3f(random.nextFloat() * 2 - 1, random.nextFloat() * 2 - 1, random.nextFloat()).normalize().mul(scale);
+            // Create a set of random unit vectors
+            kernel[i] = new Vector2f(random.nextFloat() * 2 - 1, random.nextFloat() * 2 - 1).normalize();
         }
         // Generate the noise texture data
         final int noiseTextureSize = noiseSize * noiseSize;
         final ByteBuffer noiseTextureBuffer = CausticUtil.createByteBuffer(noiseTextureSize * 3);
         for (int i = 0; i < noiseTextureSize; i++) {
             // Random unit vectors around the z axis
-            Vector3f noise = new Vector3f(random.nextFloat() * 2 - 1, random.nextFloat() * 2 - 1, 0).normalize();
+            Vector2f noise = new Vector2f(random.nextFloat() * 2 - 1, random.nextFloat() * 2 - 1).normalize();
             // Encode to unsigned byte, and place in buffer
-            noise = noise.mul(128).add(128, 128, 128);
+            noise = noise.mul(128).add(128, 128);
             noiseTextureBuffer.put((byte) (noise.getFloorX() & 0xff));
             noiseTextureBuffer.put((byte) (noise.getFloorY() & 0xff));
-            noiseTextureBuffer.put((byte) (noise.getFloorZ() & 0xff));
+            noiseTextureBuffer.put((byte) 0);
         }
         // Create the noise texture
         noiseTexture.setFormat(Format.RGB);
@@ -108,32 +118,52 @@ public class SSAOStage extends Creatable {
         noiseTextureBuffer.flip();
         noiseTexture.setImageData(noiseTextureBuffer, noiseSize, noiseSize);
         noiseTexture.create();
-        // Create the occlusions texture
-        occlusionsOutput.setFormat(Format.RED);
-        occlusionsOutput.setInternalFormat(InternalFormat.R8);
-        occlusionsOutput.setImageData(null, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY());
-        occlusionsOutput.create();
+        // Create the shadows texture
+        shadowsOutput.setFormat(Format.RED);
+        shadowsOutput.setInternalFormat(InternalFormat.R8);
+        shadowsOutput.setImageData(null, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY());
+        shadowsOutput.create();
+        // Create the depth texture
+        lightDepthsTexture.setFormat(Format.DEPTH);
+        lightDepthsTexture.setInternalFormat(InternalFormat.DEPTH_COMPONENT32);
+        lightDepthsTexture.setWrapS(WrapMode.CLAMP_TO_BORDER);
+        lightDepthsTexture.setWrapT(WrapMode.CLAMP_TO_BORDER);
+        lightDepthsTexture.setMagFilter(FilterMode.LINEAR);
+        lightDepthsTexture.setMinFilter(FilterMode.LINEAR);
+        lightDepthsTexture.setCompareMode(CompareMode.LESS);
+        lightDepthsTexture.setImageData(null, Renderer.SHADOW_SIZE.getFloorX(), Renderer.SHADOW_SIZE.getFloorY());
+        lightDepthsTexture.create();
         // Create the material
         material.addTexture(0, normalsInput);
         material.addTexture(1, depthsInput);
-        material.addTexture(2, noiseTexture);
+        material.addTexture(2, lightDepthsTexture);
+        material.addTexture(3, noiseTexture);
         final UniformHolder uniforms = material.getUniforms();
         uniforms.add(new Vector2Uniform("projection", Renderer.PROJECTION));
         uniforms.add(new FloatUniform("tanHalfFOV", Renderer.TAN_HALF_FOV));
         uniforms.add(new FloatUniform("aspectRatio", Renderer.ASPECT_RATIO));
+        uniforms.add(renderer.getLightDirectionUniform());
+        uniforms.add(inverseViewMatrixUniform);
+        uniforms.add(lightViewMatrixUniform);
+        uniforms.add(lightProjectionMatrixUniform);
         uniforms.add(new IntUniform("kernelSize", kernelSize));
-        uniforms.add(new Vector3ArrayUniform("kernel", kernel));
+        uniforms.add(new Vector2ArrayUniform("kernel", kernel));
+        uniforms.add(new Vector2Uniform("noiseScale", new Vector2f(shadowsOutput.getWidth(), shadowsOutput.getHeight()).div(noiseSize)));
+        uniforms.add(new FloatUniform("bias", bias));
         uniforms.add(new FloatUniform("radius", radius));
-        uniforms.add(new FloatUniform("threshold", threshold));
-        uniforms.add(new Vector2Uniform("noiseScale", new Vector2f(occlusionsOutput.getWidth(), occlusionsOutput.getHeight()).div(noiseSize)));
-        uniforms.add(new FloatUniform("power", power));
         // Create the screen model
         final Model model = new Model(renderer.getScreen(), material);
+        // Create the depth frame buffer
+        depthFrameBuffer.attach(AttachmentPoint.DEPTH, lightDepthsTexture);
+        depthFrameBuffer.create();
         // Create the frame buffer
-        frameBuffer.attach(AttachmentPoint.COLOR0, occlusionsOutput);
+        frameBuffer.attach(AttachmentPoint.COLOR0, shadowsOutput);
         frameBuffer.create();
         // Create the pipeline
-        pipeline = new PipelineBuilder().bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
+        final RenderModelsNode renderModelsNode = renderer.getRenderModelsNode();
+        pipeline = new PipelineBuilder().useViewPort(new Rectangle(Vector2f.ZERO, Renderer.SHADOW_SIZE)).useCamera(camera).bindFrameBuffer(depthFrameBuffer).clearBuffer()
+                .renderModels(renderModelsNode.getModels()).useViewPort(new Rectangle(Vector2f.ZERO, Renderer.WINDOW_SIZE)).useCamera(renderModelsNode.getCamera())
+                .bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
         // Update state to created
         super.create();
     }
@@ -141,14 +171,18 @@ public class SSAOStage extends Creatable {
     @Override
     public void destroy() {
         checkCreated();
+        lightDepthsTexture.destroy();
         noiseTexture.destroy();
+        depthFrameBuffer.destroy();
         frameBuffer.destroy();
-        occlusionsOutput.destroy();
+        shadowsOutput.destroy();
         super.destroy();
     }
 
     public void render() {
-        checkCreated();
+        inverseViewMatrixUniform.set(renderer.getRenderModelsNode().getCamera().getViewMatrix().invert());
+        lightViewMatrixUniform.set(camera.getViewMatrix());
+        lightProjectionMatrixUniform.set(camera.getProjectionMatrix());
         pipeline.run(renderer.getContext());
     }
 
@@ -160,16 +194,12 @@ public class SSAOStage extends Creatable {
         this.radius = radius;
     }
 
-    public void setThreshold(float threshold) {
-        this.threshold = threshold;
+    public void setBias(float bias) {
+        this.bias = bias;
     }
 
     public void setNoiseSize(int noiseSize) {
         this.noiseSize = noiseSize;
-    }
-
-    public void setPower(float power) {
-        this.power = power;
     }
 
     public void setNormalsInput(Texture texture) {
@@ -182,7 +212,11 @@ public class SSAOStage extends Creatable {
         depthsInput = texture;
     }
 
-    public Texture getOcclusionsOutput() {
-        return occlusionsOutput;
+    public Texture getShadowsOutput() {
+        return shadowsOutput;
+    }
+
+    public Camera getCamera() {
+        return camera;
     }
 }
