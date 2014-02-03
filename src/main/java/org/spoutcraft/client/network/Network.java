@@ -39,6 +39,7 @@ import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.ChannelMessage.Channel;
 import org.spoutcraft.client.network.message.login.LoginSuccessMessage;
 import org.spoutcraft.client.network.message.play.KeepAliveMessage;
+import org.spoutcraft.client.network.protocol.ClientProtocol;
 import org.spoutcraft.client.network.protocol.PlayProtocol;
 
 /**
@@ -87,7 +88,7 @@ public class Network extends TickingElement {
      * Attempts to connect the network.
      */
     private void connect() {
-        connect(new InetSocketAddress(25565));
+        connect(new InetSocketAddress(ClientProtocol.DEFAULT_PORT));
     }
 
     /**

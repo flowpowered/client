@@ -56,8 +56,8 @@ public class ClientProtocol extends KeyedProtocol {
     public static final int VERSION = 4;
     private final Game game;
 
-    public ClientProtocol(Game game, String name) {
-        super(name, DEFAULT_PORT);
+    public ClientProtocol(Game game, String name, int highestOpcode) {
+        super(name, highestOpcode + 1);
         this.game = game;
     }
 
