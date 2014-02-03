@@ -31,12 +31,13 @@ import org.spoutcraft.client.network.message.handshake.HandshakeMessage;
  * Represents the handshake protocol for the client protocol.
  */
 public class HandshakeProtocol extends ClientProtocol {
+    private static final int HIGHEST_OP_CODE = 0;
 
     /**
      * Constructs a new handshake protocol.
      */
     public HandshakeProtocol(Game game) {
-        super(game, "handshake");
+        super(game, "handshake", HIGHEST_OP_CODE);
         registerMessage(OUTBOUND, HandshakeMessage.class, HandshakeCodec.class, null, 0);
     }
 }

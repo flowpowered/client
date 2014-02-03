@@ -47,12 +47,13 @@ import org.spoutcraft.client.network.message.play.SpawnPositionMessage;
  * The main play protocol for the client protocol.
  */
 public class PlayProtocol extends ClientProtocol {
+    private static final int HIGHEST_OP_CODE = 26;
 
     /**
      * Constructs a new play protocol.
      */
     public PlayProtocol(Game game) {
-        super(game, "play");
+        super(game, "play", HIGHEST_OP_CODE);
         /**
          * From Server, in order of opcodes
          */
