@@ -29,7 +29,20 @@ import org.spoutcraft.client.nterface.render.Renderer;
 /**
  *
  */
-public class GaussianBlurNode extends Creatable {
+public class BlurNode extends Creatable {
+    public static final KernelGenerator GAUSSIAN_KERNEL = new KernelGenerator() {
+        @Override
+        public float getWeight(float x, float radius) {
+            x /= radius;
+            return (float) Math.exp(-(x * x));
+        }
+    };
+    public static final KernelGenerator BOX_KERNEL = new KernelGenerator() {
+        @Override
+        public float getWeight(float x, float radius) {
+            return 1;
+        }
+    };
     private final Renderer renderer;
     private final Material horizontalMaterial;
     private final Material verticalMaterial;
@@ -40,10 +53,11 @@ public class GaussianBlurNode extends Creatable {
     private Texture colorsInput;
     private Pipeline pipeline;
     private int kernelSize = 5;
+    private KernelGenerator kernelGenerator = GAUSSIAN_KERNEL;
 
-    public GaussianBlurNode(Renderer renderer) {
+    public BlurNode(Renderer renderer) {
         this.renderer = renderer;
-        final Program blurProgram = renderer.getProgram("gaussianBlur");
+        final Program blurProgram = renderer.getProgram("blur");
         horizontalMaterial = new Material(blurProgram);
         verticalMaterial = new Material(blurProgram);
         final GLFactory glFactory = renderer.getGLFactory();
@@ -62,13 +76,13 @@ public class GaussianBlurNode extends Creatable {
         int halfKernelSize = (kernelSize - 1) / 2 + 1;
         float[] kernel = new float[halfKernelSize];
         float[] offsets = new float[halfKernelSize];
-        float weight0 = getGaussianWeight(0, kernelSize);
+        float weight0 = kernelGenerator.getWeight(0, kernelSize);
         kernel[0] = weight0;
         offsets[0] = 0;
         float sum = weight0;
         for (int i = 1; i < kernelSize; i += 2) {
-            final float firstWeight = getGaussianWeight(i, kernelSize);
-            final float secondWeight = getGaussianWeight(i + 1, kernelSize);
+            final float firstWeight = kernelGenerator.getWeight(i, kernelSize);
+            final float secondWeight = kernelGenerator.getWeight(i + 1, kernelSize);
             final float weightSum = firstWeight + secondWeight;
             sum += weightSum * 2;
             final int index = (i + 1) / 2;
@@ -159,6 +173,10 @@ public class GaussianBlurNode extends Creatable {
         this.kernelSize = kernelSize;
     }
 
+    public void setKernelGenerator(KernelGenerator kernelGenerator) {
+        this.kernelGenerator = kernelGenerator;
+    }
+
     public void setColorsInput(Texture texture) {
         texture.checkCreated();
         colorsInput = texture;
@@ -168,8 +186,7 @@ public class GaussianBlurNode extends Creatable {
         return colorsOutput;
     }
 
-    private static float getGaussianWeight(float x, float radius) {
-        x /= radius;
-        return (float) Math.exp(-(x * x));
+    public static interface KernelGenerator {
+        public float getWeight(float x, float radius);
     }
 }

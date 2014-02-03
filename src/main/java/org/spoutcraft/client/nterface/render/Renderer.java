@@ -70,7 +70,7 @@ import org.spout.renderer.api.util.Rectangle;
 import org.spout.renderer.lwjgl.LWJGLUtil;
 
 import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.nterface.render.graph.node.GaussianBlurNode;
+import org.spoutcraft.client.nterface.render.graph.node.BlurNode;
 import org.spoutcraft.client.nterface.render.graph.node.LightingNode;
 import org.spoutcraft.client.nterface.render.graph.node.RenderGUINode;
 import org.spoutcraft.client.nterface.render.graph.node.RenderModelsNode;
@@ -117,7 +117,7 @@ public class Renderer {
     private RenderModelsNode renderModelsNode;
     private ShadowMappingNode shadowMappingNode;
     private SSAONode ssaoNode;
-    private GaussianBlurNode gaussianBlurNode;
+    private BlurNode blurNode;
     private LightingNode lightingNode;
     private RenderTransparentModelsNode renderTransparentModelsNode;
     private RenderGUINode renderGUINode;
@@ -195,14 +195,15 @@ public class Renderer {
         lightingNode.setShadowsInput(shadowMappingNode.getShadowsOutput());
         lightingNode.create();
         // Gaussian blur
-        gaussianBlurNode = new GaussianBlurNode(this);
-        gaussianBlurNode.setColorsInput(lightingNode.getColorsOutput());
-        gaussianBlurNode.setKernelSize(blurSize);
-        gaussianBlurNode.create();
+        blurNode = new BlurNode(this);
+        blurNode.setColorsInput(lightingNode.getColorsOutput());
+        blurNode.setKernelSize(blurSize);
+        blurNode.setKernelGenerator(BlurNode.GAUSSIAN_KERNEL);
+        blurNode.create();
         // Transparent models
         renderTransparentModelsNode = new RenderTransparentModelsNode(this);
         renderTransparentModelsNode.setDepthsInput(renderModelsNode.getDepthsOutput());
-        renderTransparentModelsNode.setColorsInput(gaussianBlurNode.getColorsOutput());
+        renderTransparentModelsNode.setColorsInput(blurNode.getColorsOutput());
         renderTransparentModelsNode.create();
         // Render GUI
         renderGUINode = new RenderGUINode(this);
@@ -215,7 +216,7 @@ public class Renderer {
         loadProgram("font");
         loadProgram("ssao");
         loadProgram("shadow");
-        loadProgram("gaussianBlur");
+        loadProgram("blur");
         loadProgram("lighting");
         loadProgram("motionBlur");
         loadProgram("edaa");
@@ -328,7 +329,7 @@ public class Renderer {
         shadowMappingNode.destroy();
         ssaoNode.destroy();
         lightingNode.destroy();
-        gaussianBlurNode.destroy();
+        blurNode.destroy();
         renderTransparentModelsNode.destroy();
         renderGUINode.destroy();
     }
@@ -362,7 +363,7 @@ public class Renderer {
         shadowMappingNode.render();
         ssaoNode.render();
         lightingNode.render();
-        gaussianBlurNode.render();
+        blurNode.render();
         renderTransparentModelsNode.render();
         renderGUINode.render();
         // Update the previous frame uniforms
