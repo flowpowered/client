@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.spout.renderer.api.Camera;
-import org.spout.renderer.api.Creatable;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
@@ -42,12 +41,12 @@ import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
 
 import org.spoutcraft.client.nterface.render.Renderer;
+import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
 /**
  *
  */
-public class RenderModelsNode extends Creatable {
-    private final Renderer renderer;
+public class RenderModelsNode extends GraphNode {
     private final FrameBuffer frameBuffer;
     private final Texture colorsOutput;
     private final Texture normalsOutput;
@@ -58,9 +57,9 @@ public class RenderModelsNode extends Creatable {
     private final Camera camera = Camera.createPerspective(Renderer.FIELD_OF_VIEW, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY(), Renderer.NEAR_PLANE, Renderer.FAR_PLANE);
     private Pipeline pipeline;
 
-    public RenderModelsNode(Renderer renderer) {
-        this.renderer = renderer;
-        final GLFactory glFactory = renderer.getGLFactory();
+    public RenderModelsNode(RenderGraph graph, String name) {
+        super(graph, name);
+        final GLFactory glFactory = graph.getRenderer().getGLFactory();
         colorsOutput = glFactory.createTexture();
         normalsOutput = glFactory.createTexture();
         depthsOutput = glFactory.createTexture();
@@ -130,27 +129,33 @@ public class RenderModelsNode extends Creatable {
         super.destroy();
     }
 
+    @Override
     public void render() {
         checkCreated();
-        pipeline.run(renderer.getContext());
+        pipeline.run(graph.getRenderer().getContext());
     }
 
+    @Output("colors")
     public Texture getColorsOutput() {
         return colorsOutput;
     }
 
+    @Output("normals")
     public Texture getNormalsOutput() {
         return normalsOutput;
     }
 
+    @Output("depths")
     public Texture getDepthsOutput() {
         return depthsOutput;
     }
 
+    @Output("vertexNormals")
     public Texture getVertexNormalsOutput() {
         return vertexNormalsOutput;
     }
 
+    @Output("materials")
     public Texture getMaterialsOutput() {
         return materialsOutput;
     }

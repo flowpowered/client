@@ -24,28 +24,33 @@
 package org.spoutcraft.client.nterface.render.graph.node;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.spout.renderer.api.Camera;
-import org.spout.renderer.api.Creatable;
+import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
+import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.model.Model;
 
 import org.spoutcraft.client.nterface.render.Renderer;
+import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
 /**
  *
  */
-public class RenderGUINode extends Creatable {
-    private final Renderer renderer;
+public class RenderGUINode extends GraphNode {
+    private final Material material;
+    private Texture colorsInput;
     private final Camera camera = Camera.createOrthographic(1, 0, 1 / Renderer.ASPECT_RATIO, 0, Renderer.NEAR_PLANE, Renderer.FAR_PLANE);
     private final List<Model> models = new ArrayList<>();
     private Pipeline pipeline;
 
-    public RenderGUINode(Renderer renderer) {
-        this.renderer = renderer;
+    public RenderGUINode(RenderGraph graph, String name) {
+        super(graph, name);
+        material = new Material(graph.getRenderer().getProgram("screen"));
     }
 
     @Override
@@ -53,8 +58,12 @@ public class RenderGUINode extends Creatable {
         if (isCreated()) {
             throw new IllegalStateException("Render models stage has already been created");
         }
+        // Create the material
+        material.addTexture(0, colorsInput);
+        // Create the model
+        final Model model = new Model(graph.getRenderer().getScreen(), material);
         // Create the pipeline
-        pipeline = new PipelineBuilder().useCamera(camera).clearBuffer().renderModels(models).updateDisplay().build();
+        pipeline = new PipelineBuilder().useCamera(camera).clearBuffer().renderModels(Arrays.asList(model)).renderModels(models).updateDisplay().build();
         // Update state to created
         super.create();
     }
@@ -65,9 +74,15 @@ public class RenderGUINode extends Creatable {
         super.destroy();
     }
 
+    @Override
     public void render() {
         checkCreated();
-        pipeline.run(renderer.getContext());
+        pipeline.run(graph.getRenderer().getContext());
+    }
+
+    @Input("colors")
+    public void setColorsInput(Texture colorsInput) {
+        this.colorsInput = colorsInput;
     }
 
     public Camera getCamera() {

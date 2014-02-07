@@ -31,7 +31,6 @@ import com.flowpowered.math.GenericMath;
 import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector3f;
 
-import org.spout.renderer.api.Creatable;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
@@ -50,9 +49,9 @@ import org.spout.renderer.api.model.Model;
 import org.spout.renderer.api.util.CausticUtil;
 
 import org.spoutcraft.client.nterface.render.Renderer;
+import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
-public class SSAONode extends Creatable {
-    private final Renderer renderer;
+public class SSAONode extends GraphNode {
     private final Material material;
     private final Texture noiseTexture;
     private final FrameBuffer frameBuffer;
@@ -66,8 +65,9 @@ public class SSAONode extends Creatable {
     private int noiseSize = 4;
     private float power = 2;
 
-    public SSAONode(Renderer renderer) {
-        this.renderer = renderer;
+    public SSAONode(RenderGraph graph, String name) {
+        super(graph, name);
+        final Renderer renderer = graph.getRenderer();
         material = new Material(renderer.getProgram("ssao"));
         final GLFactory glFactory = renderer.getGLFactory();
         noiseTexture = glFactory.createTexture();
@@ -128,7 +128,7 @@ public class SSAONode extends Creatable {
         uniforms.add(new Vector2Uniform("noiseScale", new Vector2f(occlusionsOutput.getWidth(), occlusionsOutput.getHeight()).div(noiseSize)));
         uniforms.add(new FloatUniform("power", power));
         // Create the screen model
-        final Model model = new Model(renderer.getScreen(), material);
+        final Model model = new Model(graph.getRenderer().getScreen(), material);
         // Create the frame buffer
         frameBuffer.attach(AttachmentPoint.COLOR0, occlusionsOutput);
         frameBuffer.create();
@@ -147,41 +147,50 @@ public class SSAONode extends Creatable {
         super.destroy();
     }
 
+    @Override
     public void render() {
         checkCreated();
-        pipeline.run(renderer.getContext());
+        pipeline.run(graph.getRenderer().getContext());
     }
 
+    @Setting
     public void setKernelSize(int kernelSize) {
         this.kernelSize = kernelSize;
     }
 
+    @Setting
     public void setRadius(float radius) {
         this.radius = radius;
     }
 
+    @Setting
     public void setThreshold(float threshold) {
         this.threshold = threshold;
     }
 
+    @Setting
     public void setNoiseSize(int noiseSize) {
         this.noiseSize = noiseSize;
     }
 
+    @Setting
     public void setPower(float power) {
         this.power = power;
     }
 
+    @Input("normals")
     public void setNormalsInput(Texture texture) {
         texture.checkCreated();
         normalsInput = texture;
     }
 
+    @Input("depths")
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         depthsInput = texture;
     }
 
+    @Output("occlusions")
     public Texture getOcclusionsOutput() {
         return occlusionsOutput;
     }

@@ -47,7 +47,6 @@ import org.spoutcraft.client.nterface.render.graph.RenderGraph;
  *
  */
 public class LightingNode extends GraphNode {
-    private final Renderer renderer;
     private final Material material;
     private final FrameBuffer frameBuffer;
     private final Texture colorsOutput;
@@ -59,9 +58,9 @@ public class LightingNode extends GraphNode {
     private Texture shadowsInput;
     private Pipeline pipeline;
 
-    public LightingNode(Renderer renderer, RenderGraph renderGraph, String name) {
-        super(renderGraph, name);
-        this.renderer = renderer;
+    public LightingNode(RenderGraph graph, String name) {
+        super(graph, name);
+        final Renderer renderer = graph.getRenderer();
         material = new Material(renderer.getProgram("lighting"));
         final GLFactory glFactory = renderer.getGLFactory();
         frameBuffer = glFactory.createFrameBuffer();
@@ -92,9 +91,9 @@ public class LightingNode extends GraphNode {
         final UniformHolder uniforms = material.getUniforms();
         uniforms.add(new FloatUniform("tanHalfFOV", Renderer.TAN_HALF_FOV));
         uniforms.add(new FloatUniform("aspectRatio", Renderer.ASPECT_RATIO));
-        uniforms.add(renderer.getLightDirectionUniform());
+        uniforms.add(graph.getRenderer().getLightDirectionUniform());
         // Create the screen model
-        final Model model = new Model(renderer.getScreen(), material);
+        final Model model = new Model(graph.getRenderer().getScreen(), material);
         // Create the frame buffer
         frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         frameBuffer.create();
@@ -114,7 +113,7 @@ public class LightingNode extends GraphNode {
     @Override
     public void render() {
         checkCreated();
-        pipeline.run(renderer.getContext());
+        pipeline.run(graph.getRenderer().getContext());
     }
 
     @Input("colors")

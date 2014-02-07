@@ -31,7 +31,6 @@ import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2f;
 
 import org.spout.renderer.api.Camera;
-import org.spout.renderer.api.Creatable;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
@@ -55,10 +54,10 @@ import org.spout.renderer.api.util.CausticUtil;
 import org.spout.renderer.api.util.Rectangle;
 
 import org.spoutcraft.client.nterface.render.Renderer;
+import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
 // TODO: cascaded shadow maps, render models for light depths using the basic shader
-public class ShadowMappingNode extends Creatable {
-    private final Renderer renderer;
+public class ShadowMappingNode extends GraphNode {
     private final Material material;
     private final Texture lightDepthsTexture;
     private final Texture noiseTexture;
@@ -77,8 +76,9 @@ public class ShadowMappingNode extends Creatable {
     private float bias = 0.005f;
     private float radius = 0.0004f;
 
-    public ShadowMappingNode(Renderer renderer) {
-        this.renderer = renderer;
+    public ShadowMappingNode(RenderGraph graph, String name) {
+        super(graph, name);
+        final Renderer renderer = graph.getRenderer();
         material = new Material(renderer.getProgram("shadow"));
         final GLFactory glFactory = renderer.getGLFactory();
         lightDepthsTexture = glFactory.createTexture();
@@ -142,7 +142,7 @@ public class ShadowMappingNode extends Creatable {
         uniforms.add(new Vector2Uniform("projection", Renderer.PROJECTION));
         uniforms.add(new FloatUniform("tanHalfFOV", Renderer.TAN_HALF_FOV));
         uniforms.add(new FloatUniform("aspectRatio", Renderer.ASPECT_RATIO));
-        uniforms.add(renderer.getLightDirectionUniform());
+        uniforms.add(graph.getRenderer().getLightDirectionUniform());
         uniforms.add(inverseViewMatrixUniform);
         uniforms.add(lightViewMatrixUniform);
         uniforms.add(lightProjectionMatrixUniform);
@@ -152,7 +152,7 @@ public class ShadowMappingNode extends Creatable {
         uniforms.add(new FloatUniform("bias", bias));
         uniforms.add(new FloatUniform("radius", radius));
         // Create the screen model
-        final Model model = new Model(renderer.getScreen(), material);
+        final Model model = new Model(graph.getRenderer().getScreen(), material);
         // Create the depth frame buffer
         depthFrameBuffer.attach(AttachmentPoint.DEPTH, lightDepthsTexture);
         depthFrameBuffer.create();
@@ -160,7 +160,7 @@ public class ShadowMappingNode extends Creatable {
         frameBuffer.attach(AttachmentPoint.COLOR0, shadowsOutput);
         frameBuffer.create();
         // Create the pipeline
-        final RenderModelsNode renderModelsNode = renderer.getRenderModelsNode();
+        final RenderModelsNode renderModelsNode = graph.getRenderer().getRenderModelsNode();
         pipeline = new PipelineBuilder().useViewPort(new Rectangle(Vector2f.ZERO, Renderer.SHADOW_SIZE)).useCamera(camera).bindFrameBuffer(depthFrameBuffer).clearBuffer()
                 .renderModels(renderModelsNode.getModels()).useViewPort(new Rectangle(Vector2f.ZERO, Renderer.WINDOW_SIZE)).useCamera(renderModelsNode.getCamera())
                 .bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
@@ -179,39 +179,47 @@ public class ShadowMappingNode extends Creatable {
         super.destroy();
     }
 
+    @Override
     public void render() {
-        inverseViewMatrixUniform.set(renderer.getRenderModelsNode().getCamera().getViewMatrix().invert());
+        inverseViewMatrixUniform.set(graph.getRenderer().getRenderModelsNode().getCamera().getViewMatrix().invert());
         lightViewMatrixUniform.set(camera.getViewMatrix());
         lightProjectionMatrixUniform.set(camera.getProjectionMatrix());
-        pipeline.run(renderer.getContext());
+        pipeline.run(graph.getRenderer().getContext());
     }
 
+    @Setting
     public void setKernelSize(int kernelSize) {
         this.kernelSize = kernelSize;
     }
 
+    @Setting
     public void setRadius(float radius) {
         this.radius = radius;
     }
 
+    @Setting
     public void setBias(float bias) {
         this.bias = bias;
     }
 
+    @Setting
     public void setNoiseSize(int noiseSize) {
         this.noiseSize = noiseSize;
     }
 
+    @Input("normals")
     public void setNormalsInput(Texture texture) {
         texture.checkCreated();
         normalsInput = texture;
     }
 
+    @Input("depths")
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         depthsInput = texture;
     }
 
+    @Output("shadows")
     public Texture getShadowsOutput() {
         return shadowsOutput;
     }

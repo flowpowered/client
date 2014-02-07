@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 import com.flowpowered.math.vector.Vector2f;
 
-import org.spout.renderer.api.Creatable;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
@@ -25,11 +24,12 @@ import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
 
 import org.spoutcraft.client.nterface.render.Renderer;
+import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
 /**
  *
  */
-public class BlurNode extends Creatable {
+public class BlurNode extends GraphNode {
     public static final KernelGenerator GAUSSIAN_KERNEL = new KernelGenerator() {
         @Override
         public float getWeight(float x, float radius) {
@@ -43,7 +43,6 @@ public class BlurNode extends Creatable {
             return 1;
         }
     };
-    private final Renderer renderer;
     private final Material horizontalMaterial;
     private final Material verticalMaterial;
     private final FrameBuffer horizontalFrameBuffer;
@@ -55,8 +54,9 @@ public class BlurNode extends Creatable {
     private int kernelSize = 5;
     private KernelGenerator kernelGenerator = GAUSSIAN_KERNEL;
 
-    public BlurNode(Renderer renderer) {
-        this.renderer = renderer;
+    public BlurNode(RenderGraph graph, String name) {
+        super(graph, name);
+        final Renderer renderer = graph.getRenderer();
         final Program blurProgram = renderer.getProgram("blur");
         horizontalMaterial = new Material(blurProgram);
         verticalMaterial = new Material(blurProgram);
@@ -132,9 +132,9 @@ public class BlurNode extends Creatable {
         uniforms.add(resolutionUniform);
         uniforms.add(new BooleanUniform("direction", true));
         // Create the horizontal screen model
-        final Model horizontalModel = new Model(renderer.getScreen(), horizontalMaterial);
+        final Model horizontalModel = new Model(graph.getRenderer().getScreen(), horizontalMaterial);
         // Create the vertical screen model
-        final Model verticalModel = new Model(renderer.getScreen(), verticalMaterial);
+        final Model verticalModel = new Model(graph.getRenderer().getScreen(), verticalMaterial);
         // Create the frame buffer
         horizontalFrameBuffer.attach(AttachmentPoint.COLOR0, intermediateTexture);
         horizontalFrameBuffer.create();
@@ -158,11 +158,13 @@ public class BlurNode extends Creatable {
         super.destroy();
     }
 
+    @Override
     public void render() {
         checkCreated();
-        pipeline.run(renderer.getContext());
+        pipeline.run(graph.getRenderer().getContext());
     }
 
+    @Setting
     public void setKernelSize(int kernelSize) {
         if ((kernelSize & 1) == 0) {
             kernelSize--;
@@ -173,15 +175,18 @@ public class BlurNode extends Creatable {
         this.kernelSize = kernelSize;
     }
 
+    @Setting
     public void setKernelGenerator(KernelGenerator kernelGenerator) {
         this.kernelGenerator = kernelGenerator;
     }
 
+    @Input("colors")
     public void setColorsInput(Texture texture) {
         texture.checkCreated();
         colorsInput = texture;
     }
 
+    @Output("colors")
     public Texture getColorsOutput() {
         return colorsOutput;
     }

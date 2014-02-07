@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.spout.renderer.api.Creatable;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
@@ -43,12 +42,12 @@ import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.model.Model;
 
 import org.spoutcraft.client.nterface.render.Renderer;
+import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
 /**
  *
  */
-public class RenderTransparentModelsNode extends Creatable {
-    private final Renderer renderer;
+public class RenderTransparentModelsNode extends GraphNode {
     private final Material material;
     private final Texture weightedColors;
     private final Texture weightedVelocities;
@@ -61,8 +60,9 @@ public class RenderTransparentModelsNode extends Creatable {
     private final List<Model> models = new ArrayList<>();
     private Pipeline pipeline;
 
-    public RenderTransparentModelsNode(Renderer renderer) {
-        this.renderer = renderer;
+    public RenderTransparentModelsNode(RenderGraph graph, String name) {
+        super(graph, name);
+        final Renderer renderer = graph.getRenderer();
         material = new Material(renderer.getProgram("transparencyBlending"));
         final GLFactory glFactory = renderer.getGLFactory();
         weightedColors = glFactory.createTexture();
@@ -97,7 +97,7 @@ public class RenderTransparentModelsNode extends Creatable {
         material.addTexture(1, weightedVelocities);
         material.addTexture(2, layerCounts);
         // Create the screen model
-        final Model model = new Model(renderer.getScreen(), material);
+        final Model model = new Model(graph.getRenderer().getScreen(), material);
         // Create the weighted sum frame buffer
         weightedSumFrameBuffer.attach(AttachmentPoint.COLOR0, weightedColors);
         weightedSumFrameBuffer.attach(AttachmentPoint.COLOR1, weightedVelocities);
@@ -128,32 +128,33 @@ public class RenderTransparentModelsNode extends Creatable {
         super.destroy();
     }
 
+    @Override
     public void render() {
         checkCreated();
-        pipeline.run(renderer.getContext());
+        pipeline.run(graph.getRenderer().getContext());
     }
 
+    @Input("depths")
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         depthsInput = texture;
     }
 
-    public Texture getColorsInput() {
-        return colorsInput;
-    }
-
+    @Input("colors")
     public void setColorsInput(Texture texture) {
         texture.checkCreated();
         colorsInput = texture;
     }
 
-    public Texture getVelocitiesInput() {
-        return velocitiesInput;
-    }
-
+    @Input("velocities")
     public void setVelocitiesInput(Texture texture) {
         texture.checkCreated();
         velocitiesInput = texture;
+    }
+
+    @Output("colors")
+    public Texture getColorsOutput() {
+        return colorsInput;
     }
 
     /**

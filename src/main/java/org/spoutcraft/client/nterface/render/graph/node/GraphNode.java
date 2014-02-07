@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.spout.renderer.api.Creatable;
+import org.spout.renderer.api.gl.Texture;
 
 import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
@@ -20,10 +21,10 @@ import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 public abstract class GraphNode extends Creatable {
     protected final RenderGraph graph;
     protected final String name;
-    protected Map<String, GraphNode> parents;
-    protected Map<String, GraphNode> children;
-    protected Map<String, Method> inputs = new HashMap<>();
-    protected Map<String, Method> outputs = new HashMap<>();
+    protected final Map<String, Method> inputs = new HashMap<>();
+    protected final Map<String, Method> outputs = new HashMap<>();
+    protected final Map<String, GraphNode> inputNodes = new HashMap<>();
+    protected final Map<String, GraphNode> outputNodes = new HashMap<>();
 
     protected GraphNode(RenderGraph graph, String name) {
         this.graph = graph;
@@ -33,6 +34,10 @@ public abstract class GraphNode extends Creatable {
 
     public abstract void render();
 
+    public String getName() {
+        return name;
+    }
+
     public Set<String> getInputs() {
         return Collections.unmodifiableSet(inputs.keySet());
     }
@@ -41,32 +46,34 @@ public abstract class GraphNode extends Creatable {
         return Collections.unmodifiableSet(outputs.keySet());
     }
 
-    protected Method getInput(String name) {
-        return inputs.get(name);
+    public Map<String, GraphNode> getConnectedInputs() {
+        return Collections.unmodifiableMap(inputNodes);
     }
 
-    protected void setInput(String name, Object input) {
+    public Map<String, GraphNode> getConnectedOutputs() {
+        return Collections.unmodifiableMap(outputNodes);
+    }
+
+    public void connect(String input, String output, GraphNode parent) {
+        setInput(input, parent.getOutput(output));
+        inputNodes.put(input, parent);
+        parent.outputNodes.put(output, this);
+    }
+
+    private void setInput(String name, Object input) {
         try {
-            getInput(name).invoke(this, input);
+            inputs.get(name).invoke(this, input);
         } catch (Exception ex) {
             throw new RuntimeException("Failed to set node input", ex);
         }
     }
 
-    protected Object getOutput(String name) {
+    private Object getOutput(String name) {
         try {
             return outputs.get(name).invoke(this);
         } catch (Exception ex) {
             throw new RuntimeException("Failed to get node output", ex);
         }
-    }
-
-    public void linkToOutput(String input, String output, GraphNode parent) {
-        setInput(input, parent.getOutput(output));
-    }
-
-    public void linkInputTo(String output, String input, GraphNode child) {
-        child.setInput(input, getOutput(output));
     }
 
     private void findInputsAndOutputs() {
@@ -78,22 +85,39 @@ public abstract class GraphNode extends Creatable {
                 if (outputAnnotation != null) {
                     throw new IllegalStateException("Input and output annotations cannot be both present");
                 }
+                final Class<?>[] parameterTypes = method.getParameterTypes();
+                if (parameterTypes.length != 1 || !Texture.class.isAssignableFrom(parameterTypes[0])) {
+                    throw new IllegalStateException("Output method must have one argument of type org.spout.renderer.api.gl.Texture");
+                }
                 inputs.put(inputAnnotation.value(), method);
             } else if (outputAnnotation != null) {
+                if (!Texture.class.isAssignableFrom(method.getReturnType())) {
+                    throw new IllegalStateException("Input method must have return type org.spout.renderer.api.gl.Texture");
+                }
                 outputs.put(outputAnnotation.value(), method);
             }
         }
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
+
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD})
-    public @interface Input {
+    public static @interface Input {
         String value();
     }
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD})
-    public @interface Output {
+    public static @interface Output {
         String value();
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD})
+    public static @interface Setting {
     }
 }
