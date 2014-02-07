@@ -25,10 +25,13 @@ package org.spoutcraft.client.nterface.render.graph.node;
 
 import java.util.Arrays;
 
+import com.flowpowered.math.vector.Vector3f;
+
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.FloatUniform;
+import org.spout.renderer.api.data.Uniform.Vector3Uniform;
 import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
@@ -57,12 +60,12 @@ public class LightingNode extends GraphNode {
     private Texture occlusionsInput;
     private Texture shadowsInput;
     private Pipeline pipeline;
+    private Vector3f lightDirection = Vector3f.UP.negate();
 
     public LightingNode(RenderGraph graph, String name) {
         super(graph, name);
-        final Renderer renderer = graph.getRenderer();
-        material = new Material(renderer.getProgram("lighting"));
-        final GLFactory glFactory = renderer.getGLFactory();
+        material = new Material(graph.getProgram("lighting"));
+        final GLFactory glFactory = graph.getGLFactory();
         frameBuffer = glFactory.createFrameBuffer();
         colorsOutput = glFactory.createTexture();
     }
@@ -91,9 +94,9 @@ public class LightingNode extends GraphNode {
         final UniformHolder uniforms = material.getUniforms();
         uniforms.add(new FloatUniform("tanHalfFOV", Renderer.TAN_HALF_FOV));
         uniforms.add(new FloatUniform("aspectRatio", Renderer.ASPECT_RATIO));
-        uniforms.add(graph.getRenderer().getLightDirectionUniform());
+        uniforms.add(new Vector3Uniform("lightDirection", lightDirection));
         // Create the screen model
-        final Model model = new Model(graph.getRenderer().getScreen(), material);
+        final Model model = new Model(graph.getScreen(), material);
         // Create the frame buffer
         frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         frameBuffer.create();
@@ -113,7 +116,12 @@ public class LightingNode extends GraphNode {
     @Override
     public void render() {
         checkCreated();
-        pipeline.run(graph.getRenderer().getContext());
+        pipeline.run(graph.getContext());
+    }
+
+    @Setting
+    public void setLightDirection(Vector3f lightDirection) {
+        this.lightDirection = lightDirection;
     }
 
     @Input("colors")

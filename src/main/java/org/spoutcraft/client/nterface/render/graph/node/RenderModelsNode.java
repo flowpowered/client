@@ -59,7 +59,7 @@ public class RenderModelsNode extends GraphNode {
 
     public RenderModelsNode(RenderGraph graph, String name) {
         super(graph, name);
-        final GLFactory glFactory = graph.getRenderer().getGLFactory();
+        final GLFactory glFactory = graph.getGLFactory();
         colorsOutput = glFactory.createTexture();
         normalsOutput = glFactory.createTexture();
         depthsOutput = glFactory.createTexture();
@@ -132,7 +132,7 @@ public class RenderModelsNode extends GraphNode {
     @Override
     public void render() {
         checkCreated();
-        pipeline.run(graph.getRenderer().getContext());
+        pipeline.run(graph.getContext());
     }
 
     @Output("colors")

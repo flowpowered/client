@@ -62,9 +62,8 @@ public class RenderTransparentModelsNode extends GraphNode {
 
     public RenderTransparentModelsNode(RenderGraph graph, String name) {
         super(graph, name);
-        final Renderer renderer = graph.getRenderer();
-        material = new Material(renderer.getProgram("transparencyBlending"));
-        final GLFactory glFactory = renderer.getGLFactory();
+        material = new Material(graph.getProgram("transparencyBlending"));
+        final GLFactory glFactory = graph.getGLFactory();
         weightedColors = glFactory.createTexture();
         weightedVelocities = glFactory.createTexture();
         layerCounts = glFactory.createTexture();
@@ -97,7 +96,7 @@ public class RenderTransparentModelsNode extends GraphNode {
         material.addTexture(1, weightedVelocities);
         material.addTexture(2, layerCounts);
         // Create the screen model
-        final Model model = new Model(graph.getRenderer().getScreen(), material);
+        final Model model = new Model(graph.getScreen(), material);
         // Create the weighted sum frame buffer
         weightedSumFrameBuffer.attach(AttachmentPoint.COLOR0, weightedColors);
         weightedSumFrameBuffer.attach(AttachmentPoint.COLOR1, weightedVelocities);
@@ -131,7 +130,7 @@ public class RenderTransparentModelsNode extends GraphNode {
     @Override
     public void render() {
         checkCreated();
-        pipeline.run(graph.getRenderer().getContext());
+        pipeline.run(graph.getContext());
     }
 
     @Input("depths")

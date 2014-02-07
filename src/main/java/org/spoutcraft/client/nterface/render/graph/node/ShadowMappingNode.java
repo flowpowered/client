@@ -29,6 +29,7 @@ import java.util.Random;
 
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector3f;
 
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.Material;
@@ -39,6 +40,7 @@ import org.spout.renderer.api.data.Uniform.IntUniform;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
 import org.spout.renderer.api.data.Uniform.Vector2ArrayUniform;
 import org.spout.renderer.api.data.Uniform.Vector2Uniform;
+import org.spout.renderer.api.data.Uniform.Vector3Uniform;
 import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
@@ -71,6 +73,7 @@ public class ShadowMappingNode extends GraphNode {
     private final Matrix4Uniform lightProjectionMatrixUniform = new Matrix4Uniform("lightProjectionMatrix", new Matrix4f());
     private final Camera camera = Camera.createOrthographic(50, -50, 50, -50, -50, 50);
     private Pipeline pipeline;
+    private Vector3f lightDirection = Vector3f.UP.negate();
     private int kernelSize = 8;
     private int noiseSize = 4;
     private float bias = 0.005f;
@@ -78,9 +81,8 @@ public class ShadowMappingNode extends GraphNode {
 
     public ShadowMappingNode(RenderGraph graph, String name) {
         super(graph, name);
-        final Renderer renderer = graph.getRenderer();
-        material = new Material(renderer.getProgram("shadow"));
-        final GLFactory glFactory = renderer.getGLFactory();
+        material = new Material(graph.getProgram("shadow"));
+        final GLFactory glFactory = graph.getGLFactory();
         lightDepthsTexture = glFactory.createTexture();
         noiseTexture = glFactory.createTexture();
         depthFrameBuffer = glFactory.createFrameBuffer();
@@ -142,7 +144,7 @@ public class ShadowMappingNode extends GraphNode {
         uniforms.add(new Vector2Uniform("projection", Renderer.PROJECTION));
         uniforms.add(new FloatUniform("tanHalfFOV", Renderer.TAN_HALF_FOV));
         uniforms.add(new FloatUniform("aspectRatio", Renderer.ASPECT_RATIO));
-        uniforms.add(graph.getRenderer().getLightDirectionUniform());
+        uniforms.add(new Vector3Uniform("lightDirection", lightDirection));
         uniforms.add(inverseViewMatrixUniform);
         uniforms.add(lightViewMatrixUniform);
         uniforms.add(lightProjectionMatrixUniform);
@@ -152,7 +154,7 @@ public class ShadowMappingNode extends GraphNode {
         uniforms.add(new FloatUniform("bias", bias));
         uniforms.add(new FloatUniform("radius", radius));
         // Create the screen model
-        final Model model = new Model(graph.getRenderer().getScreen(), material);
+        final Model model = new Model(graph.getScreen(), material);
         // Create the depth frame buffer
         depthFrameBuffer.attach(AttachmentPoint.DEPTH, lightDepthsTexture);
         depthFrameBuffer.create();
@@ -160,7 +162,7 @@ public class ShadowMappingNode extends GraphNode {
         frameBuffer.attach(AttachmentPoint.COLOR0, shadowsOutput);
         frameBuffer.create();
         // Create the pipeline
-        final RenderModelsNode renderModelsNode = graph.getRenderer().getRenderModelsNode();
+        final RenderModelsNode renderModelsNode = (RenderModelsNode) graph.getNode("models");
         pipeline = new PipelineBuilder().useViewPort(new Rectangle(Vector2f.ZERO, Renderer.SHADOW_SIZE)).useCamera(camera).bindFrameBuffer(depthFrameBuffer).clearBuffer()
                 .renderModels(renderModelsNode.getModels()).useViewPort(new Rectangle(Vector2f.ZERO, Renderer.WINDOW_SIZE)).useCamera(renderModelsNode.getCamera())
                 .bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
@@ -181,10 +183,15 @@ public class ShadowMappingNode extends GraphNode {
 
     @Override
     public void render() {
-        inverseViewMatrixUniform.set(graph.getRenderer().getRenderModelsNode().getCamera().getViewMatrix().invert());
+        inverseViewMatrixUniform.set(((RenderModelsNode) graph.getNode("models")).getCamera().getViewMatrix().invert());
         lightViewMatrixUniform.set(camera.getViewMatrix());
         lightProjectionMatrixUniform.set(camera.getProjectionMatrix());
-        pipeline.run(graph.getRenderer().getContext());
+        pipeline.run(graph.getContext());
+    }
+
+    @Setting
+    public void setLightDirection(Vector3f lightDirection) {
+        this.lightDirection = lightDirection;
     }
 
     @Setting

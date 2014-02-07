@@ -34,8 +34,6 @@ import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.math.imaginary.Quaternionf;
@@ -59,8 +57,6 @@ import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.Context.Capability;
 import org.spout.renderer.api.gl.GLFactory;
-import org.spout.renderer.api.gl.Program;
-import org.spout.renderer.api.gl.Shader;
 import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.VertexArray;
 import org.spout.renderer.api.model.Model;
@@ -103,16 +99,11 @@ public class Renderer {
     private final Matrix4Uniform previousProjectionMatrixUniform = new Matrix4Uniform("previousProjectionMatrix", new Matrix4f());
     private final FloatUniform blurStrengthUniform = new FloatUniform("blurStrength", 1);
     // OpenGL version, factory and context
-    private GLVersion glVersion;
     private GLFactory glFactory;
     private Context context;
-    // Shader programs
-    private final Map<String, Program> programs = new HashMap<>();
     // Included materials
     private Material solidMaterial;
     private Material transparencyMaterial;
-    // Vertex array for stage screens, is reused
-    private VertexArray screenVertexArray;
     // Render graph
     private RenderGraph graph;
     // Graph nodes
@@ -138,8 +129,6 @@ public class Renderer {
      */
     public void init() {
         initContext();
-        initPrograms();
-        initVertexArrays();
         initGraph();
         initMaterials();
         addDefaultObjects();
@@ -155,7 +144,7 @@ public class Renderer {
             context.enableCapability(Capability.CULL_FACE);
         }
         context.enableCapability(Capability.DEPTH_TEST);
-        if (glVersion == GLVersion.GL32 || GLContext.getCapabilities().GL_ARB_depth_clamp) {
+        if (glFactory.getGLVersion() == GLVersion.GL32 || GLContext.getCapabilities().GL_ARB_depth_clamp) {
             context.enableCapability(Capability.DEPTH_CLAMP);
         }
         final UniformHolder uniforms = context.getUniforms();
@@ -164,7 +153,8 @@ public class Renderer {
     }
 
     private void initGraph() {
-        graph = new RenderGraph(this);
+        graph = new RenderGraph(glFactory, context, "/shaders/" + glFactory.getGLVersion().toString().toLowerCase());
+        graph.create();
         final int blurSize = 5;
         // Render models
         renderModelsNode = new RenderModelsNode(graph, "models");
@@ -223,59 +213,23 @@ public class Renderer {
         graph.rebuild();
     }
 
-    private void initPrograms() {
-        loadProgram("solid");
-        loadProgram("textured");
-        loadProgram("font");
-        loadProgram("ssao");
-        loadProgram("shadow");
-        loadProgram("blur");
-        loadProgram("lighting");
-        loadProgram("motionBlur");
-        loadProgram("edaa");
-        loadProgram("weightedSum");
-        loadProgram("transparencyBlending");
-        loadProgram("screen");
-    }
-
-    private void loadProgram(String name) {
-        final String shaderPath = "/shaders/" + glVersion.toString().toLowerCase() + "/" + name;
-        final Shader vertex = glFactory.createShader();
-        vertex.setSource(Renderer.class.getResourceAsStream(shaderPath + ".vert"));
-        vertex.create();
-        final Shader fragment = glFactory.createShader();
-        fragment.setSource(Renderer.class.getResourceAsStream(shaderPath + ".frag"));
-        fragment.create();
-        final Program program = glFactory.createProgram();
-        program.addShader(vertex);
-        program.addShader(fragment);
-        program.create();
-        programs.put(name, program);
-    }
-
     private void initMaterials() {
         UniformHolder uniforms;
         // Solid material
-        solidMaterial = new Material(programs.get("solid"));
+        solidMaterial = new Material(graph.getProgram("solid"));
         uniforms = solidMaterial.getUniforms();
         uniforms.add(new FloatUniform("diffuseIntensity", 0.8f));
         uniforms.add(new FloatUniform("specularIntensity", 0.5f));
         uniforms.add(new FloatUniform("ambientIntensity", 0.2f));
         uniforms.add(new FloatUniform("shininess", 0.15f));
         // Transparency material
-        transparencyMaterial = new Material(programs.get("weightedSum"));
+        transparencyMaterial = new Material(graph.getProgram("weightedSum"));
         uniforms = transparencyMaterial.getUniforms();
         uniforms.add(lightDirectionUniform);
         uniforms.add(new FloatUniform("diffuseIntensity", 0.8f));
         uniforms.add(new FloatUniform("specularIntensity", 1));
         uniforms.add(new FloatUniform("ambientIntensity", 0.2f));
         uniforms.add(new FloatUniform("shininess", 0.8f));
-    }
-
-    private void initVertexArrays() {
-        screenVertexArray = glFactory.createVertexArray();
-        screenVertexArray.setData(MeshGenerator.generateTexturedPlane(null, new Vector2f(2, 2)));
-        screenVertexArray.create();
     }
 
     private void addDefaultObjects() {
@@ -302,7 +256,7 @@ public class Renderer {
             e.printStackTrace();
             return;
         }
-        final StringModel sandboxModel = new StringModel(glFactory, programs.get("font"), "ClientWIPFPS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), WINDOW_SIZE.getFloorX());
+        final StringModel sandboxModel = new StringModel(glFactory, graph.getProgram("font"), "ClientWIPFPS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), WINDOW_SIZE.getFloorX());
         final float aspect = 1 / ASPECT_RATIO;
         sandboxModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.315, -0.1));
         sandboxModel.setString("Client - WIP");
@@ -319,8 +273,6 @@ public class Renderer {
      */
     public void dispose() {
         disposeGraph();
-        disposePrograms();
-        disposeVertexArrays();
         disposeContext();
         fpsMonitorStarted = false;
     }
@@ -337,19 +289,6 @@ public class Renderer {
         blurNode.destroy();
         renderTransparentModelsNode.destroy();
         renderGUINode.destroy();
-    }
-
-    private void disposePrograms() {
-        for (Program program : programs.values()) {
-            for (Shader shader : program.getShaders()) {
-                shader.destroy();
-            }
-            program.destroy();
-        }
-    }
-
-    private void disposeVertexArrays() {
-        screenVertexArray.destroy();
     }
 
     /**
@@ -392,7 +331,7 @@ public class Renderer {
     }
 
     public GLVersion getGLVersion() {
-        return glVersion;
+        return glFactory.getGLVersion();
     }
 
     /**
@@ -405,26 +344,16 @@ public class Renderer {
             case GL20:
             case GL21:
                 glFactory = GLImplementation.get(LWJGLUtil.GL21_IMPL);
-                glVersion = GLVersion.GL21;
                 break;
             case GL30:
             case GL31:
             case GL32:
                 glFactory = GLImplementation.get(LWJGLUtil.GL32_IMPL);
-                glVersion = GLVersion.GL32;
         }
     }
 
     public Context getContext() {
         return context;
-    }
-
-    public Program getProgram(String name) {
-        return programs.get(name);
-    }
-
-    public VertexArray getScreen() {
-        return screenVertexArray;
     }
 
     public RenderModelsNode getRenderModelsNode() {
@@ -433,10 +362,6 @@ public class Renderer {
 
     public RenderGUINode getRenderGUINode() {
         return renderGUINode;
-    }
-
-    public Vector3Uniform getLightDirectionUniform() {
-        return lightDirectionUniform;
     }
 
     /**
@@ -468,6 +393,8 @@ public class Renderer {
         // Set the direction uniform
         direction = direction.normalize();
         lightDirectionUniform.set(direction);
+        ((ShadowMappingNode) graph.getNode("shadows")).setLightDirection(direction);
+        ((LightingNode) graph.getNode("lighting")).setLightDirection(direction);
         // Set the camera position
         final Camera camera = shadowMappingNode.getCamera();
         camera.setPosition(position);

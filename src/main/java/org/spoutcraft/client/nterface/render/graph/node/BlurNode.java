@@ -56,11 +56,10 @@ public class BlurNode extends GraphNode {
 
     public BlurNode(RenderGraph graph, String name) {
         super(graph, name);
-        final Renderer renderer = graph.getRenderer();
-        final Program blurProgram = renderer.getProgram("blur");
+        final Program blurProgram = graph.getProgram("blur");
         horizontalMaterial = new Material(blurProgram);
         verticalMaterial = new Material(blurProgram);
-        final GLFactory glFactory = renderer.getGLFactory();
+        final GLFactory glFactory = graph.getGLFactory();
         horizontalFrameBuffer = glFactory.createFrameBuffer();
         verticalFrameBuffer = glFactory.createFrameBuffer();
         intermediateTexture = glFactory.createTexture();
@@ -132,9 +131,9 @@ public class BlurNode extends GraphNode {
         uniforms.add(resolutionUniform);
         uniforms.add(new BooleanUniform("direction", true));
         // Create the horizontal screen model
-        final Model horizontalModel = new Model(graph.getRenderer().getScreen(), horizontalMaterial);
+        final Model horizontalModel = new Model(graph.getScreen(), horizontalMaterial);
         // Create the vertical screen model
-        final Model verticalModel = new Model(graph.getRenderer().getScreen(), verticalMaterial);
+        final Model verticalModel = new Model(graph.getScreen(), verticalMaterial);
         // Create the frame buffer
         horizontalFrameBuffer.attach(AttachmentPoint.COLOR0, intermediateTexture);
         horizontalFrameBuffer.create();
@@ -161,7 +160,7 @@ public class BlurNode extends GraphNode {
     @Override
     public void render() {
         checkCreated();
-        pipeline.run(graph.getRenderer().getContext());
+        pipeline.run(graph.getContext());
     }
 
     @Setting

@@ -50,7 +50,7 @@ public class RenderGUINode extends GraphNode {
 
     public RenderGUINode(RenderGraph graph, String name) {
         super(graph, name);
-        material = new Material(graph.getRenderer().getProgram("screen"));
+        material = new Material(graph.getProgram("screen"));
     }
 
     @Override
@@ -61,7 +61,7 @@ public class RenderGUINode extends GraphNode {
         // Create the material
         material.addTexture(0, colorsInput);
         // Create the model
-        final Model model = new Model(graph.getRenderer().getScreen(), material);
+        final Model model = new Model(graph.getScreen(), material);
         // Create the pipeline
         pipeline = new PipelineBuilder().useCamera(camera).clearBuffer().renderModels(Arrays.asList(model)).renderModels(models).updateDisplay().build();
         // Update state to created
@@ -77,7 +77,7 @@ public class RenderGUINode extends GraphNode {
     @Override
     public void render() {
         checkCreated();
-        pipeline.run(graph.getRenderer().getContext());
+        pipeline.run(graph.getContext());
     }
 
     @Input("colors")

@@ -67,9 +67,8 @@ public class SSAONode extends GraphNode {
 
     public SSAONode(RenderGraph graph, String name) {
         super(graph, name);
-        final Renderer renderer = graph.getRenderer();
-        material = new Material(renderer.getProgram("ssao"));
-        final GLFactory glFactory = renderer.getGLFactory();
+        material = new Material(graph.getProgram("ssao"));
+        final GLFactory glFactory = graph.getGLFactory();
         noiseTexture = glFactory.createTexture();
         frameBuffer = glFactory.createFrameBuffer();
         occlusionsOutput = glFactory.createTexture();
@@ -128,7 +127,7 @@ public class SSAONode extends GraphNode {
         uniforms.add(new Vector2Uniform("noiseScale", new Vector2f(occlusionsOutput.getWidth(), occlusionsOutput.getHeight()).div(noiseSize)));
         uniforms.add(new FloatUniform("power", power));
         // Create the screen model
-        final Model model = new Model(graph.getRenderer().getScreen(), material);
+        final Model model = new Model(graph.getScreen(), material);
         // Create the frame buffer
         frameBuffer.attach(AttachmentPoint.COLOR0, occlusionsOutput);
         frameBuffer.create();
@@ -150,7 +149,7 @@ public class SSAONode extends GraphNode {
     @Override
     public void render() {
         checkCreated();
-        pipeline.run(graph.getRenderer().getContext());
+        pipeline.run(graph.getContext());
     }
 
     @Setting
