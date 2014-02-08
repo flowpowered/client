@@ -41,7 +41,6 @@ import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.model.Model;
 
-import org.spoutcraft.client.nterface.render.Renderer;
 import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
 /**
@@ -76,12 +75,12 @@ public class RenderTransparentModelsNode extends GraphNode {
         // Create the weighted colors texture
         weightedColors.setFormat(Format.RGBA);
         weightedColors.setInternalFormat(InternalFormat.RGBA16F);
-        weightedColors.setImageData(null, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY());
+        weightedColors.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         weightedColors.create();
         // Create the layer counts texture
         layerCounts.setFormat(Format.RED);
         layerCounts.setInternalFormat(InternalFormat.R16F);
-        layerCounts.setImageData(null, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY());
+        layerCounts.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         layerCounts.create();
         // Create the material
         material.addTexture(0, weightedColors);

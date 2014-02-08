@@ -40,6 +40,7 @@ import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.matrix.Matrix3f;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3f;
 
 import org.lwjgl.opengl.GLContext;
@@ -80,16 +81,9 @@ import org.spoutcraft.client.nterface.render.graph.node.ShadowMappingNode;
  */
 public class Renderer {
     private static final String WINDOW_TITLE = "Spoutcraft";
-    public static final Vector2f WINDOW_SIZE = new Vector2f(1200, 800);
-    public static final Vector2f SHADOW_SIZE = new Vector2f(2048, 2048);
-    public static final float ASPECT_RATIO = WINDOW_SIZE.getX() / WINDOW_SIZE.getY();
-    public static final float FIELD_OF_VIEW = 60;
-    public static final float TAN_HALF_FOV = (float) Math.tan(Math.toRadians(FIELD_OF_VIEW) / 2);
-    public static final float NEAR_PLANE = 0.1f;
-    public static final float FAR_PLANE = 1000;
-    public static final Vector2f PROJECTION = new Vector2f(FAR_PLANE / (FAR_PLANE - NEAR_PLANE), (-FAR_PLANE * NEAR_PLANE) / (FAR_PLANE - NEAR_PLANE));
     private static final DateFormat SCREENSHOT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
     // Settings
+    private Vector2i windowSize = new Vector2i(1200, 800);
     private boolean cullBackFaces = true;
     private Color solidModelColor = Color.WHITE;
     // Effect uniforms
@@ -135,7 +129,7 @@ public class Renderer {
     private void initContext() {
         context = glFactory.createContext();
         context.setWindowTitle(WINDOW_TITLE);
-        context.setWindowSize(WINDOW_SIZE);
+        context.setWindowSize(windowSize.toFloat());
         context.create();
         context.setClearColor(new Color(0, 0, 0, 0));
         if (cullBackFaces) {
@@ -152,6 +146,10 @@ public class Renderer {
 
     private void initGraph() {
         graph = new RenderGraph(glFactory, context, "/shaders/" + glFactory.getGLVersion().toString().toLowerCase());
+        graph.setWindowSize(windowSize);
+        graph.setFieldOfView(60);
+        graph.setNearPlane(0.1f);
+        graph.setFarPlane(1000);
         graph.create();
         final int blurSize = 5;
         // Render models
@@ -162,6 +160,7 @@ public class Renderer {
         shadowMappingNode = new ShadowMappingNode(graph, "shadows");
         shadowMappingNode.connect("normals", "vertexNormals", renderModelsNode);
         shadowMappingNode.connect("depths", "depths", renderModelsNode);
+        shadowMappingNode.setShadowMapSize(new Vector2i(2048, 2048));
         shadowMappingNode.setKernelSize(8);
         shadowMappingNode.setNoiseSize(blurSize);
         shadowMappingNode.setBias(0.005f);
@@ -246,8 +245,8 @@ public class Renderer {
             e.printStackTrace();
             return;
         }
-        final StringModel sandboxModel = new StringModel(glFactory, graph.getProgram("font"), "ClientWIPFPS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), WINDOW_SIZE.getFloorX());
-        final float aspect = 1 / ASPECT_RATIO;
+        final StringModel sandboxModel = new StringModel(glFactory, graph.getProgram("font"), "ClientWIPFPS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
+        final float aspect = 1 / graph.getAspectRatio();
         sandboxModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.315, -0.1));
         sandboxModel.setString("Client - WIP");
         renderGUINode.addModel(sandboxModel);
@@ -444,7 +443,7 @@ public class Renderer {
      * @param outputDir The directory in which to output the file
      */
     public void saveScreenshot(File outputDir) {
-        final ByteBuffer buffer = context.readCurrentFrame(new Rectangle(Vector2f.ZERO, WINDOW_SIZE), Format.RGB);
+        final ByteBuffer buffer = context.readCurrentFrame(new Rectangle(Vector2f.ZERO, windowSize.toFloat()), Format.RGB);
         final int width = context.getWindowWidth();
         final int height = context.getWindowHeight();
         final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);

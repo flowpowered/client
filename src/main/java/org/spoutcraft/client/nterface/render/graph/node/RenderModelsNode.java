@@ -40,7 +40,6 @@ import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
 
-import org.spoutcraft.client.nterface.render.Renderer;
 import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
 /**
@@ -54,7 +53,7 @@ public class RenderModelsNode extends GraphNode {
     private final Texture vertexNormalsOutput;
     private final Texture materialsOutput;
     private final List<Model> models = new ArrayList<>();
-    private final Camera camera = Camera.createPerspective(Renderer.FIELD_OF_VIEW, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY(), Renderer.NEAR_PLANE, Renderer.FAR_PLANE);
+    private final Camera camera;
     private Pipeline pipeline;
 
     public RenderModelsNode(RenderGraph graph, String name) {
@@ -66,6 +65,7 @@ public class RenderModelsNode extends GraphNode {
         vertexNormalsOutput = glFactory.createTexture();
         materialsOutput = glFactory.createTexture();
         frameBuffer = glFactory.createFrameBuffer();
+        camera = Camera.createPerspective(graph.getFieldOfView(), graph.getWindowWidth(), graph.getWindowHeight(), graph.getNearPlane(), graph.getFarPlane());
     }
 
     @Override
@@ -76,7 +76,7 @@ public class RenderModelsNode extends GraphNode {
         // Create the colors texture
         colorsOutput.setFormat(Format.RGBA);
         colorsOutput.setInternalFormat(InternalFormat.RGBA8);
-        colorsOutput.setImageData(null, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY());
+        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
         colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
         colorsOutput.setMagFilter(FilterMode.LINEAR);
@@ -85,24 +85,24 @@ public class RenderModelsNode extends GraphNode {
         // Create the normals texture
         normalsOutput.setFormat(Format.RGBA);
         normalsOutput.setInternalFormat(InternalFormat.RGBA8);
-        normalsOutput.setImageData(null, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY());
+        normalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         normalsOutput.create();
         // Create the detphs texture
         depthsOutput.setFormat(Format.DEPTH);
         depthsOutput.setInternalFormat(InternalFormat.DEPTH_COMPONENT32);
-        depthsOutput.setImageData(null, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY());
+        depthsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         depthsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
         depthsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
         depthsOutput.create();
         // Create the vertex normals texture
         vertexNormalsOutput.setFormat(Format.RGBA);
         vertexNormalsOutput.setInternalFormat(InternalFormat.RGBA8);
-        vertexNormalsOutput.setImageData(null, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY());
+        vertexNormalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         vertexNormalsOutput.create();
         // Create the materials texture
         materialsOutput.setFormat(Format.RGBA);
         materialsOutput.setInternalFormat(InternalFormat.RGBA8);
-        materialsOutput.setImageData(null, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY());
+        materialsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         materialsOutput.create();
         // Create the frame buffer
         frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);

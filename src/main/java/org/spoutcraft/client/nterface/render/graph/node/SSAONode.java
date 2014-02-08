@@ -48,7 +48,6 @@ import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.model.Model;
 import org.spout.renderer.api.util.CausticUtil;
 
-import org.spoutcraft.client.nterface.render.Renderer;
 import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
 public class SSAONode extends GraphNode {
@@ -87,16 +86,16 @@ public class SSAONode extends GraphNode {
         // Create the occlusions texture
         occlusionsOutput.setFormat(Format.RED);
         occlusionsOutput.setInternalFormat(InternalFormat.R8);
-        occlusionsOutput.setImageData(null, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY());
+        occlusionsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         occlusionsOutput.create();
         // Create the material
         material.addTexture(0, normalsInput);
         material.addTexture(1, depthsInput);
         material.addTexture(2, noiseTexture);
         final UniformHolder uniforms = material.getUniforms();
-        uniforms.add(new Vector2Uniform("projection", Renderer.PROJECTION));
-        uniforms.add(new FloatUniform("tanHalfFOV", Renderer.TAN_HALF_FOV));
-        uniforms.add(new FloatUniform("aspectRatio", Renderer.ASPECT_RATIO));
+        uniforms.add(graph.getProjectionUniform());
+        uniforms.add(graph.getTanHalfFOVUniform());
+        uniforms.add(graph.getAspectRatioUniform());
         uniforms.add(kernelSizeUniform);
         uniforms.add(kernelUniform);
         uniforms.add(radiusUniform);
@@ -168,7 +167,7 @@ public class SSAONode extends GraphNode {
             noiseTextureBuffer.put((byte) (noise.getFloorZ() & 0xff));
         }
         // Update the uniform
-        noiseScaleUniform.set(new Vector2f(Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY()).div(noiseSize));
+        noiseScaleUniform.set(new Vector2f(graph.getWindowWidth(), graph.getWindowHeight()).div(noiseSize));
         // Update the texture
         boolean wasCreated = false;
         if (noiseTexture.isCreated()) {

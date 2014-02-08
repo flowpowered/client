@@ -30,7 +30,6 @@ import com.flowpowered.math.vector.Vector3f;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
-import org.spout.renderer.api.data.Uniform.FloatUniform;
 import org.spout.renderer.api.data.Uniform.Vector3Uniform;
 import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.FrameBuffer;
@@ -43,7 +42,6 @@ import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
 
-import org.spoutcraft.client.nterface.render.Renderer;
 import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
 /**
@@ -78,7 +76,7 @@ public class LightingNode extends GraphNode {
         // Create the colors texture
         colorsOutput.setFormat(Format.RGBA);
         colorsOutput.setInternalFormat(InternalFormat.RGBA8);
-        colorsOutput.setImageData(null, Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY());
+        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
         colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
         colorsOutput.setMagFilter(FilterMode.LINEAR);
@@ -92,8 +90,8 @@ public class LightingNode extends GraphNode {
         material.addTexture(4, occlusionsInput);
         material.addTexture(5, shadowsInput);
         final UniformHolder uniforms = material.getUniforms();
-        uniforms.add(new FloatUniform("tanHalfFOV", Renderer.TAN_HALF_FOV));
-        uniforms.add(new FloatUniform("aspectRatio", Renderer.ASPECT_RATIO));
+        uniforms.add(graph.getTanHalfFOVUniform());
+        uniforms.add(graph.getAspectRatioUniform());
         uniforms.add(lightDirectionUniform);
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);

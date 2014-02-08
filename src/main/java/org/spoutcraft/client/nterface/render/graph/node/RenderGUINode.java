@@ -35,7 +35,6 @@ import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.model.Model;
 
-import org.spoutcraft.client.nterface.render.Renderer;
 import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
 /**
@@ -44,13 +43,14 @@ import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 public class RenderGUINode extends GraphNode {
     private final Material material;
     private Texture colorsInput;
-    private final Camera camera = Camera.createOrthographic(1, 0, 1 / Renderer.ASPECT_RATIO, 0, Renderer.NEAR_PLANE, Renderer.FAR_PLANE);
+    private final Camera camera;
     private final List<Model> models = new ArrayList<>();
     private Pipeline pipeline;
 
     public RenderGUINode(RenderGraph graph, String name) {
         super(graph, name);
         material = new Material(graph.getProgram("screen"));
+        camera = Camera.createOrthographic(1, 0, 1 / graph.getAspectRatio(), 0, graph.getNearPlane(), graph.getFarPlane());
     }
 
     @Override
