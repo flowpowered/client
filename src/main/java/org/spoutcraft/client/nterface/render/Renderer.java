@@ -67,7 +67,6 @@ import org.spout.renderer.lwjgl.LWJGLUtil;
 
 import org.spoutcraft.client.nterface.Interface;
 import org.spoutcraft.client.nterface.render.graph.RenderGraph;
-import org.spoutcraft.client.nterface.render.graph.node.BlurNode;
 import org.spoutcraft.client.nterface.render.graph.node.LightingNode;
 import org.spoutcraft.client.nterface.render.graph.node.RenderGUINode;
 import org.spoutcraft.client.nterface.render.graph.node.RenderModelsNode;
@@ -110,7 +109,6 @@ public class Renderer {
     private RenderModelsNode renderModelsNode;
     private ShadowMappingNode shadowMappingNode;
     private SSAONode ssaoNode;
-    private BlurNode blurNode;
     private LightingNode lightingNode;
     private RenderTransparentModelsNode renderTransparentModelsNode;
     private RenderGUINode renderGUINode;
@@ -174,10 +172,9 @@ public class Renderer {
         ssaoNode = new SSAONode(graph, "ssao");
         ssaoNode.connect("normals", "normals", renderModelsNode);
         ssaoNode.connect("depths", "depths", renderModelsNode);
-        ssaoNode.setKernelSize(8);
+        ssaoNode.setKernelSize(8, 0.15f);
         ssaoNode.setNoiseSize(blurSize);
         ssaoNode.setRadius(0.5f);
-        ssaoNode.setThreshold(0.15f);
         ssaoNode.setPower(2);
         ssaoNode.create();
         graph.addNode(ssaoNode);
@@ -191,17 +188,10 @@ public class Renderer {
         lightingNode.connect("shadows", "shadows", shadowMappingNode);
         lightingNode.create();
         graph.addNode(lightingNode);
-        // Gaussian blur
-        blurNode = new BlurNode(graph, "blur");
-        blurNode.connect("colors", "colors", lightingNode);
-        blurNode.setKernelSize(blurSize);
-        blurNode.setKernelGenerator(BlurNode.GAUSSIAN_KERNEL);
-        blurNode.create();
-        graph.addNode(blurNode);
         // Transparent models
         renderTransparentModelsNode = new RenderTransparentModelsNode(graph, "transparency");
         renderTransparentModelsNode.connect("depths", "depths", renderModelsNode);
-        renderTransparentModelsNode.connect("colors", "colors", blurNode);
+        renderTransparentModelsNode.connect("colors", "colors", lightingNode);
         renderTransparentModelsNode.create();
         graph.addNode(renderTransparentModelsNode);
         // Render GUI
@@ -282,13 +272,7 @@ public class Renderer {
     }
 
     private void disposeGraph() {
-        renderModelsNode.destroy();
-        shadowMappingNode.destroy();
-        ssaoNode.destroy();
-        lightingNode.destroy();
-        blurNode.destroy();
-        renderTransparentModelsNode.destroy();
-        renderGUINode.destroy();
+        graph.destroy();
     }
 
     /**

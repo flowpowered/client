@@ -60,7 +60,7 @@ public class LightingNode extends GraphNode {
     private Texture occlusionsInput;
     private Texture shadowsInput;
     private Pipeline pipeline;
-    private Vector3f lightDirection = Vector3f.UP.negate();
+    private final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.UP.negate());
 
     public LightingNode(RenderGraph graph, String name) {
         super(graph, name);
@@ -94,7 +94,7 @@ public class LightingNode extends GraphNode {
         final UniformHolder uniforms = material.getUniforms();
         uniforms.add(new FloatUniform("tanHalfFOV", Renderer.TAN_HALF_FOV));
         uniforms.add(new FloatUniform("aspectRatio", Renderer.ASPECT_RATIO));
-        uniforms.add(new Vector3Uniform("lightDirection", lightDirection));
+        uniforms.add(lightDirectionUniform);
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
         // Create the frame buffer
@@ -121,7 +121,7 @@ public class LightingNode extends GraphNode {
 
     @Setting
     public void setLightDirection(Vector3f lightDirection) {
-        this.lightDirection = lightDirection;
+        lightDirectionUniform.set(lightDirection);
     }
 
     @Input("colors")

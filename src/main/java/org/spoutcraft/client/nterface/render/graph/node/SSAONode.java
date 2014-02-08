@@ -59,17 +59,20 @@ public class SSAONode extends GraphNode {
     private Texture normalsInput;
     private Texture depthsInput;
     private Pipeline pipeline;
-    private int kernelSize = 8;
-    private float radius = 0.5f;
-    private float threshold = 0.15f;
-    private int noiseSize = 4;
-    private float power = 2;
+    private IntUniform kernelSizeUniform = new IntUniform("kernelSize", 0);
+    private final Vector3ArrayUniform kernelUniform = new Vector3ArrayUniform("kernel", new Vector3f[]{});
+    private final FloatUniform radiusUniform = new FloatUniform("radius", 0.5f);
+    private final FloatUniform thresholdUniform = new FloatUniform("threshold", 0.15f);
+    private final Vector2Uniform noiseScaleUniform = new Vector2Uniform("noiseScale", Vector2f.ONE);
+    private final FloatUniform powerUniform = new FloatUniform("power", 2);
 
     public SSAONode(RenderGraph graph, String name) {
         super(graph, name);
         material = new Material(graph.getProgram("ssao"));
         final GLFactory glFactory = graph.getGLFactory();
         noiseTexture = glFactory.createTexture();
+        noiseTexture.setFormat(Format.RGB);
+        noiseTexture.setInternalFormat(InternalFormat.RGB8);
         frameBuffer = glFactory.createFrameBuffer();
         occlusionsOutput = glFactory.createTexture();
     }
@@ -79,33 +82,7 @@ public class SSAONode extends GraphNode {
         if (isCreated()) {
             throw new IllegalStateException("SSAO stage has already been created");
         }
-        // Generate the kernel
-        final Vector3f[] kernel = new Vector3f[kernelSize];
-        final Random random = new Random();
-        for (int i = 0; i < kernelSize; i++) {
-            float scale = (float) i / kernelSize;
-            scale = GenericMath.lerp(threshold, 1, scale * scale);
-            // Create a set of random unit vectors inside a hemisphere
-            // The vectors are scaled so that the amount falls of as we get further away from the center
-            kernel[i] = new Vector3f(random.nextFloat() * 2 - 1, random.nextFloat() * 2 - 1, random.nextFloat()).normalize().mul(scale);
-        }
-        // Generate the noise texture data
-        final int noiseTextureSize = noiseSize * noiseSize;
-        final ByteBuffer noiseTextureBuffer = CausticUtil.createByteBuffer(noiseTextureSize * 3);
-        for (int i = 0; i < noiseTextureSize; i++) {
-            // Random unit vectors around the z axis
-            Vector3f noise = new Vector3f(random.nextFloat() * 2 - 1, random.nextFloat() * 2 - 1, 0).normalize();
-            // Encode to unsigned byte, and place in buffer
-            noise = noise.mul(128).add(128, 128, 128);
-            noiseTextureBuffer.put((byte) (noise.getFloorX() & 0xff));
-            noiseTextureBuffer.put((byte) (noise.getFloorY() & 0xff));
-            noiseTextureBuffer.put((byte) (noise.getFloorZ() & 0xff));
-        }
         // Create the noise texture
-        noiseTexture.setFormat(Format.RGB);
-        noiseTexture.setInternalFormat(InternalFormat.RGB8);
-        noiseTextureBuffer.flip();
-        noiseTexture.setImageData(noiseTextureBuffer, noiseSize, noiseSize);
         noiseTexture.create();
         // Create the occlusions texture
         occlusionsOutput.setFormat(Format.RED);
@@ -120,12 +97,12 @@ public class SSAONode extends GraphNode {
         uniforms.add(new Vector2Uniform("projection", Renderer.PROJECTION));
         uniforms.add(new FloatUniform("tanHalfFOV", Renderer.TAN_HALF_FOV));
         uniforms.add(new FloatUniform("aspectRatio", Renderer.ASPECT_RATIO));
-        uniforms.add(new IntUniform("kernelSize", kernelSize));
-        uniforms.add(new Vector3ArrayUniform("kernel", kernel));
-        uniforms.add(new FloatUniform("radius", radius));
-        uniforms.add(new FloatUniform("threshold", threshold));
-        uniforms.add(new Vector2Uniform("noiseScale", new Vector2f(occlusionsOutput.getWidth(), occlusionsOutput.getHeight()).div(noiseSize)));
-        uniforms.add(new FloatUniform("power", power));
+        uniforms.add(kernelSizeUniform);
+        uniforms.add(kernelUniform);
+        uniforms.add(radiusUniform);
+        uniforms.add(thresholdUniform);
+        uniforms.add(noiseScaleUniform);
+        uniforms.add(powerUniform);
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
         // Create the frame buffer
@@ -153,28 +130,61 @@ public class SSAONode extends GraphNode {
     }
 
     @Setting
-    public void setKernelSize(int kernelSize) {
-        this.kernelSize = kernelSize;
+    public void setKernelSize(int kernelSize, float threshold) {
+        // Generate the kernel
+        final Vector3f[] kernel = new Vector3f[kernelSize];
+        final Random random = new Random();
+        for (int i = 0; i < kernelSize; i++) {
+            float scale = (float) i / kernelSize;
+            scale = GenericMath.lerp(threshold, 1, scale * scale);
+            // Create a set of random unit vectors inside a hemisphere
+            // The vectors are scaled so that the amount falls of as we get further away from the center
+            kernel[i] = new Vector3f(random.nextFloat() * 2 - 1, random.nextFloat() * 2 - 1, random.nextFloat()).normalize().mul(scale);
+        }
+        // Update the uniforms
+        kernelSizeUniform.set(kernelSize);
+        kernelUniform.set(kernel);
+        thresholdUniform.set(threshold);
     }
 
     @Setting
     public void setRadius(float radius) {
-        this.radius = radius;
-    }
-
-    @Setting
-    public void setThreshold(float threshold) {
-        this.threshold = threshold;
+        radiusUniform.set(radius);
     }
 
     @Setting
     public void setNoiseSize(int noiseSize) {
-        this.noiseSize = noiseSize;
+        // Generate the noise texture data
+        final Random random = new Random();
+        final int noiseTextureSize = noiseSize * noiseSize;
+        final ByteBuffer noiseTextureBuffer = CausticUtil.createByteBuffer(noiseTextureSize * 3);
+        for (int i = 0; i < noiseTextureSize; i++) {
+            // Random unit vectors around the z axis
+            Vector3f noise = new Vector3f(random.nextFloat() * 2 - 1, random.nextFloat() * 2 - 1, 0).normalize();
+            // Encode to unsigned byte, and place in buffer
+            noise = noise.mul(128).add(128, 128, 128);
+            noiseTextureBuffer.put((byte) (noise.getFloorX() & 0xff));
+            noiseTextureBuffer.put((byte) (noise.getFloorY() & 0xff));
+            noiseTextureBuffer.put((byte) (noise.getFloorZ() & 0xff));
+        }
+        // Update the uniform
+        noiseScaleUniform.set(new Vector2f(Renderer.WINDOW_SIZE.getFloorX(), Renderer.WINDOW_SIZE.getFloorY()).div(noiseSize));
+        // Update the texture
+        boolean wasCreated = false;
+        if (noiseTexture.isCreated()) {
+            noiseTexture.destroy();
+            wasCreated = true;
+        }
+        noiseTextureBuffer.flip();
+        noiseTexture.setImageData(noiseTextureBuffer, noiseSize, noiseSize);
+        if (wasCreated) {
+            noiseTexture.create();
+        }
     }
 
     @Setting
     public void setPower(float power) {
-        this.power = power;
+        powerUniform.set(power);
     }
 
     @Input("normals")
