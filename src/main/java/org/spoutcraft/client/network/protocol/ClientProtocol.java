@@ -93,7 +93,7 @@ public class ClientProtocol extends KeyedProtocol {
         ByteBufUtils.writeVarInt(opcodeBuffer, codec.getOpcode());
         ByteBufUtils.writeVarInt(out, length + opcodeBuffer.readableBytes());
         ByteBufUtils.writeVarInt(out, codec.getOpcode());
-        return opcodeBuffer;
+        return out;
     }
 
     public Game getGame() {
