@@ -87,12 +87,13 @@ public class ClientProtocol extends KeyedProtocol {
     }
 
     @Override
-    public void writeHeader(ByteBuf data, CodecRegistration codec, ByteBuf out) {
+    public ByteBuf writeHeader(ByteBuf data, CodecRegistration codec, ByteBuf out) {
         final int length = data.readableBytes();
         final ByteBuf opcodeBuffer = Unpooled.buffer();
         ByteBufUtils.writeVarInt(opcodeBuffer, codec.getOpcode());
         ByteBufUtils.writeVarInt(out, length + opcodeBuffer.readableBytes());
         ByteBufUtils.writeVarInt(out, codec.getOpcode());
+        return opcodeBuffer;
     }
 
     public Game getGame() {
