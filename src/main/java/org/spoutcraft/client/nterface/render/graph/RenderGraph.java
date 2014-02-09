@@ -100,6 +100,7 @@ public class RenderGraph extends Creatable {
             }
             program.destroy();
         }
+        programs.clear();
         super.destroy();
     }
 
@@ -126,9 +127,6 @@ public class RenderGraph extends Creatable {
                 break;
             }
             current = new Stage(i++);
-        }
-        for (Stage stage : stages) {
-            System.out.println(stage.getNumber() + ": " + stage.getNodes());
         }
     }
 

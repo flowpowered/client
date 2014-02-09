@@ -96,9 +96,11 @@ public class BlurNode extends GraphNode {
         if (isCreated()) {
             throw new IllegalStateException("Guassian blur stage has already been created");
         }
+        final Format format = colorsInput.getFormat();
+        final InternalFormat internalFormat = colorsInput.getInternalFormat();
         // Create the colors texture
-        colorsOutput.setFormat(Format.RGBA);
-        colorsOutput.setInternalFormat(InternalFormat.RGBA8);
+        colorsOutput.setFormat(format);
+        colorsOutput.setInternalFormat(internalFormat);
         colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
         colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
@@ -106,8 +108,8 @@ public class BlurNode extends GraphNode {
         colorsOutput.setMinFilter(FilterMode.LINEAR);
         colorsOutput.create();
         // Create the intermediate texture
-        intermediateTexture.setFormat(Format.RGBA);
-        intermediateTexture.setInternalFormat(InternalFormat.RGBA8);
+        intermediateTexture.setFormat(format);
+        intermediateTexture.setInternalFormat(internalFormat);
         intermediateTexture.setImageData(null, colorsInput.getWidth(), colorsInput.getHeight());
         intermediateTexture.setWrapS(WrapMode.CLAMP_TO_EDGE);
         intermediateTexture.setWrapT(WrapMode.CLAMP_TO_EDGE);
