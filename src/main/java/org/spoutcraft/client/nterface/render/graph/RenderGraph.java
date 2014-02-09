@@ -41,8 +41,6 @@ import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Program;
 import org.spout.renderer.api.gl.Shader;
-import org.spout.renderer.api.gl.Texture;
-import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.gl.VertexArray;
 import org.spout.renderer.api.util.MeshGenerator;
 
@@ -62,8 +60,8 @@ public class RenderGraph extends Creatable {
     private final Vector2Uniform projectionUniform = new Vector2Uniform("projection", new Vector2f(farPlane / (farPlane - nearPlane), (-farPlane * nearPlane) / (farPlane - nearPlane)));
     private final GLFactory glFactory;
     private final Context glContext;
-    private final ProgramPool programPool;
-    private final TexturePool texturePool = new TexturePool();
+    private final String shaderSrcDir;
+    private final Map<String, Program> programs = new HashMap<>();
     private final VertexArray screen;
     private final Map<String, GraphNode> nodes = new HashMap<>();
     private final SortedSet<Stage> stages = new TreeSet<>();
@@ -71,7 +69,7 @@ public class RenderGraph extends Creatable {
     public RenderGraph(GLFactory glFactory, Context glContext, String shaderSrcDir) {
         this.glFactory = glFactory;
         this.glContext = glContext;
-        programPool = new ProgramPool(shaderSrcDir);
+        this.shaderSrcDir = shaderSrcDir;
         screen = glFactory.createVertexArray();
     }
 
@@ -96,8 +94,12 @@ public class RenderGraph extends Creatable {
         }
         nodes.clear();
         stages.clear();
-        programPool.dispose();
-        texturePool.dispose();
+        for (Program program : programs.values()) {
+            for (Shader shader : program.getShaders()) {
+                shader.destroy();
+            }
+            program.destroy();
+        }
         super.destroy();
     }
 
@@ -225,98 +227,27 @@ public class RenderGraph extends Creatable {
     }
 
     public Program getProgram(String name) {
-        return programPool.get(name);
+        final Program program = programs.get(name);
+        if (program == null) {
+            return loadProgram(name);
+        }
+        return program;
     }
 
-    private class ProgramPool {
-        private final String sourceDirectory;
-        private final Map<String, Program> programs = new HashMap<>();
-
-        public ProgramPool(String sourceDirectory) {
-            this.sourceDirectory = sourceDirectory;
-        }
-
-        public Program get(String name) {
-            final Program program = programs.get(name);
-            if (program == null) {
-                return loadProgram(name);
-            }
-            return program;
-        }
-
-        public void dispose() {
-            for (Program program : programs.values()) {
-                for (Shader shader : program.getShaders()) {
-                    shader.destroy();
-                }
-                program.destroy();
-            }
-        }
-
-        private Program loadProgram(String name) {
-            final String shaderPath = sourceDirectory + "/" + name;
-            final Shader vertex = glFactory.createShader();
-            vertex.setSource(Renderer.class.getResourceAsStream(shaderPath + ".vert"));
-            vertex.create();
-            final Shader fragment = glFactory.createShader();
-            fragment.setSource(Renderer.class.getResourceAsStream(shaderPath + ".frag"));
-            fragment.create();
-            final Program program = glFactory.createProgram();
-            program.addShader(vertex);
-            program.addShader(fragment);
-            program.create();
-            programs.put(name, program);
-            return program;
-        }
-    }
-
-    private class TexturePool {
-        private final Set<Texture> textures = new HashSet<>();
-
-        private Texture get(int width, int height, InternalFormat format) {
-            return null;
-        }
-
-        private void dispose() {
-
-        }
-
-        private float checkMatch(InternalFormat desired, InternalFormat candidate) {
-            if (candidate.getComponentCount() < desired.getComponentCount()
-                    || desired.hasRed() && !candidate.hasRed()
-                    || desired.hasGreen() && !candidate.hasGreen()
-                    || desired.hasBlue() && !candidate.hasBlue()
-                    || desired.hasAlpha() && !candidate.hasAlpha()
-                    || desired.hasDepth() && !candidate.hasDepth()
-                    || desired.isFloatBased() && !candidate.isFloatBased()) {
-                return -1;
-            }
-            float match = 0;
-            if (candidate.hasRed() && !desired.hasRed()) {
-                match++;
-            }
-            if (candidate.hasGreen() && !desired.hasGreen()) {
-                match++;
-            }
-            if (candidate.hasBlue() && !desired.hasBlue()) {
-                match++;
-            }
-            if (candidate.hasAlpha() && !desired.hasAlpha()) {
-                match++;
-            }
-            if (candidate.hasDepth() && !desired.hasDepth()) {
-                match++;
-            }
-            if (candidate.isFloatBased() && !desired.isFloatBased()) {
-                match++;
-            }
-            final float byteRatio = candidate.getBytesPerComponent() / (float) desired.getBytesPerComponent();
-            if (byteRatio < 1) {
-                return -1;
-            } else {
-                return match + byteRatio - 1;
-            }
-        }
+    private Program loadProgram(String name) {
+        final String shaderPath = shaderSrcDir + "/" + name;
+        final Shader vertex = glFactory.createShader();
+        vertex.setSource(Renderer.class.getResourceAsStream(shaderPath + ".vert"));
+        vertex.create();
+        final Shader fragment = glFactory.createShader();
+        fragment.setSource(Renderer.class.getResourceAsStream(shaderPath + ".frag"));
+        fragment.create();
+        final Program program = glFactory.createProgram();
+        program.addShader(vertex);
+        program.addShader(fragment);
+        program.create();
+        programs.put(name, program);
+        return program;
     }
 
     private static class Stage implements Comparable<Stage> {
