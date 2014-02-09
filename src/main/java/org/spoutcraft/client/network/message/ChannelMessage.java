@@ -36,11 +36,6 @@ public abstract class ChannelMessage implements Message {
         this.channels = channels;
     }
 
-    @Override
-    public boolean isAsync() {
-        return true;
-    }
-
     public Channel[] getChannels() {
         return channels;
     }
