@@ -36,9 +36,13 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 import com.flowpowered.commons.ticking.TickingElement;
+import com.flowpowered.math.GenericMath;
 import com.flowpowered.math.vector.Vector3i;
 import com.flowpowered.networking.util.AnnotatedMessageHandler;
 import com.flowpowered.networking.util.AnnotatedMessageHandler.Handle;
+
+import net.royawesome.jlibnoise.NoiseQuality;
+import net.royawesome.jlibnoise.module.source.Perlin;
 
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.game.Difficulty;
@@ -86,13 +90,28 @@ public class Universe extends TickingElement {
         game.getLogger().info("Starting universe");
 
         // TEST CODE
-        final short[] chunkIDs = new short[Chunk.BLOCKS.VOLUME];
-        Arrays.fill(chunkIDs, Materials.SOLID.getID());
         final short[] chunkSubIDs = new short[Chunk.BLOCKS.VOLUME];
+        final Perlin perlin = new Perlin();
+        perlin.setFrequency(0.01);
+        perlin.setLacunarity(2);
+        perlin.setNoiseQuality(NoiseQuality.BEST);
+        perlin.setOctaveCount(8);
+        perlin.setPersistence(0.5);
         final World world = new World("test");
-        for (int xx = -2; xx < 2; xx++) {
-            for (int zz = -2; zz < 2; zz++) {
-                world.setChunk(new Chunk(world, new Vector3i(xx, 0, zz), chunkIDs, chunkSubIDs));
+        for (int cx = -2; cx < 2; cx++) {
+            for (int cz = -2; cz < 2; cz++) {
+                final short[] chunkIDs = new short[Chunk.BLOCKS.VOLUME];
+                final int wx = cx << Chunk.BLOCKS.BITS;
+                final int wz = cz << Chunk.BLOCKS.BITS;
+                for (int bx = 0; bx < Chunk.BLOCKS.SIZE; bx++) {
+                    for (int bz = 0; bz < Chunk.BLOCKS.SIZE; bz++) {
+                        final int landHeight = Math.min(Chunk.BLOCKS.SIZE, GenericMath.floor(perlin.GetValue(wx + bx, 0, wz + bz) * (Chunk.BLOCKS.SIZE / 2) + (Chunk.BLOCKS.SIZE / 2)));
+                        for (int by = 0; by < landHeight; by++) {
+                            chunkIDs[by << Chunk.BLOCKS.DOUBLE_BITS | bz << Chunk.BLOCKS.BITS | bx] = Materials.SOLID.getID();
+                        }
+                    }
+                }
+                world.setChunk(new Chunk(world, new Vector3i(cx, 0, cz), chunkIDs, chunkSubIDs));
             }
         }
         addWorld(world, true);
@@ -328,9 +347,8 @@ public class Universe extends TickingElement {
     /**
      * Decompresses the raw compressed data from the server into the provided 3D array that comprises:
      * <p/>
-     * Section        - The section of the column, ground up
-     * ChunkDataIndex - See {@link org.spoutcraft.client.universe.Universe.ChunkDataIndex}
-     * data           - decompressed data as a byte
+     * Section        - The section of the column, ground up ChunkDataIndex - See {@link org.spoutcraft.client.universe.Universe.ChunkDataIndex} data           - decompressed data as a byte
+     *
      * @param groundUpContinuous True if this is the entire column, false if not. Used to determine if biome data is included
      * @param compressedData Compressed data from the server
      * @param hasSkyLight True if the compressed data has sky light, only {@link org.spoutcraft.client.network.message.play.ChunkDataBulkMessage}s can not provide this

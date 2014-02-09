@@ -65,6 +65,7 @@ dependencies {
     compile 'com.flowpowered:flow-chat-commands:0.1.0-SNAPSHOT'
     compile 'com.flowpowered:flow-commons:0.1.0-SNAPSHOT'
     compile 'com.flowpowered:flow-networking:0.1.0-SNAPSHOT'
+    compile 'com.flowpowered:flow-noise:0.1.0-SNAPSHOT'
     compile 'com.github.wolf480pl:jline-log4j2-appender:0.0.1-SNAPSHOT'
     compile 'io.netty:netty-all:4.0.14.Final'
     compile 'junit:junit:4.8.2'
