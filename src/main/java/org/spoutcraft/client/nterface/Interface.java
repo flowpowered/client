@@ -74,7 +74,7 @@ public class Interface extends TickingElement {
     private final Renderer renderer = new Renderer();
     private final ParallelChunkMesher mesher;
     private final Map<Vector3i, ChunkModel> chunkModels = new HashMap<>();
-    private long worldLastUpdateNumber;
+    private long worldLastUpdateNumber = -1;
     private boolean lastUpdatePartial = false;
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
     private final ViewFrustum frustum = new ViewFrustum();
@@ -126,7 +126,7 @@ public class Interface extends TickingElement {
         handleInput(dt / 1000000000f);
         final WorldSnapshot world = game.getUniverse().getActiveWorldSnapshot();
         updateChunkModels(world);
-        updateLight(world.getTime());
+        updateLight(world != null ? world.getTime() : 0);
         renderer.render();
         updateSnapshots();
     }
@@ -167,14 +167,15 @@ public class Interface extends TickingElement {
             }
             chunkModels.clear();
             chunkLastUpdateNumbers.clear();
-            worldLastUpdateNumber = 0;
+            worldLastUpdateNumber = -1;
             lastUpdatePartial = false;
             return;
         }
         // Else get the chunks
         final Map<Vector3i, ChunkSnapshot> chunks = world.getChunks();
         // If the snapshot hasn't updated yet, there's probably nothing to do
-        if (world.getUpdateNumber() <= worldLastUpdateNumber) {
+        final long updateNumber = world.getUpdateNumber();
+        if (updateNumber <= worldLastUpdateNumber) {
             if (lastUpdatePartial) {
                 // But if the last update was partial, there might still be work to do though
                 updateExistingChunkModels(chunks);
@@ -198,7 +199,7 @@ public class Interface extends TickingElement {
         // Update the existing chunk models to match the world
         updateExistingChunkModels(chunks);
         // Update the world update number
-        worldLastUpdateNumber = world.getUpdateNumber();
+        worldLastUpdateNumber = updateNumber;
         // Safety precautions
         if (renderer.getRenderModelsNode().getModels().size() > chunkModels.size()) {
             game.getLogger().warn("There are more models in the renderer (" + renderer.getRenderModelsNode().getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
