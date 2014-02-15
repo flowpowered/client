@@ -67,7 +67,6 @@ public class Interface extends TickingElement {
     private static final float PI = (float) TrigMath.PI;
     private static final float TWO_PI = 2 * PI;
     private static final float LIGHT_ANGLE_LIMIT = PI / 64;
-    private static final Vector3f SHADOWED_CHUNKS = new Vector3f(Chunk.BLOCKS.SIZE * 4, 64, Chunk.BLOCKS.SIZE * 4);
     private static final Vector3f[] CHUNK_VERTICES;
     private static final float MOUSE_SENSITIVITY = 0.08f;
     private final Game game;
@@ -153,8 +152,7 @@ public class Interface extends TickingElement {
         }
         lightAngle = lightAngle / PI * (PI - 2 * LIGHT_ANGLE_LIMIT) + LIGHT_ANGLE_LIMIT;
         final Vector3f direction = new Vector3f(0, -Math.sin(lightAngle), -Math.cos(lightAngle));
-        final Vector3f position = renderer.getRenderModelsNode().getCamera().getPosition();
-        renderer.updateLight(direction, new Vector3f(position.getX(), 0, position.getZ()), SHADOWED_CHUNKS);
+        renderer.updateLight(direction, frustum);
         // TODO: lower light intensity at night
     }
 
@@ -213,7 +211,7 @@ public class Interface extends TickingElement {
             // If the chunk model is out of date
             if (newChunk.getUpdateNumber() > chunkLastUpdateNumbers.get(newChunk.getPosition())) {
                 // If it's not visible, skip it, and mark that we skipped at least one chunk
-                if (!isChunkVisible(newChunk.getPosition())) {
+                if (!isChunkVisible(newChunk.getPosition().mul(16))) {
                     skippedChunk = true;
                     continue;
                 }
@@ -364,7 +362,6 @@ public class Interface extends TickingElement {
      * @return Whether or not the chunk is visible
      */
     public boolean isChunkVisible(Vector3f position) {
-
         return frustum.intersectsCuboid(CHUNK_VERTICES, position);
     }
 }

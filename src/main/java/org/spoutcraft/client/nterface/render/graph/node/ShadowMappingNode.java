@@ -27,6 +27,9 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Random;
 
+import com.flowpowered.commons.ViewFrustum;
+import com.flowpowered.math.imaginary.Quaternionf;
+import com.flowpowered.math.matrix.Matrix3f;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector2i;
@@ -233,6 +236,50 @@ public class ShadowMappingNode extends GraphNode {
         }
     }
 
+    /**
+     * Updates the light direction and camera bounds to ensure that shadows are casted inside the frustum.
+     *
+     * @param direction The light direction
+     * @param frustum The frustum in which to cast shadows
+     */
+    public void updateLight(Vector3f direction, ViewFrustum frustum) {
+        // Set the direction uniform
+        direction = direction.normalize();
+        setLightDirection(direction);
+        // Calculate the camera rotation from the direction and set
+        final Quaternionf rotation = Quaternionf.fromRotationTo(Vector3f.FORWARD.negate(), direction);
+        // Calculate the transformation from the camera bounds rotation to the identity rotation (its axis aligned space)
+        final Matrix3f axisAlignTransform = Matrix3f.createRotation(rotation).invert();
+        // Calculate the points of the box to completely include inside the camera bounds
+        // Transform those points to the axis aligned space of the camera bounds
+        Vector3f position = frustum.getPosition();
+        final Vector3f[] vertices = frustum.getVertices();
+        final Vector3f p0 = axisAlignTransform.transform(vertices[0].sub(position));
+        final Vector3f p1 = axisAlignTransform.transform(vertices[1].sub(position));
+        final Vector3f p2 = axisAlignTransform.transform(vertices[2].sub(position));
+        final Vector3f p3 = axisAlignTransform.transform(vertices[3].sub(position));
+        final Vector3f p4 = axisAlignTransform.transform(vertices[4].sub(position));
+        final Vector3f p5 = axisAlignTransform.transform(vertices[5].sub(position));
+        final Vector3f p6 = axisAlignTransform.transform(vertices[6].sub(position));
+        final Vector3f p7 = axisAlignTransform.transform(vertices[7].sub(position));
+        // Calculate the new camera bounds so that the box is fully included in those bounds
+        final Vector3f low = p0.min(p1).min(p2).min(p3)
+                .min(p4).min(p5).min(p6).min(p7);
+        final Vector3f high = p0.max(p1).max(p2).max(p3)
+                .max(p4).max(p5).max(p6).max(p7);
+        // Calculate the size of the new camera bounds
+        final Vector3f size = high.sub(low).div(2);
+        final Vector3f mid = low.add(size);
+        // Compute the camera position
+        position = Matrix3f.createRotation(rotation).transform(mid).add(position);
+        // Update the camera position
+        camera.setPosition(position);
+        // Update the camera rotation
+        camera.setRotation(rotation);
+        // Update the camera size
+        camera.setProjection(Matrix4f.createOrthographic(size.getX(), -size.getX(), size.getY(), -size.getY(), -size.getZ(), size.getZ()));
+    }
+
     @Input("normals")
     public void setNormalsInput(Texture texture) {
         texture.checkCreated();
@@ -243,6 +290,11 @@ public class ShadowMappingNode extends GraphNode {
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         depthsInput = texture;
+    }
+
+    @Output("lightDepths")
+    public Texture getLightDepthsTexture() {
+        return lightDepthsTexture;
     }
 
     @Output("shadows")

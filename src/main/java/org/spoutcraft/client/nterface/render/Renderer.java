@@ -36,8 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import com.flowpowered.commons.TPSMonitor;
-import com.flowpowered.math.imaginary.Quaternionf;
-import com.flowpowered.math.matrix.Matrix3f;
+import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector2i;
@@ -148,7 +147,7 @@ public class Renderer {
         graph.setWindowSize(windowSize);
         graph.setFieldOfView(60);
         graph.setNearPlane(0.1f);
-        graph.setFarPlane(1000);
+        graph.setFarPlane(100);
         graph.create();
         final int blurSize = 3;
         // Render models
@@ -248,7 +247,20 @@ public class Renderer {
         model2.setPosition(new Vector3f(0, 22, 6));
         model2.getUniforms().add(new ColorUniform("modelColor", new Color(0, 0, 1, 0.7)));
         addTransparentModel(model2);
+
+        /*final VertexArray cuboid = glFactory.createVertexArray();
+        cuboid.setData(MeshGenerator.generateWireCuboid(null, Vector3f.ONE));
+        cuboid.setDrawingMode(DrawingMode.LINES);
+        cuboid.create();
+        final Model model3 = new Model(cuboid, solidMaterial);
+        model3.getUniforms().add(new FloatUniform("diffuseIntensity", 0));
+        model3.getUniforms().add(new FloatUniform("specularIntensity", 0));
+        model3.getUniforms().add(new FloatUniform("ambientIntensity", 1));
+        model3.getUniforms().add(new FloatUniform("shininess", 0));
+        addSolidModel(model3);
+        this.cuboid = model3;*/
     }
+    //private Model cuboid;
 
     private void addFPSMonitor() {
         final Font ubuntu;
@@ -370,54 +382,16 @@ public class Renderer {
     }
 
     /**
-     * Updates the light direction and camera bounds to ensure that shadows are casted inside the cuboid defined by size.
+     * Updates the light direction and camera bounds to ensure that shadows are casted inside the frustum.
      *
      * @param direction The light direction
-     * @param position The light camera position
-     * @param size The size of the cuboid that must have shadows
+     * @param frustum The frustum in which to cast shadows
      */
-    public void updateLight(Vector3f direction, Vector3f position, Vector3f size) {
-        // Set the direction uniform
+    public void updateLight(Vector3f direction, ViewFrustum frustum) {
         direction = direction.normalize();
         lightDirectionUniform.set(direction);
-        shadowMappingNode.setLightDirection(direction);
+        shadowMappingNode.updateLight(direction, frustum);
         lightingNode.setLightDirection(direction);
-        // Set the camera position
-        final Camera camera = shadowMappingNode.getCamera();
-        camera.setPosition(position);
-        // Calculate the camera rotation from the direction and set
-        final Quaternionf rotation = Quaternionf.fromRotationTo(Vector3f.FORWARD.negate(), direction);
-        camera.setRotation(rotation);
-        // Calculate the transformation from the camera bounds rotation to the identity rotation (its axis aligned space)
-        final Matrix3f axisAlignTransform = Matrix3f.createRotation(rotation).invert();
-        // Calculate the points of the box to completely include inside the camera bounds
-        size = size.div(2);
-        Vector3f p6 = size;
-        Vector3f p0 = p6.negate();
-        Vector3f p7 = new Vector3f(-size.getX(), size.getY(), size.getZ());
-        Vector3f p1 = p7.negate();
-        Vector3f p4 = new Vector3f(-size.getX(), size.getY(), -size.getZ());
-        Vector3f p2 = p4.negate();
-        Vector3f p5 = new Vector3f(size.getX(), size.getY(), -size.getZ());
-        Vector3f p3 = p5.negate();
-        // Transform those points to the axis aligned space of the camera bounds
-        p0 = axisAlignTransform.transform(p0);
-        p1 = axisAlignTransform.transform(p1);
-        p2 = axisAlignTransform.transform(p2);
-        p3 = axisAlignTransform.transform(p3);
-        p4 = axisAlignTransform.transform(p4);
-        p5 = axisAlignTransform.transform(p5);
-        p6 = axisAlignTransform.transform(p6);
-        p7 = axisAlignTransform.transform(p7);
-        // Calculate the new camera bounds so that the box is fully included in those bounds
-        final Vector3f low = p0.min(p1).min(p2).min(p3)
-                .min(p4).min(p5).min(p6).min(p7);
-        final Vector3f high = p0.max(p1).max(p2).max(p3)
-                .max(p4).max(p5).max(p6).max(p7);
-        // Calculate the size of the new camera bounds
-        size = high.sub(low).div(2);
-        // Update the camera to the new bounds
-        camera.setProjection(Matrix4f.createOrthographic(size.getX(), -size.getX(), size.getY(), -size.getY(), -size.getZ(), size.getZ()));
     }
 
     /**
