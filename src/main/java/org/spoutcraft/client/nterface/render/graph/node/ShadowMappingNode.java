@@ -25,6 +25,7 @@ package org.spoutcraft.client.nterface.render.graph.node;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Random;
 
 import com.flowpowered.commons.ViewFrustum;
@@ -35,6 +36,7 @@ import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3f;
 
+import org.spout.renderer.api.Action;
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
@@ -46,9 +48,11 @@ import org.spout.renderer.api.data.Uniform.Vector2ArrayUniform;
 import org.spout.renderer.api.data.Uniform.Vector2Uniform;
 import org.spout.renderer.api.data.Uniform.Vector3Uniform;
 import org.spout.renderer.api.data.UniformHolder;
+import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
 import org.spout.renderer.api.gl.GLFactory;
+import org.spout.renderer.api.gl.Program;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.CompareMode;
 import org.spout.renderer.api.gl.Texture.FilterMode;
@@ -61,21 +65,20 @@ import org.spout.renderer.api.util.Rectangle;
 
 import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
-// TODO: cascaded shadow maps, render models for light depths using the basic shader
 public class ShadowMappingNode extends GraphNode {
-    private final Material material;
+    protected final Material material;
     private final Texture lightDepthsTexture;
-    private final Texture noiseTexture;
-    private final FrameBuffer depthFrameBuffer;
-    private final FrameBuffer frameBuffer;
+    protected final Texture noiseTexture;
+    protected final FrameBuffer depthFrameBuffer;
+    protected final FrameBuffer frameBuffer;
     private final Texture shadowsOutput;
     private Texture normalsInput;
     private Texture depthsInput;
     private final Matrix4Uniform inverseViewMatrixUniform = new Matrix4Uniform("inverseViewMatrix", new Matrix4f());
     private final Matrix4Uniform lightViewMatrixUniform = new Matrix4Uniform("lightViewMatrix", new Matrix4f());
     private final Matrix4Uniform lightProjectionMatrixUniform = new Matrix4Uniform("lightProjectionMatrix", new Matrix4f());
-    private final Camera camera = Camera.createOrthographic(50, -50, 50, -50, -50, 50);
-    private Vector2i shadowMapSize = new Vector2i(2048, 2048);
+    protected final Camera camera = Camera.createOrthographic(50, -50, 50, -50, -50, 50);
+    protected Vector2i shadowMapSize = new Vector2i(1024, 1024);
     private Pipeline pipeline;
     private final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.UP.negate());
     private final IntUniform kernelSizeUniform = new IntUniform("kernelSize", 0);
@@ -85,13 +88,15 @@ public class ShadowMappingNode extends GraphNode {
     private final FloatUniform radiusUniform = new FloatUniform("radius", 0.0004f);
 
     public ShadowMappingNode(RenderGraph graph, String name) {
+        this(graph, name, "shadow");
+    }
+
+    protected ShadowMappingNode(RenderGraph graph, String name, String program) {
         super(graph, name);
-        material = new Material(graph.getProgram("shadow"));
+        material = new Material(graph.getProgram(program));
         final GLFactory glFactory = graph.getGLFactory();
         lightDepthsTexture = glFactory.createTexture();
         noiseTexture = glFactory.createTexture();
-        noiseTexture.setFormat(Format.RG);
-        noiseTexture.setInternalFormat(InternalFormat.RG8);
         depthFrameBuffer = glFactory.createFrameBuffer();
         frameBuffer = glFactory.createFrameBuffer();
         shadowsOutput = glFactory.createTexture();
@@ -103,6 +108,8 @@ public class ShadowMappingNode extends GraphNode {
             throw new IllegalStateException("Shadow mapping stage has already been created");
         }
         // Create the noise texture
+        noiseTexture.setFormat(Format.RG);
+        noiseTexture.setInternalFormat(InternalFormat.RG8);
         noiseTexture.create();
         // Create the shadows texture
         shadowsOutput.setFormat(Format.RED);
@@ -111,7 +118,7 @@ public class ShadowMappingNode extends GraphNode {
         shadowsOutput.create();
         // Create the depth texture
         lightDepthsTexture.setFormat(Format.DEPTH);
-        lightDepthsTexture.setInternalFormat(InternalFormat.DEPTH_COMPONENT32);
+        lightDepthsTexture.setInternalFormat(InternalFormat.DEPTH_COMPONENT16);
         lightDepthsTexture.setWrapS(WrapMode.CLAMP_TO_BORDER);
         lightDepthsTexture.setWrapT(WrapMode.CLAMP_TO_BORDER);
         lightDepthsTexture.setMagFilter(FilterMode.LINEAR);
@@ -146,12 +153,17 @@ public class ShadowMappingNode extends GraphNode {
         frameBuffer.attach(AttachmentPoint.COLOR0, shadowsOutput);
         frameBuffer.create();
         // Create the pipeline
-        final RenderModelsNode renderModelsNode = (RenderModelsNode) graph.getNode("models");
-        pipeline = new PipelineBuilder().useViewPort(new Rectangle(Vector2f.ZERO, shadowMapSize.toFloat())).useCamera(camera).bindFrameBuffer(depthFrameBuffer).clearBuffer()
-                .renderModels(renderModelsNode.getModels()).useViewPort(new Rectangle(Vector2f.ZERO, graph.getWindowSize().toFloat())).useCamera(renderModelsNode.getCamera())
-                .bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
+        pipeline = createPipeline(model);
         // Update state to created
         super.create();
+    }
+
+    protected Pipeline createPipeline(Model model) {
+        final RenderModelsNode renderModelsNode = (RenderModelsNode) graph.getNode("models");
+        return new PipelineBuilder().useViewPort(new Rectangle(Vector2f.ZERO, shadowMapSize.toFloat()))
+                .useCamera(camera).bindFrameBuffer(depthFrameBuffer).clearBuffer().doAction(new RenderShadowModelsAction(renderModelsNode.getModels()))
+                .useViewPort(new Rectangle(Vector2f.ZERO, graph.getWindowSize().toFloat())).useCamera(renderModelsNode.getCamera())
+                .bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
     }
 
     @Override
@@ -292,17 +304,36 @@ public class ShadowMappingNode extends GraphNode {
         depthsInput = texture;
     }
 
-    @Output("lightDepths")
-    public Texture getLightDepthsTexture() {
-        return lightDepthsTexture;
-    }
-
     @Output("shadows")
     public Texture getShadowsOutput() {
         return shadowsOutput;
     }
 
-    public Camera getCamera() {
-        return camera;
+    protected class RenderShadowModelsAction extends Action {
+        private final Material material;
+        private final Collection<Model> models;
+
+        protected RenderShadowModelsAction(Collection<Model> models) {
+            this.material = new Material(graph.getProgram("basic"));
+            this.models = models;
+        }
+
+        @Override
+        public void execute(Context context) {
+            final Program program = material.getProgram();
+            // Bind the material
+            material.bind();
+            // Upload the camera matrices
+            final Camera camera = context.getCamera();
+            program.setUniform("projectionMatrix", camera.getProjectionMatrix());
+            program.setUniform("viewMatrix", camera.getViewMatrix());
+            for (Model model : models) {
+                // Upload the model and normal matrices
+                program.setUniform("modelMatrix", model.getMatrix());
+                program.setUniform("normalMatrix", camera.getViewMatrix().mul(model.getMatrix()).invert().transpose());
+                // Render the model
+                model.render();
+            }
+        }
     }
 }

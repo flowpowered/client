@@ -70,8 +70,6 @@ public class SSAONode extends GraphNode {
         material = new Material(graph.getProgram("ssao"));
         final GLFactory glFactory = graph.getGLFactory();
         noiseTexture = glFactory.createTexture();
-        noiseTexture.setFormat(Format.RGB);
-        noiseTexture.setInternalFormat(InternalFormat.RGB8);
         frameBuffer = glFactory.createFrameBuffer();
         occlusionsOutput = glFactory.createTexture();
     }
@@ -82,6 +80,8 @@ public class SSAONode extends GraphNode {
             throw new IllegalStateException("SSAO stage has already been created");
         }
         // Create the noise texture
+        noiseTexture.setFormat(Format.RGB);
+        noiseTexture.setInternalFormat(InternalFormat.RGB8);
         noiseTexture.create();
         // Create the occlusions texture
         occlusionsOutput.setFormat(Format.RED);
@@ -128,6 +128,7 @@ public class SSAONode extends GraphNode {
         pipeline.run(graph.getContext());
     }
 
+    // TODO: we can't have 2 arguments here
     @Setting
     public void setKernelSize(int kernelSize, float threshold) {
         // Generate the kernel

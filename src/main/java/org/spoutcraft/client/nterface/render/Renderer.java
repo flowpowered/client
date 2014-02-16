@@ -68,6 +68,7 @@ import org.spout.renderer.lwjgl.LWJGLUtil;
 import org.spoutcraft.client.nterface.Interface;
 import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 import org.spoutcraft.client.nterface.render.graph.node.BlurNode;
+import org.spoutcraft.client.nterface.render.graph.node.CascadedShadowMappingNode;
 import org.spoutcraft.client.nterface.render.graph.node.LightingNode;
 import org.spoutcraft.client.nterface.render.graph.node.RenderGUINode;
 import org.spoutcraft.client.nterface.render.graph.node.RenderModelsNode;
@@ -147,28 +148,28 @@ public class Renderer {
         graph.setWindowSize(windowSize);
         graph.setFieldOfView(60);
         graph.setNearPlane(0.1f);
-        graph.setFarPlane(100);
+        graph.setFarPlane(200);
         graph.create();
-        final int blurSize = 3;
+        final int blurSize = 2;
         // Render models
         renderModelsNode = new RenderModelsNode(graph, "models");
         renderModelsNode.create();
         graph.addNode(renderModelsNode);
         // Shadows
-        shadowMappingNode = new ShadowMappingNode(graph, "shadows");
+        shadowMappingNode = new CascadedShadowMappingNode(graph, "shadows");
         shadowMappingNode.connect("normals", "vertexNormals", renderModelsNode);
         shadowMappingNode.connect("depths", "depths", renderModelsNode);
-        shadowMappingNode.setShadowMapSize(new Vector2i(2048, 2048));
+        shadowMappingNode.setShadowMapSize(new Vector2i(1048, 1048));
         shadowMappingNode.setKernelSize(8);
         shadowMappingNode.setNoiseSize(blurSize);
         shadowMappingNode.setBias(0.005f);
-        shadowMappingNode.setRadius(0.0004f);
+        shadowMappingNode.setRadius(0.05f);
         shadowMappingNode.create();
         graph.addNode(shadowMappingNode);
         // Blur shadows
         final BlurNode blurShadowsNode = new BlurNode(graph, "blurShadows");
         blurShadowsNode.connect("colors", "shadows", shadowMappingNode);
-        blurShadowsNode.setKernelSize(blurSize + 2);
+        blurShadowsNode.setKernelSize(blurSize + 1);
         blurShadowsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
         blurShadowsNode.create();
         graph.addNode(blurShadowsNode);
@@ -185,7 +186,7 @@ public class Renderer {
         // Blur occlusions
         final BlurNode blurOcclusionsNode = new BlurNode(graph, "blurOcclusions");
         blurOcclusionsNode.connect("colors", "occlusions", ssaoNode);
-        blurOcclusionsNode.setKernelSize(blurSize + 2);
+        blurOcclusionsNode.setKernelSize(blurSize + 1);
         blurOcclusionsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
         blurOcclusionsNode.create();
         graph.addNode(blurOcclusionsNode);
@@ -247,20 +248,7 @@ public class Renderer {
         model2.setPosition(new Vector3f(0, 22, 6));
         model2.getUniforms().add(new ColorUniform("modelColor", new Color(0, 0, 1, 0.7)));
         addTransparentModel(model2);
-
-        /*final VertexArray cuboid = glFactory.createVertexArray();
-        cuboid.setData(MeshGenerator.generateWireCuboid(null, Vector3f.ONE));
-        cuboid.setDrawingMode(DrawingMode.LINES);
-        cuboid.create();
-        final Model model3 = new Model(cuboid, solidMaterial);
-        model3.getUniforms().add(new FloatUniform("diffuseIntensity", 0));
-        model3.getUniforms().add(new FloatUniform("specularIntensity", 0));
-        model3.getUniforms().add(new FloatUniform("ambientIntensity", 1));
-        model3.getUniforms().add(new FloatUniform("shininess", 0));
-        addSolidModel(model3);
-        this.cuboid = model3;*/
     }
-    //private Model cuboid;
 
     private void addFPSMonitor() {
         final Font ubuntu;

@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -92,14 +91,15 @@ public class Universe extends TickingElement {
         // TEST CODE
         final short[] chunkSubIDs = new short[Chunk.BLOCKS.VOLUME];
         final Perlin perlin = new Perlin();
+        perlin.setSeed((int) (System.nanoTime() & System.nanoTime() >> 32));
         perlin.setFrequency(0.01);
         perlin.setLacunarity(2);
         perlin.setNoiseQuality(NoiseQuality.BEST);
         perlin.setOctaveCount(8);
         perlin.setPersistence(0.5);
         final World world = new World("test");
-        for (int cx = -2; cx < 2; cx++) {
-            for (int cz = -2; cz < 2; cz++) {
+        for (int cx = -4; cx < 4; cx++) {
+            for (int cz = -4; cz < 4; cz++) {
                 final short[] chunkIDs = new short[Chunk.BLOCKS.VOLUME];
                 final int wx = cx << Chunk.BLOCKS.BITS;
                 final int wz = cz << Chunk.BLOCKS.BITS;
@@ -126,23 +126,6 @@ public class Universe extends TickingElement {
         while (messages.hasNext()) {
             messageHandler.handle(messages.next());
             messages.remove();
-        }
-
-        // TEST CODE
-        final Random random = new Random();
-        if (random.nextInt(20) == 0) {
-            final World world = activeWorld.get();
-            int x = random.nextInt(64) - 32;
-            int z = random.nextInt(64) - 32;
-            final Chunk chunk = world.getChunk(x >> Chunk.BLOCKS.BITS, 0, z >> Chunk.BLOCKS.BITS);
-            if (chunk != null) {
-                for (int y = 15; y >= 0; y--) {
-                    if (chunk.getMaterial(x, y, z) != Materials.AIR) {
-                        chunk.setMaterial(x, y, z, Materials.AIR);
-                        break;
-                    }
-                }
-            }
         }
 
         updateWorldTimes(dt);
