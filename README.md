@@ -18,7 +18,7 @@ __For [IntelliJ]__
 ## Building
 __Note:__ If you do not have [Gradle] installed you can use the gradlew files included with the project in place of 'gradle' in the following command(s). If you are using Git Bash, Unix or OS X then use './gradlew'. If you are using Windows then use 'gradlew.bat'.
 
-In order to build Client you simply need to run the `gradle` command. You can find the compiled JAR file in `~/build/distributions`.
+In order to build Client, simply run the `gradle` command. You can find the compiled JAR file in `~/build/distributions`.
 
 ## Contributing
 Are you a talented programmer looking to contribute some code? We'd love the help!
@@ -27,7 +27,7 @@ Are you a talented programmer looking to contribute some code? We'd love the hel
 * For help setting up the project, keep reading!
 
 ## Running
-After building Client, you can simply double-click `client-x.x.x-SNAPSHOT.jar` in `~/build/libs`.
+After building Client, simply double-click `client-x.x.x-SNAPSHOT.jar` in `~/build/distributions`.
 
 [Gradle]: http://www.gradle.org/
 [Eclipse]: http://www.eclipse.org/
