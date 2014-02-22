@@ -88,14 +88,13 @@ public class RenderTransparentModelsNode extends GraphNode {
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
         // Create the weighted sum frame buffer
+        weightedSumFrameBuffer.create();
         weightedSumFrameBuffer.attach(AttachmentPoint.COLOR0, weightedColors);
         weightedSumFrameBuffer.attach(AttachmentPoint.COLOR1, layerCounts);
         weightedSumFrameBuffer.attach(AttachmentPoint.DEPTH, depthsInput);
-        weightedSumFrameBuffer.create();
         // Create the frame buffer
-        frameBuffer.attach(AttachmentPoint.COLOR0, colorsInput);
-        //frameBuffer.attach(AttachmentPoint.COLOR1, velocitiesInput);
         frameBuffer.create();
+        frameBuffer.attach(AttachmentPoint.COLOR0, colorsInput);
         // Create the pipeline
         pipeline = new PipelineBuilder().disableDepthMask().disableCapabilities(Capability.CULL_FACE).enableCapabilities(Capability.BLEND)
                 .setBlendingFunctions(BlendFunction.GL_ONE, BlendFunction.GL_ONE).bindFrameBuffer(weightedSumFrameBuffer).clearBuffer().renderModels(models)

@@ -105,12 +105,16 @@ public class RenderModelsNode extends GraphNode {
         materialsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         materialsOutput.create();
         // Create the frame buffer
+        frameBuffer.create();
         frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         frameBuffer.attach(AttachmentPoint.COLOR1, normalsOutput);
         frameBuffer.attach(AttachmentPoint.COLOR2, vertexNormalsOutput);
         frameBuffer.attach(AttachmentPoint.COLOR3, materialsOutput);
         frameBuffer.attach(AttachmentPoint.DEPTH, depthsOutput);
-        frameBuffer.create();
+        frameBuffer.detach(AttachmentPoint.DEPTH);
+        System.out.println(frameBuffer.isComplete());
+        frameBuffer.attach(AttachmentPoint.DEPTH, depthsOutput);
+        System.out.println(frameBuffer.isComplete());
         // Create the pipeline
         pipeline = new PipelineBuilder().useCamera(camera).bindFrameBuffer(frameBuffer).clearBuffer().renderModels(models).unbindFrameBuffer(frameBuffer).build();
         // Update the state to created

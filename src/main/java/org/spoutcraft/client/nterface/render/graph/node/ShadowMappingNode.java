@@ -147,11 +147,11 @@ public class ShadowMappingNode extends GraphNode {
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
         // Create the depth frame buffer
-        depthFrameBuffer.attach(AttachmentPoint.DEPTH, lightDepthsTexture);
         depthFrameBuffer.create();
+        depthFrameBuffer.attach(AttachmentPoint.DEPTH, lightDepthsTexture);
         // Create the frame buffer
-        frameBuffer.attach(AttachmentPoint.COLOR0, shadowsOutput);
         frameBuffer.create();
+        frameBuffer.attach(AttachmentPoint.COLOR0, shadowsOutput);
         // Create the pipeline
         pipeline = createPipeline(model);
         // Update state to created
@@ -160,9 +160,9 @@ public class ShadowMappingNode extends GraphNode {
 
     protected Pipeline createPipeline(Model model) {
         final RenderModelsNode renderModelsNode = (RenderModelsNode) graph.getNode("models");
-        return new PipelineBuilder().useViewPort(new Rectangle(Vector2f.ZERO, shadowMapSize.toFloat()))
+        return new PipelineBuilder().useViewPort(new Rectangle(Vector2i.ZERO, shadowMapSize))
                 .useCamera(camera).bindFrameBuffer(depthFrameBuffer).clearBuffer().doAction(new RenderShadowModelsAction(renderModelsNode.getModels()))
-                .useViewPort(new Rectangle(Vector2f.ZERO, graph.getWindowSize().toFloat())).useCamera(renderModelsNode.getCamera())
+                .useViewPort(new Rectangle(Vector2i.ZERO, graph.getWindowSize())).useCamera(renderModelsNode.getCamera())
                 .bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
     }
 

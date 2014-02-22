@@ -38,7 +38,6 @@ import java.util.Calendar;
 import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.math.matrix.Matrix4f;
-import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3f;
 
@@ -128,7 +127,7 @@ public class Renderer {
     private void initContext() {
         context = glFactory.createContext();
         context.setWindowTitle(WINDOW_TITLE);
-        context.setWindowSize(windowSize.toFloat());
+        context.setWindowSize(windowSize);
         context.create();
         context.setClearColor(new Color(0, 0, 0, 0));
         if (cullBackFaces) {
@@ -409,7 +408,7 @@ public class Renderer {
      * @param outputDir The directory in which to output the file
      */
     public void saveScreenshot(File outputDir) {
-        final ByteBuffer buffer = context.readCurrentFrame(new Rectangle(Vector2f.ZERO, windowSize.toFloat()), Format.RGB);
+        final ByteBuffer buffer = context.readCurrentFrame(new Rectangle(Vector2i.ZERO, windowSize), Format.RGB);
         final int width = context.getWindowWidth();
         final int height = context.getWindowHeight();
         final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);

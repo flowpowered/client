@@ -105,8 +105,8 @@ public class SSAONode extends GraphNode {
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
         // Create the frame buffer
-        frameBuffer.attach(AttachmentPoint.COLOR0, occlusionsOutput);
         frameBuffer.create();
+        frameBuffer.attach(AttachmentPoint.COLOR0, occlusionsOutput);
         // Create the pipeline
         pipeline = new PipelineBuilder().bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
         // Update state to created

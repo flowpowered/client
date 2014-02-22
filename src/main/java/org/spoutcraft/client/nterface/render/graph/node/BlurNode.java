@@ -137,11 +137,11 @@ public class BlurNode extends GraphNode {
         // Create the vertical screen model
         final Model verticalModel = new Model(graph.getScreen(), verticalMaterial);
         // Create the frame buffer
-        horizontalFrameBuffer.attach(AttachmentPoint.COLOR0, intermediateTexture);
         horizontalFrameBuffer.create();
+        horizontalFrameBuffer.attach(AttachmentPoint.COLOR0, intermediateTexture);
         // Create the vertical frame buffer
-        verticalFrameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         verticalFrameBuffer.create();
+        verticalFrameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         // Create the pipeline
         pipeline = new PipelineBuilder().bindFrameBuffer(horizontalFrameBuffer).renderModels(Arrays.asList(horizontalModel)).bindFrameBuffer(verticalFrameBuffer)
                 .renderModels(Arrays.asList(verticalModel)).unbindFrameBuffer(verticalFrameBuffer).build();

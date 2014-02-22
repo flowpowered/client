@@ -31,6 +31,7 @@ import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.matrix.Matrix3f;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3f;
 
 import org.spout.renderer.api.Camera;
@@ -113,22 +114,22 @@ public class CascadedShadowMappingNode extends ShadowMappingNode {
         uniforms.add(lightProjectionMatrixUniform3);
         uniforms.add(slicesUniform);
         // Create the second depth frame buffer
-        depthFrameBuffer2.attach(AttachmentPoint.DEPTH, lightDepthsTexture2);
         depthFrameBuffer2.create();
+        depthFrameBuffer2.attach(AttachmentPoint.DEPTH, lightDepthsTexture2);
         // Create the third depth frame buffer
-        depthFrameBuffer3.attach(AttachmentPoint.DEPTH, lightDepthsTexture3);
         depthFrameBuffer3.create();
+        depthFrameBuffer3.attach(AttachmentPoint.DEPTH, lightDepthsTexture3);
     }
 
     @Override
     protected Pipeline createPipeline(Model model) {
         final RenderModelsNode renderModelsNode = (RenderModelsNode) graph.getNode("models");
         final List<Model> models = renderModelsNode.getModels();
-        return new PipelineBuilder().useViewPort(new Rectangle(Vector2f.ZERO, shadowMapSize.toFloat()))
+        return new PipelineBuilder().useViewPort(new Rectangle(Vector2i.ZERO, shadowMapSize))
                 .useCamera(camera).bindFrameBuffer(depthFrameBuffer).clearBuffer().doAction(new RenderShadowModelsAction(models))
                 .useCamera(camera2).bindFrameBuffer(depthFrameBuffer2).clearBuffer().doAction(new RenderShadowModelsAction(models))
                 .useCamera(camera3).bindFrameBuffer(depthFrameBuffer3).clearBuffer().doAction(new RenderShadowModelsAction(models))
-                .useViewPort(new Rectangle(Vector2f.ZERO, graph.getWindowSize().toFloat())).useCamera(renderModelsNode.getCamera())
+                .useViewPort(new Rectangle(Vector2i.ZERO, graph.getWindowSize())).useCamera(renderModelsNode.getCamera())
                 .bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
     }
 
