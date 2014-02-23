@@ -70,40 +70,34 @@ public class RenderModelsNode extends GraphNode {
 
     @Override
     public void create() {
-        if (isCreated()) {
-            throw new IllegalStateException("Render models stage has already been created");
-        }
+        checkNotCreated();
         // Create the colors texture
-        colorsOutput.setFormat(Format.RGBA);
-        colorsOutput.setInternalFormat(InternalFormat.RGBA8);
-        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
-        colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        colorsOutput.setMagFilter(FilterMode.LINEAR);
-        colorsOutput.setMinFilter(FilterMode.LINEAR);
         colorsOutput.create();
+        colorsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        colorsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
+        colorsOutput.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the normals texture
-        normalsOutput.setFormat(Format.RGBA);
-        normalsOutput.setInternalFormat(InternalFormat.RGBA8);
-        normalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         normalsOutput.create();
-        // Create the detphs texture
-        depthsOutput.setFormat(Format.DEPTH);
-        depthsOutput.setInternalFormat(InternalFormat.DEPTH_COMPONENT32);
-        depthsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
-        depthsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        depthsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
+        normalsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        normalsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        normalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
+        // Create the depths texture
         depthsOutput.create();
+        depthsOutput.setFormat(Format.DEPTH, InternalFormat.DEPTH_COMPONENT32);
+        depthsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        depthsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
+        depthsOutput.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the vertex normals texture
-        vertexNormalsOutput.setFormat(Format.RGBA);
-        vertexNormalsOutput.setInternalFormat(InternalFormat.RGBA8);
-        vertexNormalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         vertexNormalsOutput.create();
+        vertexNormalsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        vertexNormalsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        vertexNormalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the materials texture
-        materialsOutput.setFormat(Format.RGBA);
-        materialsOutput.setInternalFormat(InternalFormat.RGBA8);
-        materialsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         materialsOutput.create();
+        materialsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        materialsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        materialsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the frame buffer
         frameBuffer.create();
         frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
@@ -111,10 +105,6 @@ public class RenderModelsNode extends GraphNode {
         frameBuffer.attach(AttachmentPoint.COLOR2, vertexNormalsOutput);
         frameBuffer.attach(AttachmentPoint.COLOR3, materialsOutput);
         frameBuffer.attach(AttachmentPoint.DEPTH, depthsOutput);
-        frameBuffer.detach(AttachmentPoint.DEPTH);
-        System.out.println(frameBuffer.isComplete());
-        frameBuffer.attach(AttachmentPoint.DEPTH, depthsOutput);
-        System.out.println(frameBuffer.isComplete());
         // Create the pipeline
         pipeline = new PipelineBuilder().useCamera(camera).bindFrameBuffer(frameBuffer).clearBuffer().renderModels(models).unbindFrameBuffer(frameBuffer).build();
         // Update the state to created

@@ -78,31 +78,23 @@ public class CascadedShadowMappingNode extends ShadowMappingNode {
 
     @Override
     public void create() {
-        if (isCreated()) {
-            throw new IllegalStateException("Shadow mapping stage has already been created");
-        }
+        checkNotCreated();
         // Let the super class create the basis
         super.create();
         // Create second light depth texture
-        lightDepthsTexture2.setFormat(Format.DEPTH);
-        lightDepthsTexture2.setInternalFormat(InternalFormat.DEPTH_COMPONENT16);
-        lightDepthsTexture2.setWrapS(WrapMode.CLAMP_TO_BORDER);
-        lightDepthsTexture2.setWrapT(WrapMode.CLAMP_TO_BORDER);
-        lightDepthsTexture2.setMagFilter(FilterMode.LINEAR);
-        lightDepthsTexture2.setMinFilter(FilterMode.LINEAR);
-        lightDepthsTexture2.setCompareMode(CompareMode.LESS);
-        lightDepthsTexture2.setImageData(null, shadowMapSize.getX(), shadowMapSize.getY());
         lightDepthsTexture2.create();
+        lightDepthsTexture2.setFormat(Format.DEPTH, InternalFormat.DEPTH_COMPONENT16);
+        lightDepthsTexture2.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        lightDepthsTexture2.setImageData(null, shadowMapSize.getX(), shadowMapSize.getY());
+        lightDepthsTexture2.setWraps(WrapMode.CLAMP_TO_BORDER, WrapMode.CLAMP_TO_BORDER);
+        lightDepthsTexture2.setCompareMode(CompareMode.LESS);
         // Create third light depth texture
-        lightDepthsTexture3.setFormat(Format.DEPTH);
-        lightDepthsTexture3.setInternalFormat(InternalFormat.DEPTH_COMPONENT16);
-        lightDepthsTexture3.setWrapS(WrapMode.CLAMP_TO_BORDER);
-        lightDepthsTexture3.setWrapT(WrapMode.CLAMP_TO_BORDER);
-        lightDepthsTexture3.setMagFilter(FilterMode.LINEAR);
-        lightDepthsTexture3.setMinFilter(FilterMode.LINEAR);
-        lightDepthsTexture3.setCompareMode(CompareMode.LESS);
-        lightDepthsTexture3.setImageData(null, shadowMapSize.getX(), shadowMapSize.getY());
         lightDepthsTexture3.create();
+        lightDepthsTexture3.setFormat(Format.DEPTH, InternalFormat.DEPTH_COMPONENT16);
+        lightDepthsTexture3.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        lightDepthsTexture3.setImageData(null, shadowMapSize.getX(), shadowMapSize.getY());
+        lightDepthsTexture3.setWraps(WrapMode.CLAMP_TO_BORDER, WrapMode.CLAMP_TO_BORDER);
+        lightDepthsTexture3.setCompareMode(CompareMode.LESS);
         // Update the material
         material.addTexture(3, lightDepthsTexture2);
         material.addTexture(4, lightDepthsTexture3);

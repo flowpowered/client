@@ -159,35 +159,35 @@ public class Renderer {
         shadowMappingNode.connect("normals", "vertexNormals", renderModelsNode);
         shadowMappingNode.connect("depths", "depths", renderModelsNode);
         shadowMappingNode.setShadowMapSize(new Vector2i(1048, 1048));
+        shadowMappingNode.create();
         shadowMappingNode.setKernelSize(8);
         shadowMappingNode.setNoiseSize(blurSize);
         shadowMappingNode.setBias(0.005f);
         shadowMappingNode.setRadius(0.05f);
-        shadowMappingNode.create();
         graph.addNode(shadowMappingNode);
         // Blur shadows
         final BlurNode blurShadowsNode = new BlurNode(graph, "blurShadows");
         blurShadowsNode.connect("colors", "shadows", shadowMappingNode);
-        blurShadowsNode.setKernelSize(blurSize + 1);
-        blurShadowsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
         blurShadowsNode.create();
+        blurShadowsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
+        blurShadowsNode.setKernelSize(blurSize + 1);
         graph.addNode(blurShadowsNode);
         // SSAO
         final SSAONode ssaoNode = new SSAONode(graph, "ssao");
         ssaoNode.connect("normals", "normals", renderModelsNode);
         ssaoNode.connect("depths", "depths", renderModelsNode);
+        ssaoNode.create();
         ssaoNode.setKernelSize(8, 0.15f);
         ssaoNode.setNoiseSize(blurSize);
         ssaoNode.setRadius(0.5f);
         ssaoNode.setPower(2);
-        ssaoNode.create();
         graph.addNode(ssaoNode);
         // Blur occlusions
         final BlurNode blurOcclusionsNode = new BlurNode(graph, "blurOcclusions");
         blurOcclusionsNode.connect("colors", "occlusions", ssaoNode);
-        blurOcclusionsNode.setKernelSize(blurSize + 1);
-        blurOcclusionsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
         blurOcclusionsNode.create();
+        blurOcclusionsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
+        blurOcclusionsNode.setKernelSize(blurSize + 1);
         graph.addNode(blurOcclusionsNode);
         // Lighting
         lightingNode = new LightingNode(graph, "lighting");
@@ -257,7 +257,7 @@ public class Renderer {
             e.printStackTrace();
             return;
         }
-        final StringModel sandboxModel = new StringModel(glFactory, graph.getProgram("font"), "ClientWIPFPS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
+        final StringModel sandboxModel = new StringModel(glFactory, graph.getProgram("font"), "ClientWIPFS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
         final float aspect = 1 / graph.getAspectRatio();
         sandboxModel.setPosition(new Vector3f(0.005, 0.97 * aspect, -0.1));
         sandboxModel.setString("Client - WIP");

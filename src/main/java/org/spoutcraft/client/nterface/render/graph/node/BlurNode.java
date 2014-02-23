@@ -93,29 +93,21 @@ public class BlurNode extends GraphNode {
 
     @Override
     public void create() {
-        if (isCreated()) {
-            throw new IllegalStateException("Guassian blur stage has already been created");
-        }
+        checkNotCreated();
         final Format format = colorsInput.getFormat();
         final InternalFormat internalFormat = colorsInput.getInternalFormat();
         // Create the colors texture
-        colorsOutput.setFormat(format);
-        colorsOutput.setInternalFormat(internalFormat);
-        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
-        colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        colorsOutput.setMagFilter(FilterMode.LINEAR);
-        colorsOutput.setMinFilter(FilterMode.LINEAR);
         colorsOutput.create();
+        colorsOutput.setFormat(format, internalFormat);
+        colorsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
+        colorsOutput.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the intermediate texture
-        intermediateTexture.setFormat(format);
-        intermediateTexture.setInternalFormat(internalFormat);
-        intermediateTexture.setImageData(null, colorsInput.getWidth(), colorsInput.getHeight());
-        intermediateTexture.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        intermediateTexture.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        intermediateTexture.setMagFilter(FilterMode.LINEAR);
-        intermediateTexture.setMinFilter(FilterMode.LINEAR);
         intermediateTexture.create();
+        intermediateTexture.setFormat(format, internalFormat);
+        intermediateTexture.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        intermediateTexture.setImageData(null, colorsInput.getWidth(), colorsInput.getHeight());
+        intermediateTexture.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the horizontal material
         horizontalMaterial.addTexture(0, colorsInput);
         UniformHolder uniforms = horizontalMaterial.getUniforms();
