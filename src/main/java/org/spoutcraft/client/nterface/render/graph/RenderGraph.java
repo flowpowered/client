@@ -35,6 +35,7 @@ import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector2i;
 
 import org.spout.renderer.api.Creatable;
+import org.spout.renderer.api.data.ShaderSource;
 import org.spout.renderer.api.data.Uniform.FloatUniform;
 import org.spout.renderer.api.data.Uniform.Vector2Uniform;
 import org.spout.renderer.api.gl.Context;
@@ -235,11 +236,11 @@ public class RenderGraph extends Creatable {
     private Program loadProgram(String name) {
         final String shaderPath = shaderSrcDir + "/" + name;
         final Shader vertex = glFactory.createShader();
-        vertex.setSource(Renderer.class.getResourceAsStream(shaderPath + ".vert"));
         vertex.create();
+        vertex.setSource(new ShaderSource(Renderer.class.getResourceAsStream(shaderPath + ".vert")));
         final Shader fragment = glFactory.createShader();
-        fragment.setSource(Renderer.class.getResourceAsStream(shaderPath + ".frag"));
         fragment.create();
+        fragment.setSource(new ShaderSource(Renderer.class.getResourceAsStream(shaderPath + ".frag")));
         final Program program = glFactory.createProgram();
         program.addShader(vertex);
         program.addShader(fragment);
