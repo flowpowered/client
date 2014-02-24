@@ -130,8 +130,8 @@ public class ParallelChunkMesher {
                 if (vertexData != null) {
                     // Create the vertex array from the mesh
                     final VertexArray vertexArray = nterface.getRenderer().getGLFactory().createVertexArray();
-                    vertexArray.setData(vertexData);
                     vertexArray.create();
+                    vertexArray.setData(vertexData);
                     // Set it for rendering
                     setVertexArray(vertexArray);
                 }

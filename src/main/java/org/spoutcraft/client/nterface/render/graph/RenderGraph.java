@@ -79,8 +79,8 @@ public class RenderGraph extends Creatable {
             throw new IllegalStateException("Render graph has already been created");
         }
         // Create the full screen quad
-        screen.setData(MeshGenerator.generateTexturedPlane(null, new Vector2f(2, 2)));
         screen.create();
+        screen.setData(MeshGenerator.generateTexturedPlane(null, new Vector2f(2, 2)));
         // Update the state to created
         super.create();
     }

@@ -236,16 +236,16 @@ public class Renderer {
     private void addDefaultObjects() {
         addFPSMonitor();
 
-        final VertexArray sphere = glFactory.createVertexArray();
-        sphere.setData(MeshGenerator.generateSphere(null, 5));
-        sphere.create();
-        final Model model1 = new Model(sphere, transparencyMaterial);
+        final VertexArray shape = glFactory.createVertexArray();
+        shape.create();
+        shape.setData(MeshGenerator.generateCylinder(null, 2.5f, 5));
+        final Model model1 = new Model(shape, transparencyMaterial);
         model1.setPosition(new Vector3f(0, 22, -6));
-        model1.getUniforms().add(new ColorUniform("modelColor", new Color(1, 0, 0, 0.3)));
+        model1.getUniforms().add(new ColorUniform("modelColor", new Color(1, 1, 0, 0.3)));
         addTransparentModel(model1);
         final Model model2 = model1.getInstance();
         model2.setPosition(new Vector3f(0, 22, 6));
-        model2.getUniforms().add(new ColorUniform("modelColor", new Color(0, 0, 1, 0.7)));
+        model2.getUniforms().add(new ColorUniform("modelColor", new Color(0, 1, 1, 0.7)));
         addTransparentModel(model2);
     }
 
