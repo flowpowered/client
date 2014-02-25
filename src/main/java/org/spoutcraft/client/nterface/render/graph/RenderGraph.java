@@ -238,13 +238,16 @@ public class RenderGraph extends Creatable {
         final Shader vertex = glFactory.createShader();
         vertex.create();
         vertex.setSource(new ShaderSource(Renderer.class.getResourceAsStream(shaderPath + ".vert")));
+        vertex.compile();
         final Shader fragment = glFactory.createShader();
         fragment.create();
         fragment.setSource(new ShaderSource(Renderer.class.getResourceAsStream(shaderPath + ".frag")));
+        fragment.compile();
         final Program program = glFactory.createProgram();
-        program.addShader(vertex);
-        program.addShader(fragment);
         program.create();
+        program.attachShader(vertex);
+        program.attachShader(fragment);
+        program.link();
         programs.put(name, program);
         return program;
     }
