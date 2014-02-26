@@ -40,6 +40,7 @@ import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector4f;
 
 import org.lwjgl.opengl.GLContext;
 
@@ -47,11 +48,10 @@ import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLImplementation;
 import org.spout.renderer.api.GLVersioned.GLVersion;
 import org.spout.renderer.api.Material;
-import org.spout.renderer.api.data.Color;
-import org.spout.renderer.api.data.Uniform.ColorUniform;
 import org.spout.renderer.api.data.Uniform.FloatUniform;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
 import org.spout.renderer.api.data.Uniform.Vector3Uniform;
+import org.spout.renderer.api.data.Uniform.Vector4Uniform;
 import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.Context.Capability;
@@ -126,7 +126,7 @@ public class Renderer {
         context.setWindowTitle(WINDOW_TITLE);
         context.setWindowSize(windowSize);
         context.create();
-        context.setClearColor(new Color(0, 0, 0, 0));
+        context.setClearColor(Vector4f.ZERO);
         if (cullBackFaces) {
             context.enableCapability(Capability.CULL_FACE);
         }
@@ -238,11 +238,11 @@ public class Renderer {
         shape.setData(MeshGenerator.generateCylinder(null, 2.5f, 5));
         final Model model1 = new Model(shape, transparencyMaterial);
         model1.setPosition(new Vector3f(0, 22, -6));
-        model1.getUniforms().add(new ColorUniform("modelColor", new Color(1, 1, 0, 0.3)));
+        model1.getUniforms().add(new Vector4Uniform("modelColor", new Vector4f(1, 1, 0, 0.3)));
         addTransparentModel(model1);
         final Model model2 = model1.getInstance();
         model2.setPosition(new Vector3f(0, 22, 6));
-        model2.getUniforms().add(new ColorUniform("modelColor", new Color(0, 1, 1, 0.7)));
+        model2.getUniforms().add(new Vector4Uniform("modelColor", new Vector4f(0, 1, 1, 0.7)));
         addTransparentModel(model2);
     }
 
@@ -381,7 +381,7 @@ public class Renderer {
      */
     public void addSolidModel(Model model) {
         model.setMaterial(solidMaterial);
-        model.getUniforms().add(new ColorUniform("modelColor", new Color(Math.random(), Math.random(), Math.random(), 1)));
+        model.getUniforms().add(new Vector4Uniform("modelColor", new Vector4f(Math.random(), Math.random(), Math.random(), 1)));
         renderModelsNode.addModel(model);
     }
 
