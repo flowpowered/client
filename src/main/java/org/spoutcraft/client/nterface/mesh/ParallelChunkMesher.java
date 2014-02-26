@@ -129,7 +129,7 @@ public class ParallelChunkMesher {
                 // If the chunk mesher returned a mesh. It may not return one if the chunk has no mesh (completely invisible)
                 if (vertexData != null) {
                     // Create the vertex array from the mesh
-                    final VertexArray vertexArray = nterface.getRenderer().getContext().createVertexArray();
+                    final VertexArray vertexArray = nterface.getRenderer().getContext().newVertexArray();
                     vertexArray.create();
                     vertexArray.setData(vertexData);
                     // Set it for rendering

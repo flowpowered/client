@@ -64,8 +64,8 @@ public class LightingNode extends GraphNode {
         super(graph, name);
         material = new Material(graph.getProgram("lighting"));
         final Context context = graph.getContext();
-        frameBuffer = context.createFrameBuffer();
-        colorsOutput = context.createTexture();
+        frameBuffer = context.newFrameBuffer();
+        colorsOutput = context.newTexture();
     }
 
     @Override

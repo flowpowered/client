@@ -94,11 +94,11 @@ public class ShadowMappingNode extends GraphNode {
         super(graph, name);
         material = new Material(graph.getProgram(program));
         final Context context = graph.getContext();
-        lightDepthsTexture = context.createTexture();
-        noiseTexture = context.createTexture();
-        depthFrameBuffer = context.createFrameBuffer();
-        frameBuffer = context.createFrameBuffer();
-        shadowsOutput = context.createTexture();
+        lightDepthsTexture = context.newTexture();
+        noiseTexture = context.newTexture();
+        shadowsOutput = context.newTexture();
+        depthFrameBuffer = context.newFrameBuffer();
+        frameBuffer = context.newFrameBuffer();
     }
 
     @Override

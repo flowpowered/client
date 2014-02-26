@@ -68,7 +68,7 @@ public class RenderGraph extends Creatable {
     public RenderGraph(Context context, String shaderSrcDir) {
         this.context = context;
         this.shaderSrcDir = shaderSrcDir;
-        screen = context.createVertexArray();
+        screen = context.newVertexArray();
     }
 
     @Override
@@ -228,15 +228,15 @@ public class RenderGraph extends Creatable {
 
     private Program loadProgram(String name) {
         final String shaderPath = shaderSrcDir + "/" + name;
-        final Shader vertex = context.createShader();
+        final Shader vertex = context.newShader();
         vertex.create();
         vertex.setSource(new ShaderSource(Renderer.class.getResourceAsStream(shaderPath + ".vert")));
         vertex.compile();
-        final Shader fragment = context.createShader();
+        final Shader fragment = context.newShader();
         fragment.create();
         fragment.setSource(new ShaderSource(Renderer.class.getResourceAsStream(shaderPath + ".frag")));
         fragment.compile();
-        final Program program = context.createProgram();
+        final Program program = context.newProgram();
         program.create();
         program.attachShader(vertex);
         program.attachShader(fragment);

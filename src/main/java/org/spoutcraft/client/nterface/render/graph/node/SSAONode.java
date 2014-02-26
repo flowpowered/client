@@ -70,9 +70,9 @@ public class SSAONode extends GraphNode {
         super(graph, name);
         material = new Material(graph.getProgram("ssao"));
         final Context context = graph.getContext();
-        noiseTexture = context.createTexture();
-        frameBuffer = context.createFrameBuffer();
-        occlusionsOutput = context.createTexture();
+        noiseTexture = context.newTexture();
+        occlusionsOutput = context.newTexture();
+        frameBuffer = context.newFrameBuffer();
     }
 
     @Override

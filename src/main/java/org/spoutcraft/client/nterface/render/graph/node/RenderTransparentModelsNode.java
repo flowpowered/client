@@ -63,10 +63,10 @@ public class RenderTransparentModelsNode extends GraphNode {
         super(graph, name);
         material = new Material(graph.getProgram("transparencyBlending"));
         final Context context = graph.getContext();
-        weightedColors = context.createTexture();
-        layerCounts = context.createTexture();
-        weightedSumFrameBuffer = context.createFrameBuffer();
-        frameBuffer = context.createFrameBuffer();
+        weightedColors = context.newTexture();
+        layerCounts = context.newTexture();
+        weightedSumFrameBuffer = context.newFrameBuffer();
+        frameBuffer = context.newFrameBuffer();
     }
 
     @Override

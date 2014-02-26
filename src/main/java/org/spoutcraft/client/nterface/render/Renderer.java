@@ -233,7 +233,7 @@ public class Renderer {
     private void addDefaultObjects() {
         addFPSMonitor();
 
-        final VertexArray shape = context.createVertexArray();
+        final VertexArray shape = context.newVertexArray();
         shape.create();
         shape.setData(MeshGenerator.generateCylinder(null, 2.5f, 5));
         final Model model1 = new Model(shape, transparencyMaterial);

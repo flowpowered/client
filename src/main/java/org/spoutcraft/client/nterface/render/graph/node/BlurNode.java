@@ -85,10 +85,10 @@ public class BlurNode extends GraphNode {
         horizontalMaterial = new Material(blurProgram);
         verticalMaterial = new Material(blurProgram);
         final Context context = graph.getContext();
-        horizontalFrameBuffer = context.createFrameBuffer();
-        verticalFrameBuffer = context.createFrameBuffer();
-        intermediateTexture = context.createTexture();
-        colorsOutput = context.createTexture();
+        horizontalFrameBuffer = context.newFrameBuffer();
+        verticalFrameBuffer = context.newFrameBuffer();
+        intermediateTexture = context.newTexture();
+        colorsOutput = context.newTexture();
     }
 
     @Override

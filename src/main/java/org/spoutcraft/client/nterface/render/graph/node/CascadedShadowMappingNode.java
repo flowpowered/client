@@ -70,10 +70,10 @@ public class CascadedShadowMappingNode extends ShadowMappingNode {
     public CascadedShadowMappingNode(RenderGraph graph, String name) {
         super(graph, name, "cascadedShadow");
         final Context context = graph.getContext();
-        lightDepthsTexture2 = context.createTexture();
-        lightDepthsTexture3 = context.createTexture();
-        depthFrameBuffer2 = context.createFrameBuffer();
-        depthFrameBuffer3 = context.createFrameBuffer();
+        lightDepthsTexture2 = context.newTexture();
+        lightDepthsTexture3 = context.newTexture();
+        depthFrameBuffer2 = context.newFrameBuffer();
+        depthFrameBuffer3 = context.newFrameBuffer();
     }
 
     @Override

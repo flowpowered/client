@@ -59,12 +59,12 @@ public class RenderModelsNode extends GraphNode {
     public RenderModelsNode(RenderGraph graph, String name) {
         super(graph, name);
         final Context context = graph.getContext();
-        colorsOutput = context.createTexture();
-        normalsOutput = context.createTexture();
-        depthsOutput = context.createTexture();
-        vertexNormalsOutput = context.createTexture();
-        materialsOutput = context.createTexture();
-        frameBuffer = context.createFrameBuffer();
+        colorsOutput = context.newTexture();
+        normalsOutput = context.newTexture();
+        depthsOutput = context.newTexture();
+        vertexNormalsOutput = context.newTexture();
+        materialsOutput = context.newTexture();
+        frameBuffer = context.newFrameBuffer();
         camera = Camera.createPerspective(graph.getFieldOfView(), graph.getWindowWidth(), graph.getWindowHeight(), graph.getNearPlane(), graph.getFarPlane());
     }
 
