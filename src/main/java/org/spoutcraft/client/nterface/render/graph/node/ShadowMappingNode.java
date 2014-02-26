@@ -104,28 +104,23 @@ public class ShadowMappingNode extends GraphNode {
 
     @Override
     public void create() {
-        if (isCreated()) {
-            throw new IllegalStateException("Shadow mapping stage has already been created");
-        }
+        checkNotCreated();
         // Create the noise texture
-        noiseTexture.setFormat(Format.RG);
-        noiseTexture.setInternalFormat(InternalFormat.RG8);
         noiseTexture.create();
+        noiseTexture.setFormat(Format.RG, InternalFormat.RG8);
+        noiseTexture.setFilters(FilterMode.NEAREST, FilterMode.NEAREST);
         // Create the shadows texture
-        shadowsOutput.setFormat(Format.RED);
-        shadowsOutput.setInternalFormat(InternalFormat.R8);
-        shadowsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         shadowsOutput.create();
+        shadowsOutput.setFormat(Format.RED, InternalFormat.R8);
+        shadowsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        shadowsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the depth texture
-        lightDepthsTexture.setFormat(Format.DEPTH);
-        lightDepthsTexture.setInternalFormat(InternalFormat.DEPTH_COMPONENT16);
-        lightDepthsTexture.setWrapS(WrapMode.CLAMP_TO_BORDER);
-        lightDepthsTexture.setWrapT(WrapMode.CLAMP_TO_BORDER);
-        lightDepthsTexture.setMagFilter(FilterMode.LINEAR);
-        lightDepthsTexture.setMinFilter(FilterMode.LINEAR);
-        lightDepthsTexture.setCompareMode(CompareMode.LESS);
-        lightDepthsTexture.setImageData(null, shadowMapSize.getX(), shadowMapSize.getY());
         lightDepthsTexture.create();
+        lightDepthsTexture.setFormat(Format.DEPTH, InternalFormat.DEPTH_COMPONENT16);
+        lightDepthsTexture.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        lightDepthsTexture.setImageData(null, shadowMapSize.getX(), shadowMapSize.getY());
+        lightDepthsTexture.setWraps(WrapMode.CLAMP_TO_BORDER, WrapMode.CLAMP_TO_BORDER);
+        lightDepthsTexture.setCompareMode(CompareMode.LESS);
         // Create the material
         material.addTexture(0, normalsInput);
         material.addTexture(1, depthsInput);
@@ -147,11 +142,11 @@ public class ShadowMappingNode extends GraphNode {
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
         // Create the depth frame buffer
-        depthFrameBuffer.attach(AttachmentPoint.DEPTH, lightDepthsTexture);
         depthFrameBuffer.create();
+        depthFrameBuffer.attach(AttachmentPoint.DEPTH, lightDepthsTexture);
         // Create the frame buffer
-        frameBuffer.attach(AttachmentPoint.COLOR0, shadowsOutput);
         frameBuffer.create();
+        frameBuffer.attach(AttachmentPoint.COLOR0, shadowsOutput);
         // Create the pipeline
         pipeline = createPipeline(model);
         // Update state to created
@@ -160,9 +155,9 @@ public class ShadowMappingNode extends GraphNode {
 
     protected Pipeline createPipeline(Model model) {
         final RenderModelsNode renderModelsNode = (RenderModelsNode) graph.getNode("models");
-        return new PipelineBuilder().useViewPort(new Rectangle(Vector2f.ZERO, shadowMapSize.toFloat()))
+        return new PipelineBuilder().useViewPort(new Rectangle(Vector2i.ZERO, shadowMapSize))
                 .useCamera(camera).bindFrameBuffer(depthFrameBuffer).clearBuffer().doAction(new RenderShadowModelsAction(renderModelsNode.getModels()))
-                .useViewPort(new Rectangle(Vector2f.ZERO, graph.getWindowSize().toFloat())).useCamera(renderModelsNode.getCamera())
+                .useViewPort(new Rectangle(Vector2i.ZERO, graph.getWindowSize())).useCamera(renderModelsNode.getCamera())
                 .bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
     }
 
@@ -236,16 +231,8 @@ public class ShadowMappingNode extends GraphNode {
         // Update the uniform
         noiseScaleUniform.set(new Vector2f(graph.getWindowWidth(), graph.getWindowHeight()).div(noiseSize));
         // Update the texture
-        boolean wasCreated = false;
-        if (noiseTexture.isCreated()) {
-            noiseTexture.destroy();
-            wasCreated = true;
-        }
         noiseTextureBuffer.flip();
         noiseTexture.setImageData(noiseTextureBuffer, noiseSize, noiseSize);
-        if (wasCreated) {
-            noiseTexture.create();
-        }
     }
 
     /**

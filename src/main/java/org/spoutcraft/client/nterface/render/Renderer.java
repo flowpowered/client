@@ -38,7 +38,6 @@ import java.util.Calendar;
 import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.math.matrix.Matrix4f;
-import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3f;
 
@@ -128,7 +127,7 @@ public class Renderer {
     private void initContext() {
         context = glFactory.createContext();
         context.setWindowTitle(WINDOW_TITLE);
-        context.setWindowSize(windowSize.toFloat());
+        context.setWindowSize(windowSize);
         context.create();
         context.setClearColor(new Color(0, 0, 0, 0));
         if (cullBackFaces) {
@@ -160,35 +159,35 @@ public class Renderer {
         shadowMappingNode.connect("normals", "vertexNormals", renderModelsNode);
         shadowMappingNode.connect("depths", "depths", renderModelsNode);
         shadowMappingNode.setShadowMapSize(new Vector2i(1048, 1048));
+        shadowMappingNode.create();
         shadowMappingNode.setKernelSize(8);
         shadowMappingNode.setNoiseSize(blurSize);
         shadowMappingNode.setBias(0.005f);
         shadowMappingNode.setRadius(0.05f);
-        shadowMappingNode.create();
         graph.addNode(shadowMappingNode);
         // Blur shadows
         final BlurNode blurShadowsNode = new BlurNode(graph, "blurShadows");
         blurShadowsNode.connect("colors", "shadows", shadowMappingNode);
-        blurShadowsNode.setKernelSize(blurSize + 1);
-        blurShadowsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
         blurShadowsNode.create();
+        blurShadowsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
+        blurShadowsNode.setKernelSize(blurSize + 1);
         graph.addNode(blurShadowsNode);
         // SSAO
         final SSAONode ssaoNode = new SSAONode(graph, "ssao");
         ssaoNode.connect("normals", "normals", renderModelsNode);
         ssaoNode.connect("depths", "depths", renderModelsNode);
+        ssaoNode.create();
         ssaoNode.setKernelSize(8, 0.15f);
         ssaoNode.setNoiseSize(blurSize);
         ssaoNode.setRadius(0.5f);
         ssaoNode.setPower(2);
-        ssaoNode.create();
         graph.addNode(ssaoNode);
         // Blur occlusions
         final BlurNode blurOcclusionsNode = new BlurNode(graph, "blurOcclusions");
         blurOcclusionsNode.connect("colors", "occlusions", ssaoNode);
-        blurOcclusionsNode.setKernelSize(blurSize + 1);
-        blurOcclusionsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
         blurOcclusionsNode.create();
+        blurOcclusionsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
+        blurOcclusionsNode.setKernelSize(blurSize + 1);
         graph.addNode(blurOcclusionsNode);
         // Lighting
         lightingNode = new LightingNode(graph, "lighting");
@@ -237,16 +236,16 @@ public class Renderer {
     private void addDefaultObjects() {
         addFPSMonitor();
 
-        final VertexArray sphere = glFactory.createVertexArray();
-        sphere.setData(MeshGenerator.generateSphere(null, 5));
-        sphere.create();
-        final Model model1 = new Model(sphere, transparencyMaterial);
+        final VertexArray shape = glFactory.createVertexArray();
+        shape.create();
+        shape.setData(MeshGenerator.generateCylinder(null, 2.5f, 5));
+        final Model model1 = new Model(shape, transparencyMaterial);
         model1.setPosition(new Vector3f(0, 22, -6));
-        model1.getUniforms().add(new ColorUniform("modelColor", new Color(1, 0, 0, 0.3)));
+        model1.getUniforms().add(new ColorUniform("modelColor", new Color(1, 1, 0, 0.3)));
         addTransparentModel(model1);
         final Model model2 = model1.getInstance();
         model2.setPosition(new Vector3f(0, 22, 6));
-        model2.getUniforms().add(new ColorUniform("modelColor", new Color(0, 0, 1, 0.7)));
+        model2.getUniforms().add(new ColorUniform("modelColor", new Color(0, 1, 1, 0.7)));
         addTransparentModel(model2);
     }
 
@@ -258,7 +257,7 @@ public class Renderer {
             e.printStackTrace();
             return;
         }
-        final StringModel sandboxModel = new StringModel(glFactory, graph.getProgram("font"), "ClientWIPFPS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
+        final StringModel sandboxModel = new StringModel(glFactory, graph.getProgram("font"), "ClientWIPFS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
         final float aspect = 1 / graph.getAspectRatio();
         sandboxModel.setPosition(new Vector3f(0.005, 0.97 * aspect, -0.1));
         sandboxModel.setString("Client - WIP");
@@ -409,7 +408,7 @@ public class Renderer {
      * @param outputDir The directory in which to output the file
      */
     public void saveScreenshot(File outputDir) {
-        final ByteBuffer buffer = context.readCurrentFrame(new Rectangle(Vector2f.ZERO, windowSize.toFloat()), Format.RGB);
+        final ByteBuffer buffer = context.readCurrentFrame(new Rectangle(Vector2i.ZERO, windowSize), Format.RGB);
         final int width = context.getWindowWidth();
         final int height = context.getWindowHeight();
         final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);

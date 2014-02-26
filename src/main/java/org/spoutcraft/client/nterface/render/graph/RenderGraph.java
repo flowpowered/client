@@ -35,6 +35,7 @@ import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector2i;
 
 import org.spout.renderer.api.Creatable;
+import org.spout.renderer.api.data.ShaderSource;
 import org.spout.renderer.api.data.Uniform.FloatUniform;
 import org.spout.renderer.api.data.Uniform.Vector2Uniform;
 import org.spout.renderer.api.gl.Context;
@@ -79,8 +80,8 @@ public class RenderGraph extends Creatable {
             throw new IllegalStateException("Render graph has already been created");
         }
         // Create the full screen quad
-        screen.setData(MeshGenerator.generateTexturedPlane(null, new Vector2f(2, 2)));
         screen.create();
+        screen.setData(MeshGenerator.generateTexturedPlane(null, new Vector2f(2, 2)));
         // Update the state to created
         super.create();
     }
@@ -235,15 +236,18 @@ public class RenderGraph extends Creatable {
     private Program loadProgram(String name) {
         final String shaderPath = shaderSrcDir + "/" + name;
         final Shader vertex = glFactory.createShader();
-        vertex.setSource(Renderer.class.getResourceAsStream(shaderPath + ".vert"));
         vertex.create();
+        vertex.setSource(new ShaderSource(Renderer.class.getResourceAsStream(shaderPath + ".vert")));
+        vertex.compile();
         final Shader fragment = glFactory.createShader();
-        fragment.setSource(Renderer.class.getResourceAsStream(shaderPath + ".frag"));
         fragment.create();
+        fragment.setSource(new ShaderSource(Renderer.class.getResourceAsStream(shaderPath + ".frag")));
+        fragment.compile();
         final Program program = glFactory.createProgram();
-        program.addShader(vertex);
-        program.addShader(fragment);
         program.create();
+        program.attachShader(vertex);
+        program.attachShader(fragment);
+        program.link();
         programs.put(name, program);
         return program;
     }

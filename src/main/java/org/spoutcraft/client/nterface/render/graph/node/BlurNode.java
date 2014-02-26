@@ -93,29 +93,21 @@ public class BlurNode extends GraphNode {
 
     @Override
     public void create() {
-        if (isCreated()) {
-            throw new IllegalStateException("Guassian blur stage has already been created");
-        }
+        checkNotCreated();
         final Format format = colorsInput.getFormat();
         final InternalFormat internalFormat = colorsInput.getInternalFormat();
         // Create the colors texture
-        colorsOutput.setFormat(format);
-        colorsOutput.setInternalFormat(internalFormat);
-        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
-        colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        colorsOutput.setMagFilter(FilterMode.LINEAR);
-        colorsOutput.setMinFilter(FilterMode.LINEAR);
         colorsOutput.create();
+        colorsOutput.setFormat(format, internalFormat);
+        colorsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
+        colorsOutput.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the intermediate texture
-        intermediateTexture.setFormat(format);
-        intermediateTexture.setInternalFormat(internalFormat);
-        intermediateTexture.setImageData(null, colorsInput.getWidth(), colorsInput.getHeight());
-        intermediateTexture.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        intermediateTexture.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        intermediateTexture.setMagFilter(FilterMode.LINEAR);
-        intermediateTexture.setMinFilter(FilterMode.LINEAR);
         intermediateTexture.create();
+        intermediateTexture.setFormat(format, internalFormat);
+        intermediateTexture.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        intermediateTexture.setImageData(null, colorsInput.getWidth(), colorsInput.getHeight());
+        intermediateTexture.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the horizontal material
         horizontalMaterial.addTexture(0, colorsInput);
         UniformHolder uniforms = horizontalMaterial.getUniforms();
@@ -137,11 +129,11 @@ public class BlurNode extends GraphNode {
         // Create the vertical screen model
         final Model verticalModel = new Model(graph.getScreen(), verticalMaterial);
         // Create the frame buffer
-        horizontalFrameBuffer.attach(AttachmentPoint.COLOR0, intermediateTexture);
         horizontalFrameBuffer.create();
+        horizontalFrameBuffer.attach(AttachmentPoint.COLOR0, intermediateTexture);
         // Create the vertical frame buffer
-        verticalFrameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         verticalFrameBuffer.create();
+        verticalFrameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         // Create the pipeline
         pipeline = new PipelineBuilder().bindFrameBuffer(horizontalFrameBuffer).renderModels(Arrays.asList(horizontalModel)).bindFrameBuffer(verticalFrameBuffer)
                 .renderModels(Arrays.asList(verticalModel)).unbindFrameBuffer(verticalFrameBuffer).build();

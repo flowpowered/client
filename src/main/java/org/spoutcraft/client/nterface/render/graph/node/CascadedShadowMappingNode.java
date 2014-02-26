@@ -31,6 +31,7 @@ import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.matrix.Matrix3f;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3f;
 
 import org.spout.renderer.api.Camera;
@@ -77,31 +78,23 @@ public class CascadedShadowMappingNode extends ShadowMappingNode {
 
     @Override
     public void create() {
-        if (isCreated()) {
-            throw new IllegalStateException("Shadow mapping stage has already been created");
-        }
+        checkNotCreated();
         // Let the super class create the basis
         super.create();
         // Create second light depth texture
-        lightDepthsTexture2.setFormat(Format.DEPTH);
-        lightDepthsTexture2.setInternalFormat(InternalFormat.DEPTH_COMPONENT16);
-        lightDepthsTexture2.setWrapS(WrapMode.CLAMP_TO_BORDER);
-        lightDepthsTexture2.setWrapT(WrapMode.CLAMP_TO_BORDER);
-        lightDepthsTexture2.setMagFilter(FilterMode.LINEAR);
-        lightDepthsTexture2.setMinFilter(FilterMode.LINEAR);
-        lightDepthsTexture2.setCompareMode(CompareMode.LESS);
-        lightDepthsTexture2.setImageData(null, shadowMapSize.getX(), shadowMapSize.getY());
         lightDepthsTexture2.create();
+        lightDepthsTexture2.setFormat(Format.DEPTH, InternalFormat.DEPTH_COMPONENT16);
+        lightDepthsTexture2.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        lightDepthsTexture2.setImageData(null, shadowMapSize.getX(), shadowMapSize.getY());
+        lightDepthsTexture2.setWraps(WrapMode.CLAMP_TO_BORDER, WrapMode.CLAMP_TO_BORDER);
+        lightDepthsTexture2.setCompareMode(CompareMode.LESS);
         // Create third light depth texture
-        lightDepthsTexture3.setFormat(Format.DEPTH);
-        lightDepthsTexture3.setInternalFormat(InternalFormat.DEPTH_COMPONENT16);
-        lightDepthsTexture3.setWrapS(WrapMode.CLAMP_TO_BORDER);
-        lightDepthsTexture3.setWrapT(WrapMode.CLAMP_TO_BORDER);
-        lightDepthsTexture3.setMagFilter(FilterMode.LINEAR);
-        lightDepthsTexture3.setMinFilter(FilterMode.LINEAR);
-        lightDepthsTexture3.setCompareMode(CompareMode.LESS);
-        lightDepthsTexture3.setImageData(null, shadowMapSize.getX(), shadowMapSize.getY());
         lightDepthsTexture3.create();
+        lightDepthsTexture3.setFormat(Format.DEPTH, InternalFormat.DEPTH_COMPONENT16);
+        lightDepthsTexture3.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        lightDepthsTexture3.setImageData(null, shadowMapSize.getX(), shadowMapSize.getY());
+        lightDepthsTexture3.setWraps(WrapMode.CLAMP_TO_BORDER, WrapMode.CLAMP_TO_BORDER);
+        lightDepthsTexture3.setCompareMode(CompareMode.LESS);
         // Update the material
         material.addTexture(3, lightDepthsTexture2);
         material.addTexture(4, lightDepthsTexture3);
@@ -113,22 +106,22 @@ public class CascadedShadowMappingNode extends ShadowMappingNode {
         uniforms.add(lightProjectionMatrixUniform3);
         uniforms.add(slicesUniform);
         // Create the second depth frame buffer
-        depthFrameBuffer2.attach(AttachmentPoint.DEPTH, lightDepthsTexture2);
         depthFrameBuffer2.create();
+        depthFrameBuffer2.attach(AttachmentPoint.DEPTH, lightDepthsTexture2);
         // Create the third depth frame buffer
-        depthFrameBuffer3.attach(AttachmentPoint.DEPTH, lightDepthsTexture3);
         depthFrameBuffer3.create();
+        depthFrameBuffer3.attach(AttachmentPoint.DEPTH, lightDepthsTexture3);
     }
 
     @Override
     protected Pipeline createPipeline(Model model) {
         final RenderModelsNode renderModelsNode = (RenderModelsNode) graph.getNode("models");
         final List<Model> models = renderModelsNode.getModels();
-        return new PipelineBuilder().useViewPort(new Rectangle(Vector2f.ZERO, shadowMapSize.toFloat()))
+        return new PipelineBuilder().useViewPort(new Rectangle(Vector2i.ZERO, shadowMapSize))
                 .useCamera(camera).bindFrameBuffer(depthFrameBuffer).clearBuffer().doAction(new RenderShadowModelsAction(models))
                 .useCamera(camera2).bindFrameBuffer(depthFrameBuffer2).clearBuffer().doAction(new RenderShadowModelsAction(models))
                 .useCamera(camera3).bindFrameBuffer(depthFrameBuffer3).clearBuffer().doAction(new RenderShadowModelsAction(models))
-                .useViewPort(new Rectangle(Vector2f.ZERO, graph.getWindowSize().toFloat())).useCamera(renderModelsNode.getCamera())
+                .useViewPort(new Rectangle(Vector2i.ZERO, graph.getWindowSize())).useCamera(renderModelsNode.getCamera())
                 .bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
     }
 

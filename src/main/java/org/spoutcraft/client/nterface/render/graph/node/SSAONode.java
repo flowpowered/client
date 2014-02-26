@@ -43,6 +43,7 @@ import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
 import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture;
+import org.spout.renderer.api.gl.Texture.FilterMode;
 import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.model.Model;
@@ -76,18 +77,16 @@ public class SSAONode extends GraphNode {
 
     @Override
     public void create() {
-        if (isCreated()) {
-            throw new IllegalStateException("SSAO stage has already been created");
-        }
+        checkNotCreated();
         // Create the noise texture
-        noiseTexture.setFormat(Format.RGB);
-        noiseTexture.setInternalFormat(InternalFormat.RGB8);
         noiseTexture.create();
+        noiseTexture.setFormat(Format.RGB, InternalFormat.RGB8);
+        noiseTexture.setFilters(FilterMode.NEAREST, FilterMode.NEAREST);
         // Create the occlusions texture
-        occlusionsOutput.setFormat(Format.RED);
-        occlusionsOutput.setInternalFormat(InternalFormat.R8);
-        occlusionsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         occlusionsOutput.create();
+        occlusionsOutput.setFormat(Format.RED, InternalFormat.R8);
+        occlusionsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        occlusionsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the material
         material.addTexture(0, normalsInput);
         material.addTexture(1, depthsInput);
@@ -105,8 +104,8 @@ public class SSAONode extends GraphNode {
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
         // Create the frame buffer
-        frameBuffer.attach(AttachmentPoint.COLOR0, occlusionsOutput);
         frameBuffer.create();
+        frameBuffer.attach(AttachmentPoint.COLOR0, occlusionsOutput);
         // Create the pipeline
         pipeline = new PipelineBuilder().bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
         // Update state to created
@@ -170,16 +169,8 @@ public class SSAONode extends GraphNode {
         // Update the uniform
         noiseScaleUniform.set(new Vector2f(graph.getWindowWidth(), graph.getWindowHeight()).div(noiseSize));
         // Update the texture
-        boolean wasCreated = false;
-        if (noiseTexture.isCreated()) {
-            noiseTexture.destroy();
-            wasCreated = true;
-        }
         noiseTextureBuffer.flip();
         noiseTexture.setImageData(noiseTextureBuffer, noiseSize, noiseSize);
-        if (wasCreated) {
-            noiseTexture.create();
-        }
     }
 
     @Setting

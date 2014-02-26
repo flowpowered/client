@@ -70,18 +70,13 @@ public class LightingNode extends GraphNode {
 
     @Override
     public void create() {
-        if (isCreated()) {
-            throw new IllegalStateException("Lighting stage has already been created");
-        }
+        checkNotCreated();
         // Create the colors texture
-        colorsOutput.setFormat(Format.RGBA);
-        colorsOutput.setInternalFormat(InternalFormat.RGBA8);
-        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
-        colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        colorsOutput.setMagFilter(FilterMode.LINEAR);
-        colorsOutput.setMinFilter(FilterMode.LINEAR);
         colorsOutput.create();
+        colorsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        colorsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
+        colorsOutput.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the material
         material.addTexture(0, colorsInput);
         material.addTexture(1, normalsInput);
@@ -96,8 +91,8 @@ public class LightingNode extends GraphNode {
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
         // Create the frame buffer
-        frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         frameBuffer.create();
+        frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         // Create the pipeline
         pipeline = new PipelineBuilder().bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
         // Update state to created
