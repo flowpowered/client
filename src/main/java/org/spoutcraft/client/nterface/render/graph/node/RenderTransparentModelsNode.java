@@ -32,11 +32,11 @@ import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
 import org.spout.renderer.api.data.VertexAttribute.DataType;
+import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.Context.BlendFunction;
 import org.spout.renderer.api.gl.Context.Capability;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
-import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.FilterMode;
 import org.spout.renderer.api.gl.Texture.Format;
@@ -62,11 +62,11 @@ public class RenderTransparentModelsNode extends GraphNode {
     public RenderTransparentModelsNode(RenderGraph graph, String name) {
         super(graph, name);
         material = new Material(graph.getProgram("transparencyBlending"));
-        final GLFactory glFactory = graph.getGLFactory();
-        weightedColors = glFactory.createTexture();
-        layerCounts = glFactory.createTexture();
-        weightedSumFrameBuffer = glFactory.createFrameBuffer();
-        frameBuffer = glFactory.createFrameBuffer();
+        final Context context = graph.getContext();
+        weightedColors = context.createTexture();
+        layerCounts = context.createTexture();
+        weightedSumFrameBuffer = context.createFrameBuffer();
+        frameBuffer = context.createFrameBuffer();
     }
 
     @Override

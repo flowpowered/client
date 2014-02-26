@@ -40,9 +40,9 @@ import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
 import org.spout.renderer.api.data.Uniform.Vector2Uniform;
 import org.spout.renderer.api.data.UniformHolder;
+import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
-import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.CompareMode;
 import org.spout.renderer.api.gl.Texture.FilterMode;
@@ -69,11 +69,11 @@ public class CascadedShadowMappingNode extends ShadowMappingNode {
 
     public CascadedShadowMappingNode(RenderGraph graph, String name) {
         super(graph, name, "cascadedShadow");
-        final GLFactory glFactory = graph.getGLFactory();
-        lightDepthsTexture2 = glFactory.createTexture();
-        lightDepthsTexture3 = glFactory.createTexture();
-        depthFrameBuffer2 = glFactory.createFrameBuffer();
-        depthFrameBuffer3 = glFactory.createFrameBuffer();
+        final Context context = graph.getContext();
+        lightDepthsTexture2 = context.createTexture();
+        lightDepthsTexture3 = context.createTexture();
+        depthFrameBuffer2 = context.createFrameBuffer();
+        depthFrameBuffer3 = context.createFrameBuffer();
     }
 
     @Override

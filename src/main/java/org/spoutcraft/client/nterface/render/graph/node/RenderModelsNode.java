@@ -30,9 +30,9 @@ import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
+import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
-import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.FilterMode;
 import org.spout.renderer.api.gl.Texture.Format;
@@ -58,13 +58,13 @@ public class RenderModelsNode extends GraphNode {
 
     public RenderModelsNode(RenderGraph graph, String name) {
         super(graph, name);
-        final GLFactory glFactory = graph.getGLFactory();
-        colorsOutput = glFactory.createTexture();
-        normalsOutput = glFactory.createTexture();
-        depthsOutput = glFactory.createTexture();
-        vertexNormalsOutput = glFactory.createTexture();
-        materialsOutput = glFactory.createTexture();
-        frameBuffer = glFactory.createFrameBuffer();
+        final Context context = graph.getContext();
+        colorsOutput = context.createTexture();
+        normalsOutput = context.createTexture();
+        depthsOutput = context.createTexture();
+        vertexNormalsOutput = context.createTexture();
+        materialsOutput = context.createTexture();
+        frameBuffer = context.createFrameBuffer();
         camera = Camera.createPerspective(graph.getFieldOfView(), graph.getWindowWidth(), graph.getWindowHeight(), graph.getNearPlane(), graph.getFarPlane());
     }
 

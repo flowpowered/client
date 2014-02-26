@@ -55,7 +55,6 @@ import org.spout.renderer.api.data.Uniform.Vector3Uniform;
 import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.Context.Capability;
-import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.VertexArray;
 import org.spout.renderer.api.model.Model;
@@ -90,8 +89,7 @@ public class Renderer {
     private final Matrix4Uniform previousViewMatrixUniform = new Matrix4Uniform("previousViewMatrix", new Matrix4f());
     private final Matrix4Uniform previousProjectionMatrixUniform = new Matrix4Uniform("previousProjectionMatrix", new Matrix4f());
     private final FloatUniform blurStrengthUniform = new FloatUniform("blurStrength", 1);
-    // OpenGL version, factory and context
-    private GLFactory glFactory;
+    // OpenGL version and context
     private Context context;
     // Included materials
     private Material solidMaterial;
@@ -125,7 +123,6 @@ public class Renderer {
     }
 
     private void initContext() {
-        context = glFactory.createContext();
         context.setWindowTitle(WINDOW_TITLE);
         context.setWindowSize(windowSize);
         context.create();
@@ -134,7 +131,7 @@ public class Renderer {
             context.enableCapability(Capability.CULL_FACE);
         }
         context.enableCapability(Capability.DEPTH_TEST);
-        if (glFactory.getGLVersion() == GLVersion.GL32 || GLContext.getCapabilities().GL_ARB_depth_clamp) {
+        if (context.getGLVersion() == GLVersion.GL32 || GLContext.getCapabilities().GL_ARB_depth_clamp) {
             context.enableCapability(Capability.DEPTH_CLAMP);
         }
         final UniformHolder uniforms = context.getUniforms();
@@ -143,7 +140,7 @@ public class Renderer {
     }
 
     private void initGraph() {
-        graph = new RenderGraph(glFactory, context, "/shaders/" + glFactory.getGLVersion().toString().toLowerCase());
+        graph = new RenderGraph(context, "/shaders/" + context.getGLVersion().toString().toLowerCase());
         graph.setWindowSize(windowSize);
         graph.setFieldOfView(60);
         graph.setNearPlane(0.1f);
@@ -236,7 +233,7 @@ public class Renderer {
     private void addDefaultObjects() {
         addFPSMonitor();
 
-        final VertexArray shape = glFactory.createVertexArray();
+        final VertexArray shape = context.createVertexArray();
         shape.create();
         shape.setData(MeshGenerator.generateCylinder(null, 2.5f, 5));
         final Model model1 = new Model(shape, transparencyMaterial);
@@ -257,7 +254,7 @@ public class Renderer {
             e.printStackTrace();
             return;
         }
-        final StringModel sandboxModel = new StringModel(glFactory, graph.getProgram("font"), "ClientWIPFS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
+        final StringModel sandboxModel = new StringModel(context, graph.getProgram("font"), "ClientWIPFS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
         final float aspect = 1 / graph.getAspectRatio();
         sandboxModel.setPosition(new Vector3f(0.005, 0.97 * aspect, -0.1));
         sandboxModel.setString("Client - WIP");
@@ -321,12 +318,8 @@ public class Renderer {
         fpsMonitorModel.setString("FPS: " + fpsMonitor.getTPS());
     }
 
-    public GLFactory getGLFactory() {
-        return glFactory;
-    }
-
     public GLVersion getGLVersion() {
-        return glFactory.getGLVersion();
+        return context.getGLVersion();
     }
 
     /**
@@ -338,12 +331,12 @@ public class Renderer {
         switch (version) {
             case GL20:
             case GL21:
-                glFactory = GLImplementation.get(LWJGLUtil.GL21_IMPL);
+                context = GLImplementation.get(LWJGLUtil.GL21_IMPL);
                 break;
             case GL30:
             case GL31:
             case GL32:
-                glFactory = GLImplementation.get(LWJGLUtil.GL32_IMPL);
+                context = GLImplementation.get(LWJGLUtil.GL32_IMPL);
         }
     }
 

@@ -39,7 +39,6 @@ import org.spout.renderer.api.data.ShaderSource;
 import org.spout.renderer.api.data.Uniform.FloatUniform;
 import org.spout.renderer.api.data.Uniform.Vector2Uniform;
 import org.spout.renderer.api.gl.Context;
-import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Program;
 import org.spout.renderer.api.gl.Shader;
 import org.spout.renderer.api.gl.VertexArray;
@@ -59,19 +58,17 @@ public class RenderGraph extends Creatable {
     private float nearPlane = 0.1f;
     private float farPlane = 1000;
     private final Vector2Uniform projectionUniform = new Vector2Uniform("projection", new Vector2f(farPlane / (farPlane - nearPlane), (-farPlane * nearPlane) / (farPlane - nearPlane)));
-    private final GLFactory glFactory;
-    private final Context glContext;
+    private final Context context;
     private final String shaderSrcDir;
     private final Map<String, Program> programs = new HashMap<>();
     private final VertexArray screen;
     private final Map<String, GraphNode> nodes = new HashMap<>();
     private final SortedSet<Stage> stages = new TreeSet<>();
 
-    public RenderGraph(GLFactory glFactory, Context glContext, String shaderSrcDir) {
-        this.glFactory = glFactory;
-        this.glContext = glContext;
+    public RenderGraph(Context context, String shaderSrcDir) {
+        this.context = context;
         this.shaderSrcDir = shaderSrcDir;
-        screen = glFactory.createVertexArray();
+        screen = context.createVertexArray();
     }
 
     @Override
@@ -213,12 +210,8 @@ public class RenderGraph extends Creatable {
         return projectionUniform;
     }
 
-    public GLFactory getGLFactory() {
-        return glFactory;
-    }
-
     public Context getContext() {
-        return glContext;
+        return context;
     }
 
     public VertexArray getScreen() {
@@ -235,15 +228,15 @@ public class RenderGraph extends Creatable {
 
     private Program loadProgram(String name) {
         final String shaderPath = shaderSrcDir + "/" + name;
-        final Shader vertex = glFactory.createShader();
+        final Shader vertex = context.createShader();
         vertex.create();
         vertex.setSource(new ShaderSource(Renderer.class.getResourceAsStream(shaderPath + ".vert")));
         vertex.compile();
-        final Shader fragment = glFactory.createShader();
+        final Shader fragment = context.createShader();
         fragment.create();
         fragment.setSource(new ShaderSource(Renderer.class.getResourceAsStream(shaderPath + ".frag")));
         fragment.compile();
-        final Program program = glFactory.createProgram();
+        final Program program = context.createProgram();
         program.create();
         program.attachShader(vertex);
         program.attachShader(fragment);

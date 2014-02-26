@@ -39,9 +39,9 @@ import org.spout.renderer.api.data.Uniform.IntUniform;
 import org.spout.renderer.api.data.Uniform.Vector2Uniform;
 import org.spout.renderer.api.data.Uniform.Vector3ArrayUniform;
 import org.spout.renderer.api.data.UniformHolder;
+import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
-import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.FilterMode;
 import org.spout.renderer.api.gl.Texture.Format;
@@ -69,10 +69,10 @@ public class SSAONode extends GraphNode {
     public SSAONode(RenderGraph graph, String name) {
         super(graph, name);
         material = new Material(graph.getProgram("ssao"));
-        final GLFactory glFactory = graph.getGLFactory();
-        noiseTexture = glFactory.createTexture();
-        frameBuffer = glFactory.createFrameBuffer();
-        occlusionsOutput = glFactory.createTexture();
+        final Context context = graph.getContext();
+        noiseTexture = context.createTexture();
+        frameBuffer = context.createFrameBuffer();
+        occlusionsOutput = context.createTexture();
     }
 
     @Override

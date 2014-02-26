@@ -51,7 +51,6 @@ import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
-import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Program;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.CompareMode;
@@ -94,12 +93,12 @@ public class ShadowMappingNode extends GraphNode {
     protected ShadowMappingNode(RenderGraph graph, String name, String program) {
         super(graph, name);
         material = new Material(graph.getProgram(program));
-        final GLFactory glFactory = graph.getGLFactory();
-        lightDepthsTexture = glFactory.createTexture();
-        noiseTexture = glFactory.createTexture();
-        depthFrameBuffer = glFactory.createFrameBuffer();
-        frameBuffer = glFactory.createFrameBuffer();
-        shadowsOutput = glFactory.createTexture();
+        final Context context = graph.getContext();
+        lightDepthsTexture = context.createTexture();
+        noiseTexture = context.createTexture();
+        depthFrameBuffer = context.createFrameBuffer();
+        frameBuffer = context.createFrameBuffer();
+        shadowsOutput = context.createTexture();
     }
 
     @Override

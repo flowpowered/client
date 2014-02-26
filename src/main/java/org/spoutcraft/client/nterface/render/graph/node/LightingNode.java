@@ -32,9 +32,9 @@ import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.Vector3Uniform;
 import org.spout.renderer.api.data.UniformHolder;
+import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
-import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.FilterMode;
 import org.spout.renderer.api.gl.Texture.Format;
@@ -63,9 +63,9 @@ public class LightingNode extends GraphNode {
     public LightingNode(RenderGraph graph, String name) {
         super(graph, name);
         material = new Material(graph.getProgram("lighting"));
-        final GLFactory glFactory = graph.getGLFactory();
-        frameBuffer = glFactory.createFrameBuffer();
-        colorsOutput = glFactory.createTexture();
+        final Context context = graph.getContext();
+        frameBuffer = context.createFrameBuffer();
+        colorsOutput = context.createTexture();
     }
 
     @Override

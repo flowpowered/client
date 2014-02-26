@@ -35,9 +35,9 @@ import org.spout.renderer.api.data.Uniform.FloatArrayUniform;
 import org.spout.renderer.api.data.Uniform.IntUniform;
 import org.spout.renderer.api.data.Uniform.Vector2Uniform;
 import org.spout.renderer.api.data.UniformHolder;
+import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
-import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Program;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.FilterMode;
@@ -84,11 +84,11 @@ public class BlurNode extends GraphNode {
         final Program blurProgram = graph.getProgram("blur");
         horizontalMaterial = new Material(blurProgram);
         verticalMaterial = new Material(blurProgram);
-        final GLFactory glFactory = graph.getGLFactory();
-        horizontalFrameBuffer = glFactory.createFrameBuffer();
-        verticalFrameBuffer = glFactory.createFrameBuffer();
-        intermediateTexture = glFactory.createTexture();
-        colorsOutput = glFactory.createTexture();
+        final Context context = graph.getContext();
+        horizontalFrameBuffer = context.createFrameBuffer();
+        verticalFrameBuffer = context.createFrameBuffer();
+        intermediateTexture = context.createTexture();
+        colorsOutput = context.createTexture();
     }
 
     @Override
