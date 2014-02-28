@@ -109,8 +109,8 @@ public class Renderer {
     private boolean fpsMonitorStarted = false;
 
     public Renderer() {
-        // Set the default OpenGL version to GL32
-        setGLVersion(GLVersion.GL32);
+        // Set the default OpenGL version to GL30
+        setGLVersion(Interface.DEFAULT_VERSION);
     }
 
     /**
@@ -132,7 +132,7 @@ public class Renderer {
             context.enableCapability(Capability.CULL_FACE);
         }
         context.enableCapability(Capability.DEPTH_TEST);
-        if (context.getGLVersion() == GLVersion.GL32 || GLContext.getCapabilities().GL_ARB_depth_clamp) {
+        if (context.getGLVersion() == Interface.DEFAULT_VERSION || GLContext.getCapabilities().GL_ARB_depth_clamp) {
             context.enableCapability(Capability.DEPTH_CLAMP);
         }
         final UniformHolder uniforms = context.getUniforms();
@@ -331,13 +331,10 @@ public class Renderer {
     public void setGLVersion(GLVersion version) {
         switch (version) {
             case GL20:
-            case GL21:
-                context = GLImplementation.get(LWJGLUtil.GL21_IMPL);
+                context = GLImplementation.get(LWJGLUtil.GL20_IMPL);
                 break;
             case GL30:
-            case GL31:
-            case GL32:
-                context = GLImplementation.get(LWJGLUtil.GL32_IMPL);
+                context = GLImplementation.get(LWJGLUtil.GL30_IMPL);
         }
     }
 
