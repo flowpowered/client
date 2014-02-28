@@ -31,7 +31,6 @@ import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
-import org.spout.renderer.api.data.VertexAttribute.DataType;
 import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.Context.BlendFunction;
 import org.spout.renderer.api.gl.Context.Capability;
@@ -39,7 +38,6 @@ import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.FilterMode;
-import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.model.Model;
 
@@ -74,12 +72,12 @@ public class RenderTransparentModelsNode extends GraphNode {
         checkNotCreated();
         // Create the weighted colors texture
         weightedColors.create();
-        weightedColors.setFormat(Format.RGBA, InternalFormat.RGBA16F, DataType.HALF_FLOAT);
+        weightedColors.setFormat(InternalFormat.RGBA16F);
         weightedColors.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
         weightedColors.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the layer counts texture
         layerCounts.create();
-        layerCounts.setFormat(Format.RED, InternalFormat.R16F, DataType.HALF_FLOAT);
+        layerCounts.setFormat(InternalFormat.R16F);
         layerCounts.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
         layerCounts.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the material

@@ -27,7 +27,6 @@ import javax.imageio.ImageIO;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -56,9 +55,11 @@ import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.Context.Capability;
 import org.spout.renderer.api.gl.Texture.Format;
+import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.gl.VertexArray;
 import org.spout.renderer.api.model.Model;
 import org.spout.renderer.api.model.StringModel;
+import org.spout.renderer.api.util.CausticUtil;
 import org.spout.renderer.api.util.MeshGenerator;
 import org.spout.renderer.api.util.Rectangle;
 import org.spout.renderer.lwjgl.LWJGLUtil;
@@ -398,23 +399,12 @@ public class Renderer {
     /**
      * Saves a screenshot (PNG) to the directory where the program is currently running, with the current date as the file name.
      *
-     * @param outputDir The directory in which to output the file
+     * @param outputDir The directory in which to output the file, can be null, which will output to the current working directory
      */
     public void saveScreenshot(File outputDir) {
-        final ByteBuffer buffer = context.readCurrentFrame(new Rectangle(Vector2i.ZERO, windowSize), Format.RGB);
-        final int width = context.getWindowWidth();
-        final int height = context.getWindowHeight();
-        final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        final byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                final int srcIndex = (x + y * width) * 3;
-                final int destIndex = (x + (height - y - 1) * width) * 3;
-                data[destIndex + 2] = buffer.get(srcIndex);
-                data[destIndex + 1] = buffer.get(srcIndex + 1);
-                data[destIndex] = buffer.get(srcIndex + 2);
-            }
-        }
+        final Rectangle size = new Rectangle(Vector2i.ZERO, windowSize);
+        final ByteBuffer buffer = context.readFrame(size, InternalFormat.RGB8);
+        final BufferedImage image = CausticUtil.getImage(buffer, Format.RGB, size);
         try {
             ImageIO.write(image, "PNG", new File(outputDir, SCREENSHOT_DATE_FORMAT.format(Calendar.getInstance().getTime()) + ".png"));
         } catch (IOException e) {

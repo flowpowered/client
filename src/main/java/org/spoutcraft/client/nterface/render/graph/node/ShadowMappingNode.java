@@ -55,7 +55,6 @@ import org.spout.renderer.api.gl.Program;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.CompareMode;
 import org.spout.renderer.api.gl.Texture.FilterMode;
-import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
@@ -106,16 +105,16 @@ public class ShadowMappingNode extends GraphNode {
         checkNotCreated();
         // Create the noise texture
         noiseTexture.create();
-        noiseTexture.setFormat(Format.RG, InternalFormat.RG8);
+        noiseTexture.setFormat(InternalFormat.RG8);
         noiseTexture.setFilters(FilterMode.NEAREST, FilterMode.NEAREST);
         // Create the shadows texture
         shadowsOutput.create();
-        shadowsOutput.setFormat(Format.RED, InternalFormat.R8);
+        shadowsOutput.setFormat(InternalFormat.R8);
         shadowsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
         shadowsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the depth texture
         lightDepthsTexture.create();
-        lightDepthsTexture.setFormat(Format.DEPTH, InternalFormat.DEPTH_COMPONENT16);
+        lightDepthsTexture.setFormat(InternalFormat.DEPTH_COMPONENT16);
         lightDepthsTexture.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
         lightDepthsTexture.setImageData(null, shadowMapSize.getX(), shadowMapSize.getY());
         lightDepthsTexture.setWraps(WrapMode.CLAMP_TO_BORDER, WrapMode.CLAMP_TO_BORDER);

@@ -72,7 +72,7 @@ dependencies {
     compile 'org.apache.logging.log4j:log4j-api:2.0-beta9'
     compile 'org.apache.logging.log4j:log4j-core:2.0-beta9'
     compile 'org.apache.logging.log4j:log4j-slf4j-impl:2.0-beta9'
-    compile 'org.spout:caustic-lwjgl:2.0.0-SNAPSHOT'
+    compile 'org.spout:caustic-lwjgl:2.0.1-SNAPSHOT'
     compile 'org.spout:react:1.0.0-SNAPSHOT'
     testCompile 'junit:junit:4.8.2'
 }

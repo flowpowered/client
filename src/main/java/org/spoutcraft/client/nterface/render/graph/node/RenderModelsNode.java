@@ -35,7 +35,6 @@ import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.FilterMode;
-import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
@@ -73,29 +72,29 @@ public class RenderModelsNode extends GraphNode {
         checkNotCreated();
         // Create the colors texture
         colorsOutput.create();
-        colorsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        colorsOutput.setFormat(InternalFormat.RGBA8);
         colorsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
         colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         colorsOutput.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the normals texture
         normalsOutput.create();
-        normalsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        normalsOutput.setFormat(InternalFormat.RGBA8);
         normalsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
         normalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the depths texture
         depthsOutput.create();
-        depthsOutput.setFormat(Format.DEPTH, InternalFormat.DEPTH_COMPONENT32);
+        depthsOutput.setFormat(InternalFormat.DEPTH_COMPONENT32);
         depthsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
         depthsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         depthsOutput.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the vertex normals texture
         vertexNormalsOutput.create();
-        vertexNormalsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        vertexNormalsOutput.setFormat(InternalFormat.RGBA8);
         vertexNormalsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
         vertexNormalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the materials texture
         materialsOutput.create();
-        materialsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        materialsOutput.setFormat(InternalFormat.RGBA8);
         materialsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
         materialsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the frame buffer

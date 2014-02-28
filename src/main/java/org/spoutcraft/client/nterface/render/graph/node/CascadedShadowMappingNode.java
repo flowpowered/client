@@ -46,7 +46,6 @@ import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.CompareMode;
 import org.spout.renderer.api.gl.Texture.FilterMode;
-import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
@@ -83,14 +82,14 @@ public class CascadedShadowMappingNode extends ShadowMappingNode {
         super.create();
         // Create second light depth texture
         lightDepthsTexture2.create();
-        lightDepthsTexture2.setFormat(Format.DEPTH, InternalFormat.DEPTH_COMPONENT16);
+        lightDepthsTexture2.setFormat(InternalFormat.DEPTH_COMPONENT16);
         lightDepthsTexture2.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
         lightDepthsTexture2.setImageData(null, shadowMapSize.getX(), shadowMapSize.getY());
         lightDepthsTexture2.setWraps(WrapMode.CLAMP_TO_BORDER, WrapMode.CLAMP_TO_BORDER);
         lightDepthsTexture2.setCompareMode(CompareMode.LESS);
         // Create third light depth texture
         lightDepthsTexture3.create();
-        lightDepthsTexture3.setFormat(Format.DEPTH, InternalFormat.DEPTH_COMPONENT16);
+        lightDepthsTexture3.setFormat(InternalFormat.DEPTH_COMPONENT16);
         lightDepthsTexture3.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
         lightDepthsTexture3.setImageData(null, shadowMapSize.getX(), shadowMapSize.getY());
         lightDepthsTexture3.setWraps(WrapMode.CLAMP_TO_BORDER, WrapMode.CLAMP_TO_BORDER);

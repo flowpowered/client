@@ -44,7 +44,6 @@ import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.FilterMode;
-import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.model.Model;
 import org.spout.renderer.api.util.CausticUtil;
@@ -80,11 +79,11 @@ public class SSAONode extends GraphNode {
         checkNotCreated();
         // Create the noise texture
         noiseTexture.create();
-        noiseTexture.setFormat(Format.RGB, InternalFormat.RGB8);
+        noiseTexture.setFormat(InternalFormat.RGB8);
         noiseTexture.setFilters(FilterMode.NEAREST, FilterMode.NEAREST);
         // Create the occlusions texture
         occlusionsOutput.create();
-        occlusionsOutput.setFormat(Format.RED, InternalFormat.R8);
+        occlusionsOutput.setFormat(InternalFormat.R8);
         occlusionsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
         occlusionsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the material
