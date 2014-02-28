@@ -33,6 +33,7 @@ import java.util.TreeSet;
 
 import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector2i;
+import java.io.File;
 
 import org.spout.renderer.api.Creatable;
 import org.spout.renderer.api.data.ShaderSource;
@@ -109,7 +110,7 @@ public class RenderGraph extends Creatable {
         int i = 0;
         Stage current = new Stage(i++);
         while (true) {
-            for (Iterator<GraphNode> iterator = toBuild.iterator(); iterator.hasNext(); ) {
+            for (Iterator<GraphNode> iterator = toBuild.iterator(); iterator.hasNext();) {
                 final GraphNode node = iterator.next();
                 if (previous.containsAll(node.getConnectedInputs().values())) {
                     current.addNode(node);
@@ -227,8 +228,9 @@ public class RenderGraph extends Creatable {
     }
 
     private Program loadProgram(String name) {
-        final String shaderPath = shaderSrcDir + "/" + name;
+        final String shaderPath = shaderSrcDir + '/' + name;
         final Shader vertex = context.newShader();
+        System.out.println("Shader Path: " + shaderPath);
         vertex.create();
         vertex.setSource(new ShaderSource(Renderer.class.getResourceAsStream(shaderPath + ".vert")));
         vertex.compile();
