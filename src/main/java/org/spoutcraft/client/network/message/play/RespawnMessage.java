@@ -33,7 +33,7 @@ import org.spoutcraft.client.network.message.ChannelMessage;
  * Client-bound {@link com.flowpowered.networking.Message} that instructs the client to respawn, updating the active {@link org.spoutcraft.client.universe.world.World}'s characteristics.
  */
 public class RespawnMessage extends ChannelMessage {
-    private static final Channel[] CHANNELS = new Channel[] {Channel.UNIVERSE};
+    private static final Channel[] CHANNELS = new Channel[]{Channel.UNIVERSE};
     private final Dimension dimension;
     private final Difficulty difficulty;
     private final GameMode gameMode;

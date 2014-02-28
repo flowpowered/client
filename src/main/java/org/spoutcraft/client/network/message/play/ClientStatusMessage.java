@@ -69,8 +69,7 @@ public class ClientStatusMessage extends ChannelMessage {
          */
         REQUEST_STATS(1),
         /**
-         * TODO: check this and rephrase
-         * This informs the server that the client is opening an inventory achievement
+         * TODO: check this and rephrase This informs the server that the client is opening an inventory achievement
          */
         OPEN_INVENTORY_ACHIEVEMENT(2);
         private final int value;

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
 	<Appenders>
-		<JLineConsole name ="Console" target="SYSTEM_OUT">
+		<JLineConsole name="Console" target="SYSTEM_OUT">
 			<PatternLayout pattern="[%d{HH:mm:ss}] [%style{%t}{dim, yellow}] [%logger{36}/%highlight{%-4level}]: %msg%n"/>
 		</JLineConsole>
-		<Console name ="workaround" target="SYSTEM_OUT">
+		<Console name="workaround" target="SYSTEM_OUT">
 			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%logger{36}/%-4level]: %msg%n"/>
 		</Console>
 		<RollingRandomAccessFile name="Log" fileName="logs/current.log" filePattern="logs/%d{MM.dd.yyyy}-%i.log.gz">

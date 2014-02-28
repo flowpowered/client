@@ -28,6 +28,7 @@ import com.flowpowered.commons.store.block.AtomicBlockStore;
 import com.flowpowered.commons.store.block.AtomicBlockStore.DataMask;
 import com.flowpowered.commons.store.block.impl.AtomicPaletteBlockStore;
 import com.flowpowered.math.vector.Vector3i;
+
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
 

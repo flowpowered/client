@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import org.spoutcraft.client.input.Input;
 import org.spoutcraft.client.network.Network;
 import org.spoutcraft.client.nterface.Interface;

@@ -28,7 +28,7 @@ import java.util.Arrays;
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 public class ChunkDataBulkMessage extends ChannelMessage {
-    private static final Channel[] CHANNELS = new Channel[] {Channel.UNIVERSE};
+    private static final Channel[] CHANNELS = new Channel[]{Channel.UNIVERSE};
     private final short columnCount;
     private final int compressedDataLength;
     private final boolean hasSkyLight;

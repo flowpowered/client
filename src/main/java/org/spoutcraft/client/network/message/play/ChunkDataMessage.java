@@ -28,7 +28,7 @@ import java.util.Arrays;
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 public class ChunkDataMessage extends ChannelMessage {
-    private static final Channel[] CHANNELS = new Channel[] {Channel.UNIVERSE};
+    private static final Channel[] CHANNELS = new Channel[]{Channel.UNIVERSE};
     private final int columnX;
     private final int columnZ;
     private final boolean groundUpContinuous;

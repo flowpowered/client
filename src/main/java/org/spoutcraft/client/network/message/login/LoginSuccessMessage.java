@@ -32,7 +32,7 @@ import org.spoutcraft.client.network.message.ChannelMessage;
  * LoginStartMessage} is sent.
  */
 public class LoginSuccessMessage extends ChannelMessage {
-    private static final Channel[] CHANNELS = new Channel[] {Channel.NETWORK};
+    private static final Channel[] CHANNELS = new Channel[]{Channel.NETWORK};
     private final UUID uuid;
     private final String username;
 

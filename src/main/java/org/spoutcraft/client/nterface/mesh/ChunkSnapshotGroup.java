@@ -24,6 +24,7 @@
 package org.spoutcraft.client.nterface.mesh;
 
 import com.flowpowered.math.vector.Vector3i;
+
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.block.material.Materials;
 import org.spoutcraft.client.universe.snapshot.ChunkSnapshot;

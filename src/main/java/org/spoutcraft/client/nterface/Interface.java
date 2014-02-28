@@ -63,6 +63,7 @@ import org.spoutcraft.client.universe.world.World;
  */
 public class Interface extends TickingElement {
     public static final int TPS = 60;
+    public static final GLVersion DEFAULT_VERSION = GLVersion.GL30;
     private static final float PI = (float) TrigMath.PI;
     private static final float TWO_PI = 2 * PI;
     private static final float LIGHT_ANGLE_LIMIT = PI / 64;
@@ -110,7 +111,7 @@ public class Interface extends TickingElement {
     public void onStart() {
         game.getLogger().info("Starting interface");
         // Initialize the renderer
-        renderer.setGLVersion(GLVersion.GL32);
+        renderer.setGLVersion(DEFAULT_VERSION);
         renderer.init();
         // Subscribe to the keyboard input queue
         final Input input = game.getInput();

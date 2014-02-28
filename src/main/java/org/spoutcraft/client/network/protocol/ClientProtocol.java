@@ -33,8 +33,10 @@ import com.flowpowered.networking.exception.IllegalOpcodeException;
 import com.flowpowered.networking.exception.UnknownPacketException;
 import com.flowpowered.networking.protocol.keyed.KeyedProtocol;
 import com.flowpowered.networking.util.ByteBufUtils;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+
 import org.spoutcraft.client.Game;
 
 public class ClientProtocol extends KeyedProtocol {

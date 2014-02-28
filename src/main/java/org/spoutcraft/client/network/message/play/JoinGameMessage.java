@@ -33,7 +33,7 @@ import org.spoutcraft.client.network.message.ChannelMessage;
  * Client-bound message that instructs the client to setup the game with various game attributes.
  */
 public class JoinGameMessage extends ChannelMessage {
-    private static final Channel[] CHANNELS = new Channel[] {Channel.UNIVERSE};
+    private static final Channel[] CHANNELS = new Channel[]{Channel.UNIVERSE};
     private final int playerId;
     private final boolean hardcore;
     private final GameMode gameMode;
@@ -75,6 +75,7 @@ public class JoinGameMessage extends ChannelMessage {
 
     /**
      * Returns if hardcore is enabled
+     *
      * @return True if hardcore, false if not
      */
     public boolean isHardcore() {

@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.networking.session.Session;
+
 import org.spoutcraft.client.network.ClientSession;
 import org.spoutcraft.client.universe.snapshot.WorldSnapshot;
 

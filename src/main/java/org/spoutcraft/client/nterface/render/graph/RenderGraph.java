@@ -227,8 +227,9 @@ public class RenderGraph extends Creatable {
     }
 
     private Program loadProgram(String name) {
-        final String shaderPath = shaderSrcDir + "/" + name;
+        final String shaderPath = shaderSrcDir + '/' + name;
         final Shader vertex = context.newShader();
+        System.out.println("Shader Path: " + shaderPath);
         vertex.create();
         vertex.setSource(new ShaderSource(Renderer.class.getResourceAsStream(shaderPath + ".vert")));
         vertex.compile();

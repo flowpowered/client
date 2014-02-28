@@ -30,7 +30,7 @@ import org.spoutcraft.client.network.message.ChannelMessage;
  * timeout period, it will terminate the session.
  */
 public class KeepAliveMessage extends ChannelMessage {
-    private static final Channel[] CHANNELS = new Channel[] {Channel.NETWORK};
+    private static final Channel[] CHANNELS = new Channel[]{Channel.NETWORK};
     private final int random;
 
     /**

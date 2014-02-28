@@ -24,6 +24,7 @@
 package org.spoutcraft.client.universe.block;
 
 import com.flowpowered.math.vector.Vector3i;
+
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.world.Chunk;
 

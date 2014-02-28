@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.networking.util.AnnotatedMessageHandler;
 import com.flowpowered.networking.util.AnnotatedMessageHandler.Handle;
-import io.netty.channel.ChannelOption;
+
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.ChannelMessage.Channel;

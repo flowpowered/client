@@ -25,6 +25,7 @@ package org.spoutcraft.client.nterface.mesh;
 
 import gnu.trove.list.TFloatList;
 import gnu.trove.list.TIntList;
+
 import org.spoutcraft.client.nterface.mesh.Mesh.MeshAttribute;
 import org.spoutcraft.client.universe.block.BlockFace;
 import org.spoutcraft.client.universe.block.BlockFaces;

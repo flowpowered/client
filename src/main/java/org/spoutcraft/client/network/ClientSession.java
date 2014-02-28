@@ -28,7 +28,9 @@ import java.util.UUID;
 import com.flowpowered.networking.Message;
 import com.flowpowered.networking.protocol.AbstractProtocol;
 import com.flowpowered.networking.session.BasicSession;
+
 import io.netty.channel.Channel;
+
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.network.message.ChannelMessage;
 import org.spoutcraft.client.network.message.handshake.HandshakeMessage;

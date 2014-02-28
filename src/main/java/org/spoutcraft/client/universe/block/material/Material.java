@@ -25,6 +25,7 @@ package org.spoutcraft.client.universe.block.material;
 
 import gnu.trove.map.TShortObjectMap;
 import gnu.trove.map.hash.TShortObjectHashMap;
+
 import org.spoutcraft.client.universe.block.BlockFace;
 
 /**

@@ -26,7 +26,7 @@ package org.spoutcraft.client.network.message.play;
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 public class PositionLookMessage extends ChannelMessage {
-    private static final Channel[] CHANNELS = new Channel[] {Channel.UNIVERSE};
+    private static final Channel[] CHANNELS = new Channel[]{Channel.UNIVERSE};
     private final double x;
     private final double y;
     private final double z;

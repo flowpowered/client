@@ -26,13 +26,7 @@ package org.spoutcraft.client.network.message.play;
 import org.spoutcraft.client.network.message.ChannelMessage;
 
 /**
- * Server bound message that tells the server when the client is:
- * </p>
- * A. In the air
- * B. Swimming
- * C. On the ground
- * </p>
- * onGround should be false anytime the client isn't on the ground.
+ * Server bound message that tells the server when the client is: </p> A. In the air B. Swimming C. On the ground </p> onGround should be false anytime the client isn't on the ground.
  */
 public class PlayerMessage extends ChannelMessage {
     private final boolean onGround;
@@ -48,6 +42,7 @@ public class PlayerMessage extends ChannelMessage {
 
     /**
      * Return true if the client's player is on the ground, false otherwise.
+     *
      * @return Whether or not the client's player is on the ground
      */
     public boolean isOnGround() {

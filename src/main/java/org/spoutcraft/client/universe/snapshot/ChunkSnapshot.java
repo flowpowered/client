@@ -29,6 +29,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.flowpowered.commons.store.block.AtomicBlockStore;
 import com.flowpowered.math.vector.Vector3i;
+
 import org.spoutcraft.client.universe.block.Block;
 import org.spoutcraft.client.universe.block.material.Material;
 import org.spoutcraft.client.universe.world.Chunk;

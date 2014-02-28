@@ -32,6 +32,7 @@ import com.flowpowered.commands.CommandException;
 import com.flowpowered.commands.CommandManager;
 import com.flowpowered.commands.CommandSender;
 import com.flowpowered.permissions.PermissionDomain;
+
 import org.spoutcraft.client.Game;
 
 public class ConsoleCommandSender implements CommandSender {
