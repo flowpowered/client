@@ -63,7 +63,7 @@ import org.spoutcraft.client.universe.world.World;
  */
 public class Interface extends TickingElement {
     public static final int TPS = 60;
-    public static final GLVersion DEFAULT_VERSION = GLVersion.GL30;
+    public static final GLVersion DEFAULT_VERSION = GLVersion.GL32;
     private static final float PI = (float) TrigMath.PI;
     private static final float TWO_PI = 2 * PI;
     private static final float LIGHT_ANGLE_LIMIT = PI / 64;

@@ -141,7 +141,7 @@ public class Renderer {
     }
 
     private void initGraph() {
-        graph = new RenderGraph(context, "/shaders/" + context.getGLVersion().toString().toLowerCase());
+        graph = new RenderGraph(context, "/shaders/gl" + context.getGLVersion().getMajor() + "0");
         graph.setWindowSize(windowSize);
         graph.setFieldOfView(60);
         graph.setNearPlane(0.1f);
@@ -333,8 +333,18 @@ public class Renderer {
             case GL20:
                 context = GLImplementation.get(LWJGLUtil.GL20_IMPL);
                 break;
+            case GL21:
+                context = GLImplementation.get(LWJGLUtil.GL21_IMPL);
+                break;
             case GL30:
+            case GL31:
                 context = GLImplementation.get(LWJGLUtil.GL30_IMPL);
+                break;
+            case GL32:
+                context = GLImplementation.get(LWJGLUtil.GL32_IMPL);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported OpenGL version: " + version);
         }
     }
 
