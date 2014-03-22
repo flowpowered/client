@@ -29,6 +29,7 @@ import java.util.Random;
 
 import com.flowpowered.math.GenericMath;
 import com.flowpowered.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3f;
 
 import org.spout.renderer.api.Material;
@@ -47,18 +48,18 @@ import org.spout.renderer.api.gl.Texture.FilterMode;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.model.Model;
 import org.spout.renderer.api.util.CausticUtil;
+import org.spout.renderer.api.util.Rectangle;
 
 import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
 public class SSAONode extends GraphNode {
-    private final Material material;
     private final Texture noiseTexture;
     private final FrameBuffer frameBuffer;
     private final Texture occlusionsOutput;
-    private Texture normalsInput;
-    private Texture depthsInput;
-    private Pipeline pipeline;
-    private IntUniform kernelSizeUniform = new IntUniform("kernelSize", 0);
+    private final Material material;
+    private final Pipeline pipeline;
+    private final Rectangle outputSize = new Rectangle();
+    private final IntUniform kernelSizeUniform = new IntUniform("kernelSize", 0);
     private final Vector3ArrayUniform kernelUniform = new Vector3ArrayUniform("kernel", new Vector3f[]{});
     private final FloatUniform radiusUniform = new FloatUniform("radius", 0.5f);
     private final FloatUniform thresholdUniform = new FloatUniform("threshold", 0.15f);
@@ -67,28 +68,24 @@ public class SSAONode extends GraphNode {
 
     public SSAONode(RenderGraph graph, String name) {
         super(graph, name);
-        material = new Material(graph.getProgram("ssao"));
-        final Context context = graph.getContext();
-        noiseTexture = context.newTexture();
-        occlusionsOutput = context.newTexture();
-        frameBuffer = context.newFrameBuffer();
-    }
 
-    @Override
-    public void create() {
-        checkNotCreated();
+        final Context context = graph.getContext();
         // Create the noise texture
+        noiseTexture = context.newTexture();
         noiseTexture.create();
         noiseTexture.setFormat(InternalFormat.RGB8);
         noiseTexture.setFilters(FilterMode.NEAREST, FilterMode.NEAREST);
         // Create the occlusions texture
+        occlusionsOutput = context.newTexture();
         occlusionsOutput.create();
         occlusionsOutput.setFormat(InternalFormat.R8);
         occlusionsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
-        occlusionsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
+        // Create the frame buffer
+        frameBuffer = context.newFrameBuffer();
+        frameBuffer.create();
+        frameBuffer.attach(AttachmentPoint.COLOR0, occlusionsOutput);
         // Create the material
-        material.addTexture(0, normalsInput);
-        material.addTexture(1, depthsInput);
+        material = new Material(graph.getProgram("ssao"));
         material.addTexture(2, noiseTexture);
         final UniformHolder uniforms = material.getUniforms();
         uniforms.add(graph.getProjectionUniform());
@@ -102,31 +99,22 @@ public class SSAONode extends GraphNode {
         uniforms.add(powerUniform);
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
-        // Create the frame buffer
-        frameBuffer.create();
-        frameBuffer.attach(AttachmentPoint.COLOR0, occlusionsOutput);
         // Create the pipeline
-        pipeline = new PipelineBuilder().bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
-        // Update state to created
-        super.create();
+        pipeline = new PipelineBuilder().useViewPort(outputSize).bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
     }
 
     @Override
     public void destroy() {
-        checkCreated();
         noiseTexture.destroy();
         frameBuffer.destroy();
         occlusionsOutput.destroy();
-        super.destroy();
     }
 
     @Override
     public void render() {
-        checkCreated();
         pipeline.run(graph.getContext());
     }
 
-    // TODO: we can't have 2 arguments here
     @Setting
     public void setKernelSize(int kernelSize, float threshold) {
         // Generate the kernel
@@ -166,7 +154,7 @@ public class SSAONode extends GraphNode {
             noiseTextureBuffer.put((byte) (noise.getFloorZ() & 0xff));
         }
         // Update the uniform
-        noiseScaleUniform.set(new Vector2f(graph.getWindowWidth(), graph.getWindowHeight()).div(noiseSize));
+        noiseScaleUniform.set(outputSize.getSize().toFloat().div(noiseSize));
         // Update the texture
         noiseTextureBuffer.flip();
         noiseTexture.setImageData(noiseTextureBuffer, noiseSize, noiseSize);
@@ -180,17 +168,23 @@ public class SSAONode extends GraphNode {
     @Input("normals")
     public void setNormalsInput(Texture texture) {
         texture.checkCreated();
-        normalsInput = texture;
+        material.addTexture(0, texture);
     }
 
     @Input("depths")
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
-        depthsInput = texture;
+        material.addTexture(1, texture);
     }
 
     @Output("occlusions")
     public Texture getOcclusionsOutput() {
         return occlusionsOutput;
+    }
+
+    @Setting
+    public void setOcclusionsSize(Vector2i size) {
+        outputSize.setSize(size);
+        occlusionsOutput.setImageData(null, size.getX(), size.getY());
     }
 }

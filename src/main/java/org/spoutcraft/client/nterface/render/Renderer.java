@@ -150,23 +150,24 @@ public class Renderer {
         final int blurSize = 2;
         // Render models
         renderModelsNode = new RenderModelsNode(graph, "models");
-        renderModelsNode.create();
+        renderModelsNode.setOutputSize(windowSize);
         graph.addNode(renderModelsNode);
         // Shadows
         shadowMappingNode = new CascadedShadowMappingNode(graph, "shadows");
         shadowMappingNode.connect("normals", "vertexNormals", renderModelsNode);
         shadowMappingNode.connect("depths", "depths", renderModelsNode);
+        shadowMappingNode.setShadowsSize(windowSize);
         shadowMappingNode.setShadowMapSize(new Vector2i(1048, 1048));
-        shadowMappingNode.create();
+        shadowMappingNode.setRenderModelsNode(renderModelsNode);
         shadowMappingNode.setKernelSize(8);
         shadowMappingNode.setNoiseSize(blurSize);
-        shadowMappingNode.setBias(0.005f);
+        shadowMappingNode.setBias(0.001f);
         shadowMappingNode.setRadius(0.05f);
         graph.addNode(shadowMappingNode);
         // Blur shadows
         final BlurNode blurShadowsNode = new BlurNode(graph, "blurShadows");
         blurShadowsNode.connect("colors", "shadows", shadowMappingNode);
-        blurShadowsNode.create();
+        blurShadowsNode.setColorsSize(windowSize);
         blurShadowsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
         blurShadowsNode.setKernelSize(blurSize + 1);
         graph.addNode(blurShadowsNode);
@@ -174,7 +175,7 @@ public class Renderer {
         final SSAONode ssaoNode = new SSAONode(graph, "ssao");
         ssaoNode.connect("normals", "normals", renderModelsNode);
         ssaoNode.connect("depths", "depths", renderModelsNode);
-        ssaoNode.create();
+        ssaoNode.setOcclusionsSize(windowSize);
         ssaoNode.setKernelSize(8, 0.15f);
         ssaoNode.setNoiseSize(blurSize);
         ssaoNode.setRadius(0.5f);
@@ -183,7 +184,7 @@ public class Renderer {
         // Blur occlusions
         final BlurNode blurOcclusionsNode = new BlurNode(graph, "blurOcclusions");
         blurOcclusionsNode.connect("colors", "occlusions", ssaoNode);
-        blurOcclusionsNode.create();
+        blurOcclusionsNode.setColorsSize(windowSize);
         blurOcclusionsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
         blurOcclusionsNode.setKernelSize(blurSize + 1);
         graph.addNode(blurOcclusionsNode);
@@ -195,18 +196,16 @@ public class Renderer {
         lightingNode.connect("materials", "materials", renderModelsNode);
         lightingNode.connect("occlusions", "colors", blurOcclusionsNode);
         lightingNode.connect("shadows", "colors", blurShadowsNode);
-        lightingNode.create();
+        lightingNode.setColorsSize(windowSize);
         graph.addNode(lightingNode);
         // Transparent models
         renderTransparentModelsNode = new RenderTransparentModelsNode(graph, "transparency");
         renderTransparentModelsNode.connect("depths", "depths", renderModelsNode);
         renderTransparentModelsNode.connect("colors", "colors", lightingNode);
-        renderTransparentModelsNode.create();
         graph.addNode(renderTransparentModelsNode);
         // Render GUI
         renderGUINode = new RenderGUINode(graph, "gui");
         renderGUINode.connect("colors", "colors", renderTransparentModelsNode);
-        renderGUINode.create();
         graph.addNode(renderGUINode);
         // Build graph
         graph.rebuild();
@@ -307,9 +306,6 @@ public class Renderer {
 
     private void setPreviousModelMatrices() {
         for (Model model : renderModelsNode.getModels()) {
-            model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
-        }
-        for (Model model : renderTransparentModelsNode.getModels()) {
             model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
         }
     }

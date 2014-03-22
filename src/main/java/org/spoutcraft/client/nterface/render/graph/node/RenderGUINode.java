@@ -34,6 +34,7 @@ import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.model.Model;
+import org.spout.renderer.api.util.Rectangle;
 
 import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
@@ -42,45 +43,32 @@ import org.spoutcraft.client.nterface.render.graph.RenderGraph;
  */
 public class RenderGUINode extends GraphNode {
     private final Material material;
-    private Texture colorsInput;
     private final Camera camera;
     private final List<Model> models = new ArrayList<>();
-    private Pipeline pipeline;
+    private final Pipeline pipeline;
+    private final Rectangle screenSize = new Rectangle();
 
     public RenderGUINode(RenderGraph graph, String name) {
         super(graph, name);
-        material = new Material(graph.getProgram("screen"));
         camera = Camera.createOrthographic(1, 0, 1 / graph.getAspectRatio(), 0, graph.getNearPlane(), graph.getFarPlane());
-    }
-
-    @Override
-    public void create() {
-        checkNotCreated();
-        // Create the material
-        material.addTexture(0, colorsInput);
-        // Create the model
+        screenSize.setSize(graph.getWindowSize());
+        material = new Material(graph.getProgram("screen"));
         final Model model = new Model(graph.getScreen(), material);
-        // Create the pipeline
-        pipeline = new PipelineBuilder().useCamera(camera).clearBuffer().renderModels(Arrays.asList(model)).renderModels(models).updateDisplay().build();
-        // Update state to created
-        super.create();
+        pipeline = new PipelineBuilder().useCamera(camera).useViewPort(screenSize).clearBuffer().renderModels(Arrays.asList(model)).renderModels(models).build();
     }
 
     @Override
     public void destroy() {
-        checkCreated();
-        super.destroy();
     }
 
     @Override
     public void render() {
-        checkCreated();
         pipeline.run(graph.getContext());
     }
 
     @Input("colors")
     public void setColorsInput(Texture colorsInput) {
-        this.colorsInput = colorsInput;
+        material.addTexture(0, colorsInput);
     }
 
     public Camera getCamera() {

@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.spout.renderer.api.Creatable;
 import org.spout.renderer.api.gl.Texture;
 
 import org.spoutcraft.client.nterface.render.graph.RenderGraph;
@@ -41,7 +40,7 @@ import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 /**
  *
  */
-public abstract class GraphNode extends Creatable {
+public abstract class GraphNode {
     protected final RenderGraph graph;
     protected final String name;
     protected final Map<String, Method> inputs = new HashMap<>();
@@ -56,6 +55,8 @@ public abstract class GraphNode extends Creatable {
     }
 
     public abstract void render();
+
+    public abstract void destroy();
 
     public String getName() {
         return name;
@@ -110,12 +111,12 @@ public abstract class GraphNode extends Creatable {
                 }
                 final Class<?>[] parameterTypes = method.getParameterTypes();
                 if (parameterTypes.length != 1 || !Texture.class.isAssignableFrom(parameterTypes[0])) {
-                    throw new IllegalStateException("Output method must have one argument of type org.spout.renderer.api.gl.Texture");
+                    throw new IllegalStateException("Output method must have one argument of type " + Texture.class.getCanonicalName());
                 }
                 inputs.put(inputAnnotation.value(), method);
             } else if (outputAnnotation != null) {
                 if (!Texture.class.isAssignableFrom(method.getReturnType())) {
-                    throw new IllegalStateException("Input method must have return type org.spout.renderer.api.gl.Texture");
+                    throw new IllegalStateException("Input method must have return type " + Texture.class.getCanonicalName());
                 }
                 outputs.put(outputAnnotation.value(), method);
             }

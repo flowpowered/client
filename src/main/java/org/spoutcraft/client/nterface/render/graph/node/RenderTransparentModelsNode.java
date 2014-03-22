@@ -27,10 +27,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.flowpowered.math.vector.Vector2i;
+
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
-import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
 import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.Context.BlendFunction;
 import org.spout.renderer.api.gl.Context.Capability;
@@ -40,6 +41,7 @@ import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.FilterMode;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.model.Model;
+import org.spout.renderer.api.util.Rectangle;
 
 import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 
@@ -47,92 +49,92 @@ import org.spoutcraft.client.nterface.render.graph.RenderGraph;
  *
  */
 public class RenderTransparentModelsNode extends GraphNode {
-    private final Material material;
     private final Texture weightedColors;
     private final Texture layerCounts;
     private final FrameBuffer weightedSumFrameBuffer;
     private final FrameBuffer frameBuffer;
-    private Texture depthsInput;
-    private Texture colorsInput;
+    private Texture colors;
     private final List<Model> models = new ArrayList<>();
-    private Pipeline pipeline;
+    private final Rectangle outputSize = new Rectangle();
+    private final Pipeline pipeline;
 
     public RenderTransparentModelsNode(RenderGraph graph, String name) {
         super(graph, name);
-        material = new Material(graph.getProgram("transparencyBlending"));
-        final Context context = graph.getContext();
-        weightedColors = context.newTexture();
-        layerCounts = context.newTexture();
-        weightedSumFrameBuffer = context.newFrameBuffer();
-        frameBuffer = context.newFrameBuffer();
-    }
 
-    @Override
-    public void create() {
-        checkNotCreated();
+        final Context context = graph.getContext();
         // Create the weighted colors texture
+        weightedColors = context.newTexture();
         weightedColors.create();
         weightedColors.setFormat(InternalFormat.RGBA16F);
         weightedColors.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
-        weightedColors.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the layer counts texture
+        layerCounts = context.newTexture();
         layerCounts.create();
         layerCounts.setFormat(InternalFormat.R16F);
         layerCounts.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
-        layerCounts.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
+        // Create the weighted sum frame buffer
+        weightedSumFrameBuffer = context.newFrameBuffer();
+        weightedSumFrameBuffer.create();
+        weightedSumFrameBuffer.attach(AttachmentPoint.COLOR0, weightedColors);
+        weightedSumFrameBuffer.attach(AttachmentPoint.COLOR1, layerCounts);
+        // Create the frame buffer
+        frameBuffer = context.newFrameBuffer();
+        frameBuffer.create();
         // Create the material
+        final Material material = new Material(graph.getProgram("transparencyBlending"));
         material.addTexture(0, weightedColors);
         material.addTexture(1, layerCounts);
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
-        // Create the weighted sum frame buffer
-        weightedSumFrameBuffer.create();
-        weightedSumFrameBuffer.attach(AttachmentPoint.COLOR0, weightedColors);
-        weightedSumFrameBuffer.attach(AttachmentPoint.COLOR1, layerCounts);
-        weightedSumFrameBuffer.attach(AttachmentPoint.DEPTH, depthsInput);
-        // Create the frame buffer
-        frameBuffer.create();
-        frameBuffer.attach(AttachmentPoint.COLOR0, colorsInput);
         // Create the pipeline
-        pipeline = new PipelineBuilder().disableDepthMask().disableCapabilities(Capability.CULL_FACE).enableCapabilities(Capability.BLEND)
-                .setBlendingFunctions(BlendFunction.GL_ONE, BlendFunction.GL_ONE).bindFrameBuffer(weightedSumFrameBuffer).clearBuffer().renderModels(models)
-                .enableCapabilities(Capability.CULL_FACE).enableDepthMask().setBlendingFunctions(BlendFunction.GL_ONE_MINUS_SRC_ALPHA, BlendFunction.GL_SRC_ALPHA)
-                .bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).disableCapabilities(Capability.BLEND).enableDepthMask().build();
-        // Update the state to created
-        super.create();
+        pipeline = new PipelineBuilder()
+                .useViewPort(outputSize)
+                .disableDepthMask().disableCapabilities(Capability.CULL_FACE).enableCapabilities(Capability.BLEND)
+                .setBlendingFunctions(BlendFunction.GL_ONE, BlendFunction.GL_ONE)
+                .bindFrameBuffer(weightedSumFrameBuffer).clearBuffer().renderModels(models)
+                .enableCapabilities(Capability.CULL_FACE).enableDepthMask()
+                .setBlendingFunctions(BlendFunction.GL_ONE_MINUS_SRC_ALPHA, BlendFunction.GL_SRC_ALPHA)
+                .bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer)
+                .disableCapabilities(Capability.BLEND).enableDepthMask()
+                .build();
     }
 
     @Override
     public void destroy() {
-        checkCreated();
         weightedColors.destroy();
         layerCounts.destroy();
         weightedSumFrameBuffer.destroy();
         frameBuffer.destroy();
-        super.destroy();
     }
 
     @Override
     public void render() {
-        checkCreated();
         pipeline.run(graph.getContext());
     }
 
     @Input("depths")
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
-        depthsInput = texture;
+        weightedSumFrameBuffer.attach(AttachmentPoint.DEPTH, texture);
     }
 
     @Input("colors")
     public void setColorsInput(Texture texture) {
         texture.checkCreated();
-        colorsInput = texture;
+        colors = texture;
+        frameBuffer.attach(AttachmentPoint.COLOR0, texture);
+        final Vector2i size = texture.getSize();
+        // Update the size of the texture to match in input, if necessary
+        if (!size.equals(outputSize.getSize())) {
+            outputSize.setSize(size);
+            weightedColors.setImageData(null, size.getX(), size.getY());
+            layerCounts.setImageData(null, size.getX(), size.getY());
+        }
     }
 
     @Output("colors")
     public Texture getColorsOutput() {
-        return colorsInput;
+        return colors;
     }
 
     /**
@@ -141,7 +143,6 @@ public class RenderTransparentModelsNode extends GraphNode {
      * @param model The model to add
      */
     public void addModel(Model model) {
-        model.getUniforms().add(new Matrix4Uniform("previousModelMatrix", model.getMatrix()));
         models.add(model);
     }
 
