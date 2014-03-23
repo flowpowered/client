@@ -158,8 +158,8 @@ public class CascadedShadowMappingNode extends ShadowMappingNode {
         final Vector3f[] slice1Vertices = vertices.clone();
         final Vector3f[] slice3Vertices = vertices.clone();
         // Compute the slices
-        final float near = graph.getNearPlane();
-        final float far = graph.getFarPlane();
+        final float near = frustum.getNearPlane();
+        final float far = frustum.getFarPlane();
         float slice1 = computeSlice(1, 3, 0.7f, near, far);
         float slice2 = computeSlice(2, 3, 0.7f, near, far);
         // Update the slices uniform

@@ -25,12 +25,14 @@ package org.spoutcraft.client.nterface.render.graph.node;
 
 import java.util.Arrays;
 
+import com.flowpowered.math.TrigMath;
 import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3f;
 
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
+import org.spout.renderer.api.data.Uniform.FloatUniform;
 import org.spout.renderer.api.data.Uniform.Vector3Uniform;
 import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.Context;
@@ -54,6 +56,8 @@ public class LightingNode extends GraphNode {
     private final Material material;
     private final Pipeline pipeline;
     private final Rectangle outputSize = new Rectangle();
+    private final FloatUniform aspectRatioUniform = new FloatUniform("aspectRatio", 1);
+    private final FloatUniform tanHalfFOVUniform = new FloatUniform("tanHalfFOV", 1);
     private final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.UP.negate());
 
     public LightingNode(RenderGraph graph, String name) {
@@ -72,8 +76,8 @@ public class LightingNode extends GraphNode {
         // Create the material
         material = new Material(graph.getProgram("lighting"));
         final UniformHolder uniforms = material.getUniforms();
-        uniforms.add(graph.getTanHalfFOVUniform());
-        uniforms.add(graph.getAspectRatioUniform());
+        uniforms.add(aspectRatioUniform);
+        uniforms.add(tanHalfFOVUniform);
         uniforms.add(lightDirectionUniform);
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
@@ -97,6 +101,11 @@ public class LightingNode extends GraphNode {
         lightDirectionUniform.set(lightDirection);
     }
 
+    @Setting
+    public void setFieldOfView(float fieldOfView) {
+        tanHalfFOVUniform.set(TrigMath.tan(Math.toRadians(fieldOfView) / 2));
+    }
+
     @Input("colors")
     public void setColorsInput(Texture texture) {
         texture.checkCreated();
@@ -113,6 +122,7 @@ public class LightingNode extends GraphNode {
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         material.addTexture(2, texture);
+        aspectRatioUniform.set((float) texture.getWidth() / texture.getHeight());
     }
 
     @Input("materials")

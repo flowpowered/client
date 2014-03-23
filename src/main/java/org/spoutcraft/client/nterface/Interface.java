@@ -151,7 +151,7 @@ public class Interface extends TickingElement {
             lightAngle = dayAngle - PI;
         }
         lightAngle = lightAngle / PI * (PI - 2 * LIGHT_ANGLE_LIMIT) + LIGHT_ANGLE_LIMIT;
-        final Vector3f direction = new Vector3f(0, -Math.sin(lightAngle), -Math.cos(lightAngle));
+        final Vector3f direction = new Vector3f(0, -TrigMath.sin(lightAngle), -TrigMath.cos(lightAngle));
         renderer.updateLight(direction, frustum);
         // TODO: lower light intensity at night
     }

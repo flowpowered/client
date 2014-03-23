@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import com.flowpowered.math.GenericMath;
+import com.flowpowered.math.TrigMath;
 import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3f;
@@ -59,6 +60,9 @@ public class SSAONode extends GraphNode {
     private final Material material;
     private final Pipeline pipeline;
     private final Rectangle outputSize = new Rectangle();
+    private final Vector2Uniform projectionUniform = new Vector2Uniform("projection", Vector2f.ZERO);
+    private final FloatUniform aspectRatioUniform = new FloatUniform("aspectRatio", 1);
+    private final FloatUniform tanHalfFOVUniform = new FloatUniform("tanHalfFOV", 1);
     private final IntUniform kernelSizeUniform = new IntUniform("kernelSize", 0);
     private final Vector3ArrayUniform kernelUniform = new Vector3ArrayUniform("kernel", new Vector3f[]{});
     private final FloatUniform radiusUniform = new FloatUniform("radius", 0.5f);
@@ -88,9 +92,9 @@ public class SSAONode extends GraphNode {
         material = new Material(graph.getProgram("ssao"));
         material.addTexture(2, noiseTexture);
         final UniformHolder uniforms = material.getUniforms();
-        uniforms.add(graph.getProjectionUniform());
-        uniforms.add(graph.getTanHalfFOVUniform());
-        uniforms.add(graph.getAspectRatioUniform());
+        uniforms.add(projectionUniform);
+        uniforms.add(tanHalfFOVUniform);
+        uniforms.add(aspectRatioUniform);
         uniforms.add(kernelSizeUniform);
         uniforms.add(kernelUniform);
         uniforms.add(radiusUniform);
@@ -116,10 +120,23 @@ public class SSAONode extends GraphNode {
     }
 
     @Setting
-    public void setKernelSize(int kernelSize, float threshold) {
+    public void setFieldOfView(float fieldOfView) {
+        tanHalfFOVUniform.set(TrigMath.tan(Math.toRadians(fieldOfView) / 2));
+    }
+
+    @Setting
+    public void setPlanes(Vector2f planes) {
+        final float nearPlane = planes.getX();
+        final float farPlane = planes.getY();
+        projectionUniform.set(new Vector2f(farPlane / (farPlane - nearPlane), (-farPlane * nearPlane) / (farPlane - nearPlane)));
+    }
+
+    @Setting
+    public void setKernelSize(int kernelSize) {
         // Generate the kernel
         final Vector3f[] kernel = new Vector3f[kernelSize];
         final Random random = new Random();
+        final float threshold = thresholdUniform.get();
         for (int i = 0; i < kernelSize; i++) {
             float scale = (float) i / kernelSize;
             scale = GenericMath.lerp(threshold, 1, scale * scale);
@@ -130,7 +147,15 @@ public class SSAONode extends GraphNode {
         // Update the uniforms
         kernelSizeUniform.set(kernelSize);
         kernelUniform.set(kernel);
-        thresholdUniform.set(threshold);
+    }
+
+    @Setting
+    public void setThreshold(float threshold) {
+        if (threshold != thresholdUniform.get()) {
+            thresholdUniform.set(threshold);
+            // Recompute the kernel
+            setKernelSize(kernelSizeUniform.get());
+        }
     }
 
     @Setting
@@ -175,6 +200,7 @@ public class SSAONode extends GraphNode {
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         material.addTexture(1, texture);
+        aspectRatioUniform.set((float) texture.getWidth() / texture.getHeight());
     }
 
     @Output("occlusions")

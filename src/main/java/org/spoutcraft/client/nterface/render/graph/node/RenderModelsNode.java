@@ -26,8 +26,10 @@ package org.spoutcraft.client.nterface.render.graph.node;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector2i;
 
+import org.spout.renderer.api.Action.SetCameraAction;
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
@@ -55,9 +57,11 @@ public class RenderModelsNode extends GraphNode {
     private final Texture vertexNormalsOutput;
     private final Texture materialsOutput;
     private final List<Model> models = new ArrayList<>();
-    private final Camera camera;
+    private final SetCameraAction setCamera = new SetCameraAction(null);
     private final Rectangle outputSize = new Rectangle();
     private final Pipeline pipeline;
+    private float fieldOfView = 60;
+    private Vector2f planes = Vector2f.ZERO;
 
     public RenderModelsNode(RenderGraph graph, String name) {
         super(graph, name);
@@ -97,10 +101,8 @@ public class RenderModelsNode extends GraphNode {
         frameBuffer.attach(AttachmentPoint.COLOR2, vertexNormalsOutput);
         frameBuffer.attach(AttachmentPoint.COLOR3, materialsOutput);
         frameBuffer.attach(AttachmentPoint.DEPTH, depthsOutput);
-        // Create the camera
-        camera = Camera.createPerspective(graph.getFieldOfView(), graph.getWindowWidth(), graph.getWindowHeight(), graph.getNearPlane(), graph.getFarPlane());
         // Create the pipeline
-        pipeline = new PipelineBuilder().useCamera(camera).useViewPort(outputSize).bindFrameBuffer(frameBuffer).clearBuffer().renderModels(models).unbindFrameBuffer(frameBuffer).build();
+        pipeline = new PipelineBuilder().doAction(setCamera).useViewPort(outputSize).bindFrameBuffer(frameBuffer).clearBuffer().renderModels(models).unbindFrameBuffer(frameBuffer).build();
     }
 
     @Override
@@ -126,11 +128,14 @@ public class RenderModelsNode extends GraphNode {
     @Setting
     public void setOutputSize(Vector2i size) {
         outputSize.setSize(size);
-        colorsOutput.setImageData(null, size.getX(), size.getY());
-        normalsOutput.setImageData(null, size.getX(), size.getY());
-        depthsOutput.setImageData(null, size.getX(), size.getY());
-        vertexNormalsOutput.setImageData(null, size.getX(), size.getY());
-        materialsOutput.setImageData(null, size.getX(), size.getY());
+        final int width = size.getX();
+        final int height = size.getY();
+        colorsOutput.setImageData(null, width, height);
+        normalsOutput.setImageData(null, width, height);
+        depthsOutput.setImageData(null, width, height);
+        vertexNormalsOutput.setImageData(null, size.getX(), height);
+        materialsOutput.setImageData(null, width, height);
+        setCamera.setCamera(Camera.createPerspective(fieldOfView, width, height, planes.getX(), planes.getY()));
     }
 
     @Output("normals")
@@ -154,7 +159,19 @@ public class RenderModelsNode extends GraphNode {
     }
 
     public Camera getCamera() {
-        return camera;
+        return setCamera.getCamera();
+    }
+
+    @Setting
+    public void setFieldOfView(float fieldOfView) {
+        this.fieldOfView = fieldOfView;
+        setCamera.setCamera(Camera.createPerspective(fieldOfView, outputSize.getWidth(), outputSize.getHeight(), planes.getX(), planes.getY()));
+    }
+
+    @Setting
+    public void setPlanes(Vector2f planes) {
+        this.planes = planes;
+        setCamera.setCamera(Camera.createPerspective(fieldOfView, outputSize.getWidth(), outputSize.getHeight(), planes.getX(), planes.getY()));
     }
 
     /**

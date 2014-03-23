@@ -43,10 +43,10 @@ import org.spoutcraft.client.nterface.render.graph.RenderGraph;
 public abstract class GraphNode {
     protected final RenderGraph graph;
     protected final String name;
-    protected final Map<String, Method> inputs = new HashMap<>();
-    protected final Map<String, Method> outputs = new HashMap<>();
-    protected final Map<String, GraphNode> inputNodes = new HashMap<>();
-    protected final Map<String, GraphNode> outputNodes = new HashMap<>();
+    private final Map<String, Method> inputs = new HashMap<>();
+    private final Map<String, Method> outputs = new HashMap<>();
+    private final Map<String, GraphNode> inputNodes = new HashMap<>();
+    private final Map<String, GraphNode> outputNodes = new HashMap<>();
 
     protected GraphNode(RenderGraph graph, String name) {
         this.graph = graph;

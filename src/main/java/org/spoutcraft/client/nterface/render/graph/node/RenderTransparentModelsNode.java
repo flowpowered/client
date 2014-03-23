@@ -27,8 +27,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector2i;
 
+import org.spout.renderer.api.Action.SetCameraAction;
+import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
@@ -55,12 +58,14 @@ public class RenderTransparentModelsNode extends GraphNode {
     private final FrameBuffer frameBuffer;
     private Texture colors;
     private final List<Model> models = new ArrayList<>();
+    private final SetCameraAction setCamera = new SetCameraAction(null);
     private final Rectangle outputSize = new Rectangle();
     private final Pipeline pipeline;
+    private float fieldOfView = 60;
+    private Vector2f planes = Vector2f.ZERO;
 
     public RenderTransparentModelsNode(RenderGraph graph, String name) {
         super(graph, name);
-
         final Context context = graph.getContext();
         // Create the weighted colors texture
         weightedColors = context.newTexture();
@@ -88,7 +93,7 @@ public class RenderTransparentModelsNode extends GraphNode {
         final Model model = new Model(graph.getScreen(), material);
         // Create the pipeline
         pipeline = new PipelineBuilder()
-                .useViewPort(outputSize)
+                .useViewPort(outputSize).doAction(setCamera)
                 .disableDepthMask().disableCapabilities(Capability.CULL_FACE).enableCapabilities(Capability.BLEND)
                 .setBlendingFunctions(BlendFunction.GL_ONE, BlendFunction.GL_ONE)
                 .bindFrameBuffer(weightedSumFrameBuffer).clearBuffer().renderModels(models)
@@ -127,14 +132,29 @@ public class RenderTransparentModelsNode extends GraphNode {
         // Update the size of the texture to match in input, if necessary
         if (!size.equals(outputSize.getSize())) {
             outputSize.setSize(size);
-            weightedColors.setImageData(null, size.getX(), size.getY());
-            layerCounts.setImageData(null, size.getX(), size.getY());
+            final int width = size.getX();
+            final int height = size.getY();
+            weightedColors.setImageData(null, width, height);
+            layerCounts.setImageData(null, width, height);
+            setCamera.setCamera(Camera.createPerspective(fieldOfView, width, height, planes.getX(), planes.getY()));
         }
     }
 
     @Output("colors")
     public Texture getColorsOutput() {
         return colors;
+    }
+
+    @Setting
+    public void setFieldOfView(float fieldOfView) {
+        this.fieldOfView = fieldOfView;
+        setCamera.setCamera(Camera.createPerspective(fieldOfView, outputSize.getWidth(), outputSize.getHeight(), planes.getX(), planes.getY()));
+    }
+
+    @Setting
+    public void setPlanes(Vector2f planes) {
+        this.planes = planes;
+        setCamera.setCamera(Camera.createPerspective(fieldOfView, outputSize.getWidth(), outputSize.getHeight(), planes.getX(), planes.getY()));
     }
 
     /**

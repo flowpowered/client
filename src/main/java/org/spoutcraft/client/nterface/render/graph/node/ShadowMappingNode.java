@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Random;
 
 import com.flowpowered.commons.ViewFrustum;
+import com.flowpowered.math.TrigMath;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.matrix.Matrix3f;
 import com.flowpowered.math.matrix.Matrix4f;
@@ -80,6 +81,9 @@ public class ShadowMappingNode extends GraphNode {
     protected final RenderShadowModelsAction renderModelsAction = new RenderShadowModelsAction(null);
     protected final SetCameraAction setCameraAction = new SetCameraAction(null);
     protected Pipeline pipeline;
+    private final Vector2Uniform projectionUniform = new Vector2Uniform("projection", Vector2f.ZERO);
+    private final FloatUniform aspectRatioUniform = new FloatUniform("aspectRatio", 1);
+    private final FloatUniform tanHalfFOVUniform = new FloatUniform("tanHalfFOV", 1);
     protected final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.UP.negate());
     private final IntUniform kernelSizeUniform = new IntUniform("kernelSize", 0);
     private final Vector2ArrayUniform kernelUniform = new Vector2ArrayUniform("kernel", new Vector2f[]{});
@@ -133,9 +137,9 @@ public class ShadowMappingNode extends GraphNode {
         material.addTexture(2, lightDepthsTexture);
         material.addTexture(3, noiseTexture);
         final UniformHolder uniforms = material.getUniforms();
-        uniforms.add(graph.getProjectionUniform());
-        uniforms.add(graph.getTanHalfFOVUniform());
-        uniforms.add(graph.getAspectRatioUniform());
+        uniforms.add(projectionUniform);
+        uniforms.add(tanHalfFOVUniform);
+        uniforms.add(aspectRatioUniform);
         uniforms.add(lightDirectionUniform);
         uniforms.add(inverseViewMatrixUniform);
         uniforms.add(lightViewMatrixUniform);
@@ -162,6 +166,18 @@ public class ShadowMappingNode extends GraphNode {
         lightViewMatrixUniform.set(camera.getViewMatrix());
         lightProjectionMatrixUniform.set(camera.getProjectionMatrix());
         pipeline.run(graph.getContext());
+    }
+
+    @Setting
+    public void setFieldOfView(float fieldOfView) {
+        tanHalfFOVUniform.set(TrigMath.tan(Math.toRadians(fieldOfView) / 2));
+    }
+
+    @Setting
+    public void setPlanes(Vector2f planes) {
+        final float nearPlane = planes.getX();
+        final float farPlane = planes.getY();
+        projectionUniform.set(new Vector2f(farPlane / (farPlane - nearPlane), (-farPlane * nearPlane) / (farPlane - nearPlane)));
     }
 
     @Setting
@@ -269,6 +285,7 @@ public class ShadowMappingNode extends GraphNode {
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         material.addTexture(1, texture);
+        aspectRatioUniform.set((float) texture.getWidth() / texture.getHeight());
     }
 
     @Output("shadows")

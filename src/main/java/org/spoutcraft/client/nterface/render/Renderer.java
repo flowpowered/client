@@ -37,6 +37,7 @@ import java.util.Calendar;
 import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.math.matrix.Matrix4f;
+import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector4f;
@@ -76,8 +77,7 @@ import org.spoutcraft.client.nterface.render.graph.node.SSAONode;
 import org.spoutcraft.client.nterface.render.graph.node.ShadowMappingNode;
 
 /**
- * The default renderer. Support OpenGL 2.1 and 3.2. Can render fully textured models with normal and specular mapping, ambient occlusion (SSAO), shadow mapping, Phong shading, motion blur and edge
- * detection anti-aliasing. The default OpenGL version is 3.2.
+ *
  */
 public class Renderer {
     private static final String WINDOW_TITLE = "Spoutcraft";
@@ -141,21 +141,24 @@ public class Renderer {
     }
 
     private void initGraph() {
-        graph = new RenderGraph(context, "/shaders/gl" + context.getGLVersion().getMajor() + "0");
-        graph.setWindowSize(windowSize);
-        graph.setFieldOfView(60);
-        graph.setNearPlane(0.1f);
-        graph.setFarPlane(200);
-        graph.create();
+        final float fov = 60;
+        final Vector2f planes = new Vector2f(0.1f, 200);
         final int blurSize = 2;
+        // Create the graph
+        graph = new RenderGraph(context, "/shaders/gl" + context.getGLVersion().getMajor() + "0");
+        graph.create();
         // Render models
         renderModelsNode = new RenderModelsNode(graph, "models");
         renderModelsNode.setOutputSize(windowSize);
+        renderModelsNode.setFieldOfView(fov);
+        renderModelsNode.setPlanes(planes);
         graph.addNode(renderModelsNode);
         // Shadows
         shadowMappingNode = new CascadedShadowMappingNode(graph, "shadows");
         shadowMappingNode.connect("normals", "vertexNormals", renderModelsNode);
         shadowMappingNode.connect("depths", "depths", renderModelsNode);
+        shadowMappingNode.setFieldOfView(fov);
+        shadowMappingNode.setPlanes(planes);
         shadowMappingNode.setShadowsSize(windowSize);
         shadowMappingNode.setShadowMapSize(new Vector2i(1048, 1048));
         shadowMappingNode.setRenderModelsNode(renderModelsNode);
@@ -175,8 +178,11 @@ public class Renderer {
         final SSAONode ssaoNode = new SSAONode(graph, "ssao");
         ssaoNode.connect("normals", "normals", renderModelsNode);
         ssaoNode.connect("depths", "depths", renderModelsNode);
+        ssaoNode.setFieldOfView(fov);
+        ssaoNode.setPlanes(planes);
         ssaoNode.setOcclusionsSize(windowSize);
-        ssaoNode.setKernelSize(8, 0.15f);
+        ssaoNode.setKernelSize(8);
+        ssaoNode.setThreshold(0.15f);
         ssaoNode.setNoiseSize(blurSize);
         ssaoNode.setRadius(0.5f);
         ssaoNode.setPower(2);
@@ -197,15 +203,19 @@ public class Renderer {
         lightingNode.connect("occlusions", "colors", blurOcclusionsNode);
         lightingNode.connect("shadows", "colors", blurShadowsNode);
         lightingNode.setColorsSize(windowSize);
+        lightingNode.setFieldOfView(fov);
         graph.addNode(lightingNode);
         // Transparent models
         renderTransparentModelsNode = new RenderTransparentModelsNode(graph, "transparency");
         renderTransparentModelsNode.connect("depths", "depths", renderModelsNode);
         renderTransparentModelsNode.connect("colors", "colors", lightingNode);
+        renderTransparentModelsNode.setFieldOfView(fov);
+        renderTransparentModelsNode.setPlanes(planes);
         graph.addNode(renderTransparentModelsNode);
         // Render GUI
         renderGUINode = new RenderGUINode(graph, "gui");
         renderGUINode.connect("colors", "colors", renderTransparentModelsNode);
+        renderGUINode.setPlanes(planes);
         graph.addNode(renderGUINode);
         // Build graph
         graph.rebuild();
@@ -255,7 +265,7 @@ public class Renderer {
             return;
         }
         final StringModel sandboxModel = new StringModel(context, graph.getProgram("font"), "ClientWIPFS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
-        final float aspect = 1 / graph.getAspectRatio();
+        final float aspect = (float) windowSize.getY() / windowSize.getX();
         sandboxModel.setPosition(new Vector3f(0.005, 0.97 * aspect, -0.1));
         sandboxModel.setString("Client - WIP");
         renderGUINode.addModel(sandboxModel);
