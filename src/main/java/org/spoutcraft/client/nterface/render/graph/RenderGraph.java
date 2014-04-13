@@ -129,8 +129,13 @@ public class RenderGraph extends Creatable {
         nodes.put(node.getName(), node);
     }
 
-    public GraphNode getNode(String name) {
-        return nodes.get(name);
+    @SuppressWarnings("unchecked")
+    public <N extends GraphNode> N getNode(String name) {
+        try {
+            return (N) nodes.get(name);
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException("Requested node is not of requested type");
+        }
     }
 
     public Context getContext() {

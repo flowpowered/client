@@ -49,14 +49,14 @@ public class RenderGUINode extends GraphNode {
     private final SetCameraAction setCamera = new SetCameraAction(null);
     private final List<Model> models = new ArrayList<>();
     private final Pipeline pipeline;
-    private final Rectangle screenSize = new Rectangle();
+    private final Rectangle outputSize = new Rectangle();
     private Vector2f planes = Vector2f.ZERO;
 
     public RenderGUINode(RenderGraph graph, String name) {
         super(graph, name);
         material = new Material(graph.getProgram("screen"));
         final Model model = new Model(graph.getScreen(), material);
-        pipeline = new PipelineBuilder().doAction(setCamera).useViewPort(screenSize).clearBuffer().renderModels(Arrays.asList(model)).renderModels(models).build();
+        pipeline = new PipelineBuilder().doAction(setCamera).useViewPort(outputSize).clearBuffer().renderModels(Arrays.asList(model)).renderModels(models).build();
     }
 
     @Override
@@ -71,13 +71,13 @@ public class RenderGUINode extends GraphNode {
     @Setting
     public void setPlanes(Vector2f planes) {
         this.planes = planes;
-        setCamera.setCamera(Camera.createOrthographic(1, 0, (float) screenSize.getHeight() / screenSize.getWidth(), 0, planes.getX(), planes.getY()));
+        setCamera.setCamera(Camera.createOrthographic(1, 0, (float) outputSize.getHeight() / outputSize.getWidth(), 0, planes.getX(), planes.getY()));
     }
 
     @Input("colors")
     public void setColorsInput(Texture colorsInput) {
         material.addTexture(0, colorsInput);
-        screenSize.setSize(colorsInput.getSize());
+        outputSize.setSize(colorsInput.getSize());
         setCamera.setCamera(Camera.createOrthographic(1, 0, (float) colorsInput.getHeight() / colorsInput.getWidth(), 0, planes.getX(), planes.getY()));
     }
 

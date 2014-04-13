@@ -89,7 +89,6 @@ public class Renderer {
     private final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.FORWARD);
     private final Matrix4Uniform previousViewMatrixUniform = new Matrix4Uniform("previousViewMatrix", new Matrix4f());
     private final Matrix4Uniform previousProjectionMatrixUniform = new Matrix4Uniform("previousProjectionMatrix", new Matrix4f());
-    private final FloatUniform blurStrengthUniform = new FloatUniform("blurStrength", 1);
     // OpenGL version and context
     private Context context;
     // Included materials
@@ -145,7 +144,7 @@ public class Renderer {
         final Vector2f planes = new Vector2f(0.1f, 200);
         final int blurSize = 2;
         // Create the graph
-        graph = new RenderGraph(context, "/shaders/gl" + context.getGLVersion().getMajor() + "0");
+        graph = new RenderGraph(context, "/shaders/glsl" + (context.getGLVersion().getMajor() == 2 ? 120 : 330));
         graph.create();
         // Render models
         renderModelsNode = new RenderModelsNode(graph, "models");
@@ -301,13 +300,11 @@ public class Renderer {
             fpsMonitor.start();
             fpsMonitorStarted = true;
         }
-        // Update the current frame uniforms
-        final Camera camera = renderModelsNode.getCamera();
-        blurStrengthUniform.set((float) fpsMonitor.getTPS() / Interface.TPS);
         // Render
         graph.render();
         // Update the previous frame uniforms
         setPreviousModelMatrices();
+        final Camera camera = renderModelsNode.getCamera();
         previousViewMatrixUniform.set(camera.getViewMatrix());
         previousProjectionMatrixUniform.set(camera.getProjectionMatrix());
         // Update the FPS monitor
