@@ -35,7 +35,7 @@ import gnu.trove.list.array.TIntArrayList;
 import org.spout.renderer.api.data.VertexAttribute;
 import org.spout.renderer.api.data.VertexAttribute.DataType;
 import org.spout.renderer.api.data.VertexData;
-import org.spout.renderer.api.util.CausticUtil;
+import org.spout.renderer.api.util.MeshGenerator;
 
 /**
  * Represents a standard mesh, with various attributes (positions, normals, texture coordinates and/or tangents). This mesh can be converted into {@link org.spout.renderer.api.data.VertexData for
@@ -138,10 +138,10 @@ public class Mesh {
             if (data.isEmpty() && attribute.generateDataIfMissing()) {
                 switch (attribute) {
                     case NORMALS:
-                        CausticUtil.generateNormals(attributes.get(MeshAttribute.POSITIONS), indices, data);
+                        MeshGenerator.generateNormals(attributes.get(MeshAttribute.POSITIONS), indices, data);
                         break;
                     case TANGENTS:
-                        CausticUtil.generateTangents(attributes.get(MeshAttribute.POSITIONS), attributes.get(MeshAttribute.NORMALS), attributes.get(MeshAttribute.TEXTURE_COORDS), indices, data);
+                        MeshGenerator.generateTangents(attributes.get(MeshAttribute.POSITIONS), attributes.get(MeshAttribute.NORMALS), attributes.get(MeshAttribute.TEXTURE_COORDS), indices, data);
                 }
             }
             vertexAttribute.setData(data);

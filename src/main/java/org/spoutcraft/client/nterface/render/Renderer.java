@@ -23,7 +23,6 @@
  */
 package org.spoutcraft.client.nterface.render;
 
-import javax.imageio.ImageIO;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.image.BufferedImage;
@@ -32,15 +31,26 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import com.flowpowered.commons.TPSMonitor;
-import com.flowpowered.commons.ViewFrustum;
-import com.flowpowered.math.matrix.Matrix4f;
-import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector4f;
+
+import com.flowpowered.render.RenderGraph;
+import com.flowpowered.render.impl.BlurNode;
+import com.flowpowered.render.impl.CascadedShadowMappingNode;
+import com.flowpowered.render.impl.LightingNode;
+import com.flowpowered.render.impl.RenderGUINode;
+import com.flowpowered.render.impl.RenderModelsNode;
+import com.flowpowered.render.impl.RenderTransparentModelsNode;
+import com.flowpowered.render.impl.SSAONode;
+import com.flowpowered.render.impl.ShadowMappingNode;
 
 import org.lwjgl.opengl.GLContext;
 
@@ -49,7 +59,6 @@ import org.spout.renderer.api.GLImplementation;
 import org.spout.renderer.api.GLVersioned.GLVersion;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.data.Uniform.FloatUniform;
-import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
 import org.spout.renderer.api.data.Uniform.Vector3Uniform;
 import org.spout.renderer.api.data.Uniform.Vector4Uniform;
 import org.spout.renderer.api.data.UniformHolder;
@@ -66,15 +75,6 @@ import org.spout.renderer.api.util.Rectangle;
 import org.spout.renderer.lwjgl.LWJGLUtil;
 
 import org.spoutcraft.client.nterface.Interface;
-import org.spoutcraft.client.nterface.render.graph.RenderGraph;
-import org.spoutcraft.client.nterface.render.graph.node.BlurNode;
-import org.spoutcraft.client.nterface.render.graph.node.CascadedShadowMappingNode;
-import org.spoutcraft.client.nterface.render.graph.node.LightingNode;
-import org.spoutcraft.client.nterface.render.graph.node.RenderGUINode;
-import org.spoutcraft.client.nterface.render.graph.node.RenderModelsNode;
-import org.spoutcraft.client.nterface.render.graph.node.RenderTransparentModelsNode;
-import org.spoutcraft.client.nterface.render.graph.node.SSAONode;
-import org.spoutcraft.client.nterface.render.graph.node.ShadowMappingNode;
 
 /**
  *
@@ -87,8 +87,6 @@ public class Renderer {
     private boolean cullBackFaces = true;
     // Effect uniforms
     private final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.FORWARD);
-    private final Matrix4Uniform previousViewMatrixUniform = new Matrix4Uniform("previousViewMatrix", new Matrix4f());
-    private final Matrix4Uniform previousProjectionMatrixUniform = new Matrix4Uniform("previousProjectionMatrix", new Matrix4f());
     // OpenGL version and context
     private Context context;
     // Included materials
@@ -102,6 +100,10 @@ public class Renderer {
     private LightingNode lightingNode;
     private RenderTransparentModelsNode renderTransparentModelsNode;
     private RenderGUINode renderGUINode;
+    // Models
+    private final List<Model> models = new ArrayList<>();
+    private final List<Model> guiModels = new ArrayList<>();
+    private final List<Model> transparentModels = new ArrayList<>();
     // FPS monitor
     private final TPSMonitor fpsMonitor = new TPSMonitor();
     private StringModel fpsMonitorModel;
@@ -134,64 +136,53 @@ public class Renderer {
         if (context.getGLVersion() == Interface.DEFAULT_VERSION || GLContext.getCapabilities().GL_ARB_depth_clamp) {
             context.enableCapability(Capability.DEPTH_CLAMP);
         }
-        final UniformHolder uniforms = context.getUniforms();
-        uniforms.add(previousViewMatrixUniform);
-        uniforms.add(previousProjectionMatrixUniform);
     }
 
     private void initGraph() {
-        final float fov = 60;
-        final Vector2f planes = new Vector2f(0.1f, 200);
         final int blurSize = 2;
         // Create the graph
         graph = new RenderGraph(context, "/shaders/glsl" + (context.getGLVersion().getMajor() == 2 ? 120 : 330));
         graph.create();
+        graph.setAttribute("camera", Camera.createPerspective(60, windowSize.getX(), windowSize.getY(), 0.1f, 200));
+        graph.setAttribute("outputSize", windowSize);
+        graph.setAttribute("lightDirection", Vector3f.UP.negate());
+        graph.setAttribute("models", models);
         // Render models
         renderModelsNode = new RenderModelsNode(graph, "models");
-        renderModelsNode.setOutputSize(windowSize);
-        renderModelsNode.setFieldOfView(fov);
-        renderModelsNode.setPlanes(planes);
         graph.addNode(renderModelsNode);
         // Shadows
         shadowMappingNode = new CascadedShadowMappingNode(graph, "shadows");
         shadowMappingNode.connect("normals", "vertexNormals", renderModelsNode);
         shadowMappingNode.connect("depths", "depths", renderModelsNode);
-        shadowMappingNode.setFieldOfView(fov);
-        shadowMappingNode.setPlanes(planes);
-        shadowMappingNode.setShadowsSize(windowSize);
-        shadowMappingNode.setShadowMapSize(new Vector2i(1048, 1048));
-        shadowMappingNode.setRenderModelsNode(renderModelsNode);
-        shadowMappingNode.setKernelSize(8);
-        shadowMappingNode.setNoiseSize(blurSize);
-        shadowMappingNode.setBias(0.001f);
-        shadowMappingNode.setRadius(0.05f);
+        shadowMappingNode.setAttribute("shadowMapSize", new Vector2i(1048, 1048));
+        shadowMappingNode.setAttribute("renderModelsNode", renderModelsNode);
+        shadowMappingNode.setAttribute("kernelSize", 8);
+        shadowMappingNode.setAttribute("noiseSize", blurSize);
+        shadowMappingNode.setAttribute("bias", 0.01f);
+        shadowMappingNode.setAttribute("radius", 0.05f);
         graph.addNode(shadowMappingNode);
         // Blur shadows
         final BlurNode blurShadowsNode = new BlurNode(graph, "blurShadows");
         blurShadowsNode.connect("colors", "shadows", shadowMappingNode);
-        blurShadowsNode.setColorsSize(windowSize);
-        blurShadowsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
-        blurShadowsNode.setKernelSize(blurSize + 1);
+        blurShadowsNode.setAttribute("kernelGenerator", BlurNode.BOX_KERNEL);
+        blurShadowsNode.setAttribute("kernelSize", blurSize + 1);
         graph.addNode(blurShadowsNode);
         // SSAO
         final SSAONode ssaoNode = new SSAONode(graph, "ssao");
         ssaoNode.connect("normals", "normals", renderModelsNode);
         ssaoNode.connect("depths", "depths", renderModelsNode);
-        ssaoNode.setFieldOfView(fov);
-        ssaoNode.setPlanes(planes);
-        ssaoNode.setOcclusionsSize(windowSize);
-        ssaoNode.setKernelSize(8);
-        ssaoNode.setThreshold(0.15f);
-        ssaoNode.setNoiseSize(blurSize);
-        ssaoNode.setRadius(0.5f);
-        ssaoNode.setPower(2);
+        ssaoNode.setAttribute("kernelSize", 8);
+        ssaoNode.setAttribute("threshold", 0.15f);
+        ssaoNode.setAttribute("noiseSize", blurSize);
+        ssaoNode.setAttribute("radius", 0.5f);
+        ssaoNode.setAttribute("power", 2f);
         graph.addNode(ssaoNode);
         // Blur occlusions
         final BlurNode blurOcclusionsNode = new BlurNode(graph, "blurOcclusions");
         blurOcclusionsNode.connect("colors", "occlusions", ssaoNode);
-        blurOcclusionsNode.setColorsSize(windowSize);
-        blurOcclusionsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
-        blurOcclusionsNode.setKernelSize(blurSize + 1);
+        blurOcclusionsNode.setAttribute("kernelGenerator", BlurNode.BOX_KERNEL);
+        blurOcclusionsNode.setAttribute("kernelSize", blurSize + 1);
+        blurOcclusionsNode.setAttribute("outputFormat", InternalFormat.R8);
         graph.addNode(blurOcclusionsNode);
         // Lighting
         lightingNode = new LightingNode(graph, "lighting");
@@ -201,23 +192,30 @@ public class Renderer {
         lightingNode.connect("materials", "materials", renderModelsNode);
         lightingNode.connect("occlusions", "colors", blurOcclusionsNode);
         lightingNode.connect("shadows", "colors", blurShadowsNode);
-        lightingNode.setColorsSize(windowSize);
-        lightingNode.setFieldOfView(fov);
         graph.addNode(lightingNode);
         // Transparent models
         renderTransparentModelsNode = new RenderTransparentModelsNode(graph, "transparency");
         renderTransparentModelsNode.connect("depths", "depths", renderModelsNode);
         renderTransparentModelsNode.connect("colors", "colors", lightingNode);
-        renderTransparentModelsNode.setFieldOfView(fov);
-        renderTransparentModelsNode.setPlanes(planes);
+        renderTransparentModelsNode.setAttribute("transparentModels", transparentModels);
         graph.addNode(renderTransparentModelsNode);
         // Render GUI
         renderGUINode = new RenderGUINode(graph, "gui");
         renderGUINode.connect("colors", "colors", renderTransparentModelsNode);
-        renderGUINode.setPlanes(planes);
+        renderGUINode.setAttribute("guiModels", guiModels);
         graph.addNode(renderGUINode);
+
+        renderModelsNode.update();
+        shadowMappingNode.update();
+        blurShadowsNode.update();
+        ssaoNode.update();
+        blurOcclusionsNode.update();
+        lightingNode.update();
+        renderTransparentModelsNode.update();
+        renderGUINode.update();
+
         // Build graph
-        graph.rebuild();
+        graph.build();
     }
 
     private void initMaterials() {
@@ -244,7 +242,7 @@ public class Renderer {
 
         final VertexArray shape = context.newVertexArray();
         shape.create();
-        shape.setData(MeshGenerator.generateCylinder(null, 2.5f, 5));
+        shape.setData(MeshGenerator.generateCylinder(2.5f, 5));
         final Model model1 = new Model(shape, transparencyMaterial);
         model1.setPosition(new Vector3f(0, 22, -6));
         model1.getUniforms().add(new Vector4Uniform("modelColor", new Vector4f(1, 1, 0, 0.3)));
@@ -267,11 +265,11 @@ public class Renderer {
         final float aspect = (float) windowSize.getY() / windowSize.getX();
         sandboxModel.setPosition(new Vector3f(0.005, 0.97 * aspect, -0.1));
         sandboxModel.setString("Client - WIP");
-        renderGUINode.addModel(sandboxModel);
+        guiModels.add(sandboxModel);
         final StringModel fpsModel = sandboxModel.getInstance();
         fpsModel.setPosition(new Vector3f(0.005, 0.94 * aspect, -0.1));
         fpsModel.setString("FPS: " + fpsMonitor.getTPS());
-        renderGUINode.addModel(fpsModel);
+        guiModels.add(fpsModel);
         fpsMonitorModel = fpsModel;
     }
 
@@ -302,19 +300,8 @@ public class Renderer {
         }
         // Render
         graph.render();
-        // Update the previous frame uniforms
-        setPreviousModelMatrices();
-        final Camera camera = renderModelsNode.getCamera();
-        previousViewMatrixUniform.set(camera.getViewMatrix());
-        previousProjectionMatrixUniform.set(camera.getProjectionMatrix());
         // Update the FPS monitor
         updateFPSMonitor();
-    }
-
-    private void setPreviousModelMatrices() {
-        for (Model model : renderModelsNode.getModels()) {
-            model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
-        }
     }
 
     private void updateFPSMonitor() {
@@ -378,11 +365,10 @@ public class Renderer {
      * @param direction The light direction
      * @param frustum The frustum in which to cast shadows
      */
-    public void updateLight(Vector3f direction, ViewFrustum frustum) {
+    public void updateLight(Vector3f direction) {
         direction = direction.normalize();
         lightDirectionUniform.set(direction);
-        shadowMappingNode.updateLight(direction, frustum);
-        lightingNode.setLightDirection(direction);
+        graph.setAttribute("lightDirection", direction);
     }
 
     /**
@@ -393,7 +379,7 @@ public class Renderer {
     public void addSolidModel(Model model) {
         model.setMaterial(solidMaterial);
         model.getUniforms().add(new Vector4Uniform("modelColor", new Vector4f(Math.random(), Math.random(), Math.random(), 1)));
-        renderModelsNode.addModel(model);
+        models.add(model);
     }
 
     /**
@@ -403,7 +389,7 @@ public class Renderer {
      */
     public void addTransparentModel(Model model) {
         model.setMaterial(transparencyMaterial);
-        renderTransparentModelsNode.addModel(model);
+        transparentModels.add(model);
     }
 
     /**

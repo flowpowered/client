@@ -85,3 +85,4 @@ nb-configuration.xml
 /worlds
 config.yml
 /.nb-gradle/profiles/private/
+/.nb-gradle/private/

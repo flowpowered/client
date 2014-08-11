@@ -105,7 +105,7 @@ public class Universe extends TickingElement {
                 final int wz = cz << Chunk.BLOCKS.BITS;
                 for (int bx = 0; bx < Chunk.BLOCKS.SIZE; bx++) {
                     for (int bz = 0; bz < Chunk.BLOCKS.SIZE; bz++) {
-                        final int landHeight = Math.min(Chunk.BLOCKS.SIZE, GenericMath.floor(perlin.GetValue(wx + bx, 0, wz + bz) * (Chunk.BLOCKS.SIZE / 2) + (Chunk.BLOCKS.SIZE / 2)));
+                        final int landHeight = Math.min(Chunk.BLOCKS.SIZE, GenericMath.floor(perlin.getValue(wx + bx, 0, wz + bz) * (Chunk.BLOCKS.SIZE / 2) + (Chunk.BLOCKS.SIZE / 2)));
                         for (int by = 0; by < landHeight; by++) {
                             chunkIDs[by << Chunk.BLOCKS.DOUBLE_BITS | bz << Chunk.BLOCKS.BITS | bx] = Materials.SOLID.getID();
                         }
