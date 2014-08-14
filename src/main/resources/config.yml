@@ -1,5 +1,5 @@
 graphics:
-    version: GL30
+    version: GL32
     resolution: 1200, 800
     field_of_view: 60
     shadows:

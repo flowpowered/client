@@ -23,6 +23,8 @@
  */
 package org.spoutcraft.client.nterface;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -43,6 +45,7 @@ import org.lwjgl.input.Keyboard;
 
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLVersioned.GLVersion;
+import org.spout.renderer.api.model.Model;
 
 import org.spoutcraft.client.Game;
 import org.spoutcraft.client.input.Input;
@@ -152,7 +155,7 @@ public class Interface extends TickingElement {
         }
         lightAngle = lightAngle / PI * (PI - 2 * LIGHT_ANGLE_LIMIT) + LIGHT_ANGLE_LIMIT;
         final Vector3f direction = new Vector3f(0, -TrigMath.sin(lightAngle), -TrigMath.cos(lightAngle));
-        renderer.updateLight(direction, frustum);
+        renderer.updateLight(direction);
         // TODO: lower light intensity at night
     }
 
@@ -199,8 +202,9 @@ public class Interface extends TickingElement {
         // Update the world update number
         worldLastUpdateNumber = updateNumber;
         // Safety precautions
-        if (renderer.getRenderModelsNode().getModels().size() > chunkModels.size()) {
-            game.getLogger().warn("There are more models in the renderer (" + renderer.getRenderModelsNode().getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
+        Collection<Model> models = renderer.getRenderModelsNode().<Collection<Model>>getAttribute("models");
+        if (models != null && models.size() > chunkModels.size()) {
+            game.getLogger().warn("There are more models in the renderer (" + models.size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
         }
     }
 
@@ -245,7 +249,7 @@ public class Interface extends TickingElement {
     }
 
     private void removeChunkModel(ChunkModel model, boolean destroy) {
-        renderer.getRenderModelsNode().removeModel(model);
+        renderer.getRenderModelsNode().<Collection<Model>>getAttribute("models", new ArrayList<Model>()).remove(model);
         if (destroy) {
             // TODO: recycle the vertex array?
             model.destroy();
@@ -276,7 +280,7 @@ public class Interface extends TickingElement {
                 handleMouseInput(dt);
             }
             // Update the camera position to match the player
-            final Camera camera = renderer.getRenderModelsNode().getCamera();
+            final Camera camera = renderer.getRenderModelsNode().getAttribute("camera");
             final PlayerSnapshot player = game.getPhysics().getPlayerSnapshot();
             if (player != null) {
                 camera.setPosition(player.getPosition());
@@ -318,14 +322,14 @@ public class Interface extends TickingElement {
         cameraYaw %= 360;
         final Quaternionf yaw = Quaternionf.fromAngleDegAxis(cameraYaw, 1, 0, 0);
         // Set the new camera rotation
-        renderer.getRenderModelsNode().getCamera().setRotation(pitch.mul(yaw));
+        renderer.getRenderModelsNode().<Camera>getAttribute("camera").setRotation(pitch.mul(yaw));
         // Update the last mouse x and y
         this.mouseX = mouseX;
         this.mouseY = mouseY;
     }
 
     private void updateSnapshots() {
-        cameraSnapshot.update(renderer.getRenderModelsNode().getCamera());
+        cameraSnapshot.update(renderer.getRenderModelsNode().<Camera>getAttribute("camera"));
     }
 
     public CameraSnapshot getCameraSnapshot() {
