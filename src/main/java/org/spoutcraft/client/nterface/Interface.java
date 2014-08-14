@@ -202,7 +202,7 @@ public class Interface extends TickingElement {
         // Update the world update number
         worldLastUpdateNumber = updateNumber;
         // Safety precautions
-        Collection<Model> models = renderer.getRenderModelsNode().<Collection<Model>>getAttribute("models");
+        final Collection<Model> models = renderer.getRenderModelsNode().<Collection<Model>>getAttribute("models");
         if (models != null && models.size() > chunkModels.size()) {
             game.getLogger().warn("There are more models in the renderer (" + models.size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
         }
@@ -249,7 +249,10 @@ public class Interface extends TickingElement {
     }
 
     private void removeChunkModel(ChunkModel model, boolean destroy) {
-        renderer.getRenderModelsNode().<Collection<Model>>getAttribute("models", new ArrayList<Model>()).remove(model);
+        final Collection<Model> models = renderer.getRenderModelsNode().<Collection<Model>>getAttribute("models");
+        if (models != null) {
+            models.remove(model);
+        }
         if (destroy) {
             // TODO: recycle the vertex array?
             model.destroy();
